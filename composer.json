@@ -1,0 +1,24 @@
+{
+    "name": "appaqui/freimguork-core",
+    "description": "Core module for AppAqui projects",
+    "authors": [
+        {
+        	"name": "Barbara Gavalda", 
+        	"email": "bgavalda@appaqui.com"
+    	},
+    	{
+        	"name": "Toni Palanques", 
+        	"email": "tpalanques@appaqui.com"
+    	}
+    ],
+    "require": {
+        "php": ">=5.3",
+        "twig/twig": "~1.0",
+        "twig/extensions": "^1.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Core\\": "src/"
+        }
+    }
+}
