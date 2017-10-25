@@ -24,6 +24,7 @@ composer.lock
 .idea/**/tasks.xml
 .idea/dictionaries
 */.idea/
+.idea/*
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
