@@ -7,6 +7,7 @@ use Core\Routing\Router;
 use Core\Utils\Config;
 use Core\Utils\Language;
 use Core\Utils\Session;
+use Core\View\View;
 
 /**
  * Class Bootstrap
@@ -28,6 +29,11 @@ class Bootstrap {
      * @var object $controller. Controller to be executed
      */
     private $controller = null;
+
+    /**
+     * @var string $projectFolder. Folder for project App
+     */
+    private $projectFolder = null;
 
     //TODO private $cache_manager = null;
 
@@ -79,10 +85,11 @@ class Bootstrap {
         //language
         $language = new Language($userLang, $project);
         $currentLanguage = $language->getLanguage();
-        $config->setDomain( $projects->getDomain($currentLanguage) );
+        $config->setDomains( $projects->getDomains($currentLanguage) );
 
         //routing
-        $this->router = new Router( $project->getApp() );
+        $this->projectFolder = $project->getApp();
+        $this->router = new Router( $this->projectFolder );
         $this->router->doRouting( $config->get('routing') );
     }
 
@@ -94,18 +101,17 @@ class Bootstrap {
     private function execute(){
         $controllerName = $this->router->getController();
         $this->controller = new $controllerName();
+        $this->controller->setParams( $this->router->getParams() );
 
-        /*
-        $this->controller->setParams($this->router->getParams());
+        //TODO $cache_def = $this->controller->getCacheDef();
+        //TODO $html = $this->cache_manager->getCache($cache_def);
 
-        $cache_def = $this->controller->getCacheDef();
-        $html = $this->cache_manager->getCache($cache_def);
-        if ($html == null) {
-            $html = $this->render();
+        $response = null;
+        if( $response == null ){
+            $response = $this->render();
         }
 
-        echo $html;
-        */
+        echo $response;
     }
 
     /**
@@ -113,9 +119,7 @@ class Bootstrap {
      * @return $result    final response of the petition
      */
     private function render(){
-        /*
-        $view = new Views\View();
-        $this->controller->setView($view);
+        $this->controller->setView( new View( $this->projectFolder ) );
 
         try {
             $this->controller->build();
@@ -123,12 +127,10 @@ class Bootstrap {
             $e->showException();
         }
 
-        $html = $view->getHTML();
-        $this->cache_manager->setCache($html);
+        $response = $this->controller->getResponse();
+        //TODO $this->cache_manager->setCache($html);
 
-        */
-        $result = '';
-        return $result;
+        return $response;
     }
 
 }

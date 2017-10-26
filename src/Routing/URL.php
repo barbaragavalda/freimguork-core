@@ -46,10 +46,17 @@ class URL{
         return $this->controller;
     }
 
+    public function getParams(){
+        return $this->params;
+    }
+
     public function setRouting($routing){
         $this->routing = $routing;
     }
 
+    /**
+     * check which route matches the user request
+     */
     public function loadParams(){
         $config = Config::getInstance();
         $domain = $config->getDomain();
@@ -57,8 +64,6 @@ class URL{
         $userPetition = str_replace($domain, '', $userURL);
 
         $routingRegExp = $this->prepareRouting();
-
-
         foreach($routingRegExp as $regExp){
 
             if( preg_match($regExp['regExp'], $userPetition) === 1 ){
@@ -81,35 +86,42 @@ class URL{
         }
     }
 
+    /**
+     * prepare the regular expressions
+     * @return array
+     */
     private function prepareRouting(){
         $routingRegExp = array();
 
-        foreach($this->routing as $petition => $controller){
-            $regExp = '';
-            if( $petition == '' ){
-                $regExp .= '$^';
-            }else{
-                $explode = explode('/', $petition);
-                foreach($explode as $part){
-                    if( $regExp != '' ) $regExp .= '(/)';
-                    if( StringUtils::startsWidth($part, '{') ){
-                        $regExp .= '([a-z0-9])';
-                    }else{
-                        if( $part == '' ){
-                            $regExp .= '$^';
+        if( $this->routing ){
+
+            foreach($this->routing as $petition => $controller){
+                $regExp = '';
+                if( $petition == '' ){
+                    $regExp .= '$^';
+                }else{
+                    $explode = explode('/', $petition);
+                    foreach($explode as $part){
+                        if( $regExp != '' ) $regExp .= '(/)';
+                        if( StringUtils::startsWidth($part, '{') ){
+                            $regExp .= '([a-z0-9])';
                         }else{
-                            $regExp .= '(' . $part . ')';
+                            if( $part == '' ){
+                                $regExp .= '$^';
+                            }else{
+                                $regExp .= '(' . $part . ')';
+                            }
                         }
                     }
+                    if( !StringUtils::endsWidth($regExp, '(/)') ) $regExp .= '(/)';
                 }
-                if( !StringUtils::endsWidth($regExp, '(/)') ) $regExp .= '(/)';
-            }
 
-            $routingRegExp[] = array(
-                'controller' => $controller,
-                'petition' => $petition,
-                'regExp' => '/^' . str_replace('/', '\/', $regExp) . '$/'
-            );
+                $routingRegExp[] = array(
+                    'controller' => $controller,
+                    'petition' => $petition,
+                    'regExp' => '/^' . str_replace('/', '\/', $regExp) . '$/'
+                );
+            }
         }
 
         return $routingRegExp;

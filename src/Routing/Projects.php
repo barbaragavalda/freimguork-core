@@ -72,8 +72,20 @@ class Projects{
      * @param $language
      * @return string
      */
-    public function getDomain($language){
-        return $this->url->getProtocol() . str_replace('{lang}', $language, $this->currentProject->getURL());
+    public function getDomains($language){
+        $protocol = $this->url->getProtocol();
+
+        //ap domain
+        $url = str_replace('{lang}', $language, $this->currentProject->getURL());
+
+        //static domain
+        $parts = explode('/', $url);
+        $staticURL = $parts[0] . '/';
+
+        return array(
+            'app'       => $protocol . $url,
+            'static'    => $protocol . $staticURL
+        );
     }
 
     /**

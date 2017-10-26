@@ -47,4 +47,8 @@ class Router{
         }
     }
 
+    public function getParams(){
+        return $this->url->getParams();
+    }
+
 }

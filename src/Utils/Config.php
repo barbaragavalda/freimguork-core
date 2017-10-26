@@ -29,9 +29,14 @@ class Config{
     private $config = array();
 
     /**
-     * @var string $domain. Base domain
+     * @var string $domain. App domain
      */
     private $domain = '';
+
+    /**
+     * @var string $staticDomain. Static domain
+     */
+    private $staticDomain = '';
 
     /**
      * @var string $folder. Directory where must be all config files
@@ -68,7 +73,7 @@ class Config{
     }
 
     /**
-     * returns the base url
+     * returns the app url
      * @return string
      */
     public function getDomain(){
@@ -76,12 +81,20 @@ class Config{
     }
 
     /**
-     * sets the base url
-     * @param $projectURL base URL
-     * @param $language current language
+     * returns the static url
+     * @return string
      */
-    public function setDomain($domain){
-        $this->domain = $domain;
+    public function getStaticDomain(){
+        return $this->staticDomain;
+    }
+
+    /**
+     * sets the base url
+     * @param $domain array. Set app and static domains
+     */
+    public function setDomains($domain){
+        $this->domain = $domain['app'];
+        $this->staticDomain = $domain['static'];
     }
 
     /**
@@ -115,14 +128,27 @@ class Config{
 
     /**
      * returns the value for the given key
-     * @param $key
      * @return string
      */
-    public function get( $key ){
-        if( array_key_exists($key, $this->config) )
-            return $this->config[$key];
-        else
-            return '';
+    public function get(){
+        $args = func_get_args();
+        $argsCount = count($args);
+
+        $config = $this->config;
+        for($i=0; $i<$argsCount; $i++){
+            $key = $args[$i];
+            if( array_key_exists($key, $config) ){
+                if( $i ==  $argsCount-1 ){
+                    $config = $this->config[$key];
+                }else{
+                    return $this->config[$key];
+                }
+            }else{
+                break;
+            }
+        }
+
+        return '';
     }
 
     /**
