@@ -53,7 +53,6 @@ class Disk extends Cache {
         $cache = array('ttl' => $expiration, 'content' => $content);
 
         $path = $this->getPath($key);
-        echo $path.'-<br>';
         $ok = file_put_contents($path, serialize($cache));
         if ($ok === false) {
             return false;
@@ -74,7 +73,7 @@ class Disk extends Cache {
             if ($cache !== false) {
                 $cache = unserialize($cache);
                 $ttl = $cache['ttl'];
-                if ($ttl >= time()) {
+                if( $ttl >= time() ){
                     return $cache['content'];
                 } else {
                     $this->delete($key);

@@ -42,20 +42,26 @@ abstract class Controller {
      */
     private $info = array();
 
-    //TODO protected $cache_manager = null;
+    /**
+     * @var \Core\Controller\CacheManager $modelCache. Cache Manager
+     */
+    protected $modelCache = null;
 
     /**
-     *
+     * Bootstrap initialization
      */
     public function __construct() {
-        //TODO $this->cache_manager = new \Core\CacheManager();
-
+        //domains
         $config = Config::getInstance();
         $this->domain = $config->getDomain();
         $this->assign('domain', $this->domain);
         $this->assign('static_domain', $config->getStaticDomain());
 
+        //language
         $this->assign('lang', $this->langCode);
+
+        //cache
+        $this->modelCache = new CacheManager();
     }
 
     /***
@@ -63,6 +69,9 @@ abstract class Controller {
      */
     abstract public function build();
 
+    /*------------------------------------------
+     * VIEW FUNCTIONS
+     -------------------------------------------*/
     /***
      * sets the params from the URL
      * @param array $params
@@ -127,29 +136,43 @@ abstract class Controller {
         $this->view->template($file);
     }
 
-    /* TODO
-    public function getCacheDef()
-    {
+    /**
+     * returns the value of a parameter on the URL
+     * @param $param
+     * @return bool | string
+     */
+    protected function getParam( $param ){
+        if( array_key_exists($param, $this->params['params']) )
+            return $this->params['params'][$param];
+        else
+            return false;
+    }
+
+    /*------------------------------------------
+     * CACHE FUNCTIONS
+     -------------------------------------------*/
+    public function getCacheDef() {
+        return false;
         return array('ttl' => 300, 'key' => array('controller', __CLASS__));
     }
-//    */
-//
-//    protected function getParam( $param )
-//    {
-//        if( array_key_exists($param, $this->params['params']) )
-//            return $this->params['params'][$param];
-//        else
-//            return false;
-//    }
-//
-//    protected function loadCache($params_cache, $model, $function, $function_params = array()){
-//        $cache_def = $model->getCacheDef($function, $params_cache);
-//        $result = $this->cache_manager->getCache($cache_def);
-//
-//        if( $result == '' ){
-//            $result = call_user_func_array( array($model, $function), $function_params);
-//            $this->cache_manager->setCache($result);
-//        }
-//        return $result;
-//    }
+
+    /**
+     * loads the cache from a model
+     * @param $params_cache
+     * @param $model
+     * @param $function
+     * @param array $function_params
+     * @return mixed|null
+     */
+    protected function loadCache($params_cache, $model, $function, $function_params = array()){
+        $cache_def = $model->getCacheDef($params_cache);
+        $result = $this->modelCache->getCache($cache_def);
+
+        r($result);
+        if( $result == '' ){
+            $result = call_user_func_array( array($model, $function), $function_params);
+            $this->modelCache->saveCache($result);
+        }
+        return $result;
+    }
 }

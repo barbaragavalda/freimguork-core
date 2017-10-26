@@ -16,17 +16,15 @@ class Model {
     /**
      * @var null. Database connection
      */
-    private $mysql = null;
+    protected $mysql = null;
 
     public function __construct(){
         $this->mysql = MySQL::getInstance();
     }
 
-    /* TODO
-    public function getCacheDef($method, array $params)
-    {
+    public function getCacheDef(array $params) {
         return false;
+        // or return array('ttl' => 300, 'key' => $params);
     }
-    */
 
 }
