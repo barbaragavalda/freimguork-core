@@ -1,7 +1,7 @@
 <?php
 
 namespace Core\View\Response;
-use Core\Exception;
+use Core\Utils\Exception;
 
 /**
  * Class RedirectResponse
@@ -38,7 +38,7 @@ class Redirect extends Response{
      */
     public function initResponse( $info = null ) {
         if( empty($this->url) ) {
-            throw new \Exception("Cannot redirect to an empty URL.");
+            throw new \xception("Cannot redirect to an empty URL.");
         }
 
         if( IS_DEV ){

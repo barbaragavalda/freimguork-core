@@ -3,6 +3,7 @@
 namespace Core\Routing;
 
 use Core\Utils\Config;
+use Core\Utils\Exception;
 use Core\Utils\StringUtils;
 
 /**
@@ -129,7 +130,7 @@ class Projects{
             }
 
             if( $this->currentProject->isEmpty() ){
-                throw new \Exception("<span style='color:red'>No project matches the current configuration</span>");
+                throw new Exception("No project matches the current configuration");
             }
         } catch (Exception $e) {
             throw $e;

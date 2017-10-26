@@ -139,9 +139,9 @@ class Config{
             $key = $args[$i];
             if( array_key_exists($key, $config) ){
                 if( $i ==  $argsCount-1 ){
-                    $config = $this->config[$key];
+                    return $config[$key];
                 }else{
-                    return $this->config[$key];
+                    $config = $config[$key];
                 }
             }else{
                 break;
@@ -170,7 +170,7 @@ class Config{
         if( @include($file) ) {
             return $config;
         }else{
-            throw new \Exception("<span style='color:red'>The config file that you are trying to load (<em>".$file."</em>), doesn't exists</span>");
+            throw new Exception("The config file that you are trying to load (<em>".$file."</em>), doesn't exists.");
         }
     }
 }

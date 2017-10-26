@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\View;
+use Core\Utils\Exception;
 use Core\View\Response\HTML;
 use Core\View\Response\HTMLResponse;
 use Core\View\Response\Json;
