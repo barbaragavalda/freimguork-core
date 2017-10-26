@@ -23,11 +23,6 @@ abstract class Controller {
     protected $domain = '';
 
     /**
-     * @var int $langCode. Current language code
-     */
-    protected $langCode = '';
-
-    /**
      * @var array $params. Parameters from URL petition
      */
     protected $params = array();
@@ -58,7 +53,7 @@ abstract class Controller {
         $this->assign('static_domain', $config->getStaticDomain());
 
         //language
-        $this->assign('lang', $this->langCode);
+        $this->assign('lang', $config->getLanguage());
 
         //cache
         $this->modelCache = new CacheManager();
@@ -151,8 +146,11 @@ abstract class Controller {
     /*------------------------------------------
      * CACHE FUNCTIONS
      -------------------------------------------*/
+    /**
+     * controller cache definition
+     * @return array|bool
+     */
     public function getCacheDef() {
-        return false;
         return array('ttl' => 300, 'key' => array('controller', __CLASS__));
     }
 
@@ -168,7 +166,6 @@ abstract class Controller {
         $cache_def = $model->getCacheDef($params_cache);
         $result = $this->modelCache->getCache($cache_def);
 
-        r($result);
         if( $result == '' ){
             $result = call_user_func_array( array($model, $function), $function_params);
             $this->modelCache->saveCache($result);

@@ -44,6 +44,11 @@ class Config{
     private $folder = '';
 
     /**
+     * @var string $language. Current language
+     */
+    private $language = '';
+
+    /**
      * load project configurations
      */
     private function __construct(){
@@ -95,6 +100,20 @@ class Config{
     public function setDomains($domain){
         $this->domain = $domain['app'];
         $this->staticDomain = $domain['static'];
+    }
+
+    /**
+     * @return string. Get current language
+     */
+    public function getLanguage(){
+        return $this->language;
+    }
+
+    /**
+     * @param $language string. Set current language
+     */
+    public function setLanguage($language){
+        $this->language = $language;
     }
 
     /**

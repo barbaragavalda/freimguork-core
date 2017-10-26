@@ -93,6 +93,7 @@ class Bootstrap {
         $language = new Language($userLang, $project);
         $currentLanguage = $language->getLanguage();
         $config->setDomains( $projects->getDomains($currentLanguage) );
+        $config->setLanguage( $currentLanguage );
 
         //routing
         $this->projectFolder = $project->getApp();
