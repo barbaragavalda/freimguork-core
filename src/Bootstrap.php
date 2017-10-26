@@ -2,6 +2,7 @@
 
 namespace Core;
 
+use Core\Controller\CacheManager;
 use Core\Routing\Projects;
 use Core\Routing\Router;
 use Core\Utils\Config;
@@ -36,7 +37,10 @@ class Bootstrap {
      */
     private $projectFolder = null;
 
-    //TODO private $cache_manager = null;
+    /**
+     * @var \Core\Controller\CacheManager $controllerCache.
+     */
+    private $controllerCache = null;
 
     /**
      * Bootstrap constructor.
@@ -44,7 +48,6 @@ class Bootstrap {
      */
     public function __construct($isDev){
         define('IS_DEV', $isDev);
-        //TODO $this->cache_manager = new CacheManager();
     }
 
     /**
@@ -79,6 +82,9 @@ class Bootstrap {
         $config = Config::getInstance();
         $config->loadConfigs($projectFolders);
 
+        //controller cache
+        $this->controllerCache = new CacheManager();
+
         //session first initialization with ID
         $sessionID = $projectFolders[0];
         Session::getInstance($sessionID);
@@ -104,10 +110,8 @@ class Bootstrap {
         $this->controller = new $controllerName();
         $this->controller->setParams( $this->router->getParams() );
 
-        //TODO $cache_def = $this->controller->getCacheDef();
-        //TODO $html = $this->cache_manager->getCache($cache_def);
-
-        $response = null;
+        $cacheDef = $this->controller->getCacheDef();
+        $response = $this->controllerCache->getCache($cacheDef);
         if( $response == null ){
             $response = $this->render();
         }
@@ -129,7 +133,7 @@ class Bootstrap {
         }
 
         $response = $this->controller->getResponse();
-        //TODO $this->cache_manager->setCache($html);
+        $this->controllerCache->saveCache($response);
 
         return $response;
     }

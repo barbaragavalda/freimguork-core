@@ -19,11 +19,6 @@ class HTML extends Response {
     private $file = '';
 
     /**
-     * @var string $projectFolder. Folder for project App
-     */
-    private $projectFolder = null;
-
-    /**
      * @var string $directory . Directory of the template files
      */
     private $folder = '';
@@ -35,8 +30,7 @@ class HTML extends Response {
      */
     public function __construct($file, $projectFolder) {
         $this->file = $file;
-        $this->projectFolder = $projectFolder;
-        $this->folder = DIR_ROOT . 'src/' . $this->projectFolder . '/';
+        $this->folder = DIR_ROOT . 'src/' . $projectFolder . '/';
         $this->setHeaderType('text/html');
     }
 
@@ -53,7 +47,7 @@ class HTML extends Response {
         if( $config->get('cache', 'is_caching') ){
             $environment = IS_DEV ? 'dev' : 'prod';
             $twig_config = array(
-                'cache' => $this->folder . 'cache/' . $environment . '/twig'
+                'cache' => DIR_ROOT . 'src/cache/' . $environment . '/twig'
             );
         }
 
