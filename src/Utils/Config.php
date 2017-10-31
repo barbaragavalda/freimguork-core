@@ -11,6 +11,9 @@ namespace Core\Utils;
  * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
  * @date 25/10/2017
  */
+
+define("APPACMAN_DIR", DIR_ROOT . 'vendor/appaqui/freimguork-appacman/src/');
+
 class Config{
 
     /**
@@ -39,9 +42,9 @@ class Config{
     private $staticDomain = '';
 
     /**
-     * @var string $folder. Directory where must be all config files
+     * @var array $folders. Directory where must be all config files
      */
-    private $folder = '';
+    private $folders = array();
 
     /**
      * @var string $language. Current language
@@ -52,10 +55,14 @@ class Config{
      * load project configurations
      */
     private function __construct(){
-        $this->folder = DIR_ROOT . 'config/';
+        $this->folders = array(
+            DIR_ROOT . 'config/',
+            APPACMAN_DIR . 'config/'
+        );
 
+        //load projects info
         $projectFile = 'projects' . (( IS_DEV ) ? '.dev' : '.prod') . '.php';
-        $this->projects = $this->load($this->folder . $projectFile);
+        $this->projects = $this->load($this->folders[0] . $projectFile);
     }
 
     /**
@@ -118,29 +125,34 @@ class Config{
 
     /**
      * load all the configurations on a specific folder
-     * @param $folders
+     * @param $projectFolders
      */
-    public function loadConfigs( $folders ){
-        foreach($folders as $folder){
-            // common folder
-            $folder = $this->folder . $folder . '/';
-            $this->loadFolder($folder);
+    public function loadConfigs( $projectFolders ){
+        foreach($this->folders as $folder){
+            foreach($projectFolders as $projectFolder){
+                // common folder
+                $dir = $folder . $projectFolder . '/';
+                $this->loadFolder($dir);
 
-            // environment folder
-            $folder .= ( IS_DEV ) ? 'dev/' : 'prod/';
-            if( is_dir($folder) ){
-                // scan folder if exists
-                $this->loadFolder($folder);
+                // environment folder
+                $projectFolder .= ( IS_DEV ) ? '/dev/' : '/prod/';
+                $dir = $folder . $projectFolder;
+                if( is_dir($dir) ){
+                    // scan folder if exists
+                    $this->loadFolder($dir);
+                }
             }
         }
     }
 
-    private function loadFolder($folder){
-        $files = scandir($folder);
-        foreach($files as $file){
-            if( !is_dir($folder . $file) && !in_array($file, array('.', '..', '.DS_Store')) ){
-                // load config
-                $this->config = array_merge($this->config, $this->load($folder . $file));
+    private function loadFolder($projectFolder){
+        $files = @scandir($projectFolder);
+        if( $files !== false ){
+            foreach($files as $file){
+                if( !is_dir($projectFolder . $file) && !in_array($file, array('.', '..', '.DS_Store')) ){
+                    // load config
+                    $this->config = array_merge_recursive($this->config, $this->load($projectFolder . $file));
+                }
             }
         }
     }

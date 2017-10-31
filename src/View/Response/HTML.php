@@ -19,9 +19,9 @@ class HTML extends Response {
     private $file = '';
 
     /**
-     * @var string $directory . Directory of the template files
+     * @var array $twigFolders . Directory of the template files
      */
-    private $folder = '';
+    private $twigFolders = '';
 
     /**
      * set the header of the response
@@ -30,8 +30,16 @@ class HTML extends Response {
      */
     public function __construct($file, $projectFolder) {
         $this->file = $file;
-        $this->folder = DIR_ROOT . 'src/' . $projectFolder . '/';
         $this->setHeaderType('text/html');
+
+        $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/' );
+        $this->addViewFolder( APPACMAN_DIR . 'View/' );
+    }
+
+    private function addViewFolder($folder){
+        if( is_dir($folder) ){
+            $this->twigFolders[] = $folder;
+        }
     }
 
     /**
@@ -43,21 +51,21 @@ class HTML extends Response {
     public function initResponse($info = null) {
         //cache configuration
         $config = Config::getInstance();
-        $twig_config = array();
+        $twigConfig = array();
         if( $config->get('cache', 'is_caching') ){
             $environment = IS_DEV ? 'dev' : 'prod';
-            $twig_config = array(
+            $twigConfig = array(
                 'cache' => DIR_ROOT . 'src/cache/' . $environment . '/twig'
             );
         }
 
-        //create twig
-        $loader = new \Twig_Loader_Filesystem($this->folder . 'View/');
-        $twig = new \Twig_Environment($loader, $twig_config);
+        $loader = new \Twig_Loader_Filesystem($this->twigFolders);
+        $twig = new \Twig_Environment($loader, $twigConfig);
         $twig->addExtension( new \Twig_Extensions_Extension_I18n() );
 
         //response
         $template = $twig->load($this->file);
         $this->response = $template->render($info);
     }
+
 }
