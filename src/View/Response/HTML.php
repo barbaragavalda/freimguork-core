@@ -4,9 +4,6 @@ namespace Core\View\Response;
 
 use Core\Utils\Config;
 
-require_once DIR_ROOT . '/vendor/twig/twig/lib/Twig/Autoloader.php';
-require_once DIR_ROOT . '/vendor/twig/extensions/lib/Twig/Extensions/Autoloader.php';
-
 /**
  * Class HTMLResponse
  * @package Core\Views\Response

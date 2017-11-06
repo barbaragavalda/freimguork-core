@@ -12,7 +12,8 @@ namespace Core\Utils;
  * @date 25/10/2017
  */
 
-define("APPACMAN_DIR", DIR_ROOT . 'vendor/appaqui/freimguork-appacman/src/');
+define("APPACMAN", 'vendor/appaqui/freimguork-appacman/src/');
+define("APPACMAN_DIR", DIR_ROOT . APPACMAN);
 
 class Config{
 
