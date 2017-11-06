@@ -51,4 +51,8 @@ class Router{
         return $this->url->getParams();
     }
 
+    public function getParts(){
+        return $this->url->getParts();
+    }
+
 }

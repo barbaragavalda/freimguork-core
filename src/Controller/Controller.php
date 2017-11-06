@@ -23,9 +23,19 @@ abstract class Controller {
     protected $domain = '';
 
     /**
+     * @var string $static_domain. Base URL without language (if any)
+     */
+    protected $static_domain = '';
+
+    /**
      * @var array $params. Parameters from URL petition
      */
     protected $params = array();
+
+    /**
+     * @var array $parts. Parts of URL petition
+     */
+    protected $parts = array();
 
     /**
      * @var \Core\View $view. View class
@@ -49,8 +59,9 @@ abstract class Controller {
         //domains
         $config = Config::getInstance();
         $this->domain = $config->getDomain();
+        $this->static_domain = $config->getStaticDomain();
         $this->assign('domain', $this->domain);
-        $this->assign('static_domain', $config->getStaticDomain());
+        $this->assign('static_domain', $this->static_domain);
 
         //language
         $this->assign('lang', $config->getLanguage());
@@ -68,11 +79,19 @@ abstract class Controller {
      * VIEW FUNCTIONS
      -------------------------------------------*/
     /***
-     * sets the params from the URL
+     * sets the params from the URL (variable parts)
      * @param array $params
      */
     public function setParams($params) {
         $this->params = $params;
+    }
+
+    /***
+     * sets the parts from the URL (constant parts)
+     * @param array $parts
+     */
+    public function setParts($parts) {
+        $this->parts = $parts;
     }
 
     /***

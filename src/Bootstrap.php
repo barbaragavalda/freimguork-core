@@ -110,6 +110,7 @@ class Bootstrap {
         $controllerName = $this->router->getController();
         $this->controller = new $controllerName();
         $this->controller->setParams( $this->router->getParams() );
+        $this->controller->setParts( $this->router->getParts() );
 
         $cacheDef = $this->controller->getCacheDef();
         $response = $this->controllerCache->getCache($cacheDef);

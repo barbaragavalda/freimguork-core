@@ -21,6 +21,7 @@ class URL{
 
     private $routing = array();
     private $controller = null;
+    private $parts = array();
     private $params = array();
 
     public function __construct(){
@@ -50,6 +51,10 @@ class URL{
         return $this->params;
     }
 
+    public function getParts(){
+        return $this->parts;
+    }
+
     public function setRouting($routing){
         $this->routing = $routing;
     }
@@ -67,6 +72,8 @@ class URL{
         foreach($routingRegExp as $regExp){
 
             if( preg_match($regExp['regExp'], $userPetition) === 1 ){
+
+
                 //controller found
                 $this->controller = $regExp['controller'];
 
@@ -79,10 +86,13 @@ class URL{
                         $paramName = str_replace('{', '', $explodeRouting[$i]);
                         $paramName = str_replace('}', '', $paramName);
                         $this->params[$paramName] = $paramValue;
+                    }else{
+                        $this->parts[] = $explodeUser[$i];
                     }
                 }
                 break;
             }
+
         }
     }
 
@@ -104,7 +114,7 @@ class URL{
                     foreach($explode as $part){
                         if( $regExp != '' ) $regExp .= '(/)';
                         if( StringUtils::startsWidth($part, '{') ){
-                            $regExp .= '([a-z0-9])';
+                            $regExp .= '(\w+)';
                         }else{
                             if( $part == '' ){
                                 $regExp .= '$^';
