@@ -70,6 +70,9 @@ class Language{
         setlocale(LC_ALL, $this->culture);
 
         bindtextdomain(self::DOMAIN, DIR_ROOT . 'locale');
+        $appacmanLocale = APPACMAN_DIR . 'locale';
+        if( is_dir($appacmanLocale) ) bindtextdomain(self::DOMAIN, $appacmanLocale);
+
         bind_textdomain_codeset(self::DOMAIN, 'UTF-8');
         textdomain(self::DOMAIN);
     }
