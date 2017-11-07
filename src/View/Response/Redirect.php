@@ -42,23 +42,34 @@ class Redirect extends Response{
         }
 
         if( IS_DEV ){
-            $title = '<h1>301 Moved Permanently</h1>';
-            if( $this->status == 302 ) $title = '<h1>302 Temporary Redirect</h1>';
+            $title = '<h1>'.$this->status.' '.$this->getMessage().'</h1>';
             $this->url = htmlspecialchars($this->url, ENT_QUOTES, 'UTF-8');
-            $this->response = '<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Redirecting to '.$this->url.'</title>
-    </head>
-    <body>
-        '.$title.'
-        <h2>Redirecting to <a href="'.$this->url.'">'.$this->url.'</a></h2>
-    </body>
-</html>';
-
+            $this->response = '
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                        <title>Redirecting to '.$this->url.'</title>
+                    </head>
+                    <body>
+                        '.$title.'
+                        <h2>Redirecting to <a href="'.$this->url.'">'.$this->url.'</a></h2>
+                    </body>
+                </html>
+            ';
         }else {
             $this->setHeaderLocation( $this->url );
         }
     }
+
+    private function getMessage(){
+        switch ($this->status){
+            case 301:   return 'Moved Permanently';     break;
+            case 302:   return 'Moved Temporarily';     break;
+            case 401:   return 'Unauthorized';          break;
+            case 403:   return 'Forbidden';             break;
+            default:    return 'Undefined message';     break;
+        }
+    }
+
 }
