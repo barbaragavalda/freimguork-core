@@ -5,16 +5,16 @@ namespace Core\Utils;
 
 class StringUtils{
 
-    static function startsWidth($haystack, $needle){
+    public static function startsWidth($haystack, $needle){
         return strpos($haystack, $needle) === 0;
     }
 
-    static function endsWidth($haystack, $needle){
+    public static function endsWidth($haystack, $needle){
         $length = strlen($needle);
         return $length === 0 || (substr($haystack, -$length) === $needle);
     }
 
-    static function truncateHtml($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true) {
+    public static function truncateHtml($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true) {
         if ($considerHtml) {
             // if the plain text is shorter than the maximum length, return the whole text
             if (strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
