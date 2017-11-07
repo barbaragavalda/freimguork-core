@@ -10,7 +10,7 @@ use Core\Utils\Exception;
  *
  * MySQL connection
  *
- * @package Core\Utils
+ * @package Core\Model
  * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
  * @date 26/10/2017
  */

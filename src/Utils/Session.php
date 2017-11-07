@@ -15,7 +15,7 @@ namespace Core\Utils;
 class Session{
 
     /**
-     * @var Core\Utils\Session $instance.  Instance of the singleton
+     * @var \Core\Utils\Session $instance.  Instance of the singleton
      */
     private static $instance;
 
@@ -37,7 +37,7 @@ class Session{
     /**
      * initializes the instance (if needed) based on the singleton pattern
      * @param $id
-     * @return Core\Utils\Session
+     * @return \Core\Utils\Session
      */
     public static function getInstance($id = null){
         if( self::$instance === null) {

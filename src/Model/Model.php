@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\Model;
+use Core\Utils\Session;
 
 /**
  * Class Model
@@ -14,12 +15,18 @@ namespace Core\Model;
 class Model {
 
     /**
-     * @var null. Database connection
+     * @var null Core|Model|MySQL. Database connection
      */
     protected $mysql = null;
 
+    protected $langID = 0;
+
     public function __construct(){
         $this->mysql = MySQL::getInstance();
+
+        // init language id
+        $session = Session::getInstance();
+        $this->langID = $session->get('lang_id');
     }
 
     public function getCacheDef(array $params) {

@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\Utils;
+use Core\Model\Model;
 
 /**
  * Class Language
@@ -11,7 +12,7 @@ namespace Core\Utils;
  * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
  * @date 25/10/2017
  */
-class Language{
+class Language extends Model {
 
     const DOMAIN = 'messenges';
 
@@ -32,6 +33,8 @@ class Language{
     }
 
     public function __construct($userLanguage, $currentProject){
+        parent::__construct();
+
         $this->initLanguage($userLanguage, $currentProject);
         $this->initGettext();
     }
@@ -60,6 +63,7 @@ class Language{
         }
 
         $this->initCulture();
+        $this->initID();
     }
 
     /**
@@ -75,6 +79,23 @@ class Language{
 
         bind_textdomain_codeset(self::DOMAIN, 'UTF-8');
         textdomain(self::DOMAIN);
+    }
+
+    private function initID(){
+        $sql = '
+            SELECT id_appacman_lang
+            FROM appacman_lang
+            WHERE culture = :culture
+        ';
+        $params = array(
+            'culture' => array('value' => $this->language, 'type' => \PDO::PARAM_STR)
+        );
+        $language = $this->mysql->query($sql, $params);
+
+        if( count($language) ){
+            $session = Session::getInstance();
+            $session->set('lang_id', $language[0]['id_appacman_lang']);
+        }
     }
 
     /**
