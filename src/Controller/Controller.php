@@ -156,8 +156,8 @@ abstract class Controller {
      * @return bool | string
      */
     protected function getParam( $param ){
-        if( array_key_exists($param, $this->params['params']) )
-            return $this->params['params'][$param];
+        if( array_key_exists($param, $this->params) )
+            return $this->params[$param];
         else
             return false;
     }
