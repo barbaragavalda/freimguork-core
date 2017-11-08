@@ -22,6 +22,11 @@ class MySQL {
     private static $instance;
 
     /**
+     * @var string $databaseName
+     */
+    private $databaseName = '';
+
+    /**
      * @var null. Database connection
      */
     private $pdo = null;
@@ -41,10 +46,12 @@ class MySQL {
         $dbConfig = $config->get('db');
 
         if( count($dbConfig) ){
+            $this->databaseName =  $dbConfig['name'];
+
             $host       = $dbConfig['host'];
             $user       = $dbConfig['user'];
             $password   = $dbConfig['password'];
-            $database   = $dbConfig['name'];
+            $database   = $this->databaseName;
 
             if( $host != '' && $user != '' && $database != '' ){
                 $dsn = 'mysql:dbname=' . $database . ';host=' . $host;
@@ -111,6 +118,55 @@ class MySQL {
      */
     public function rowCount(){
         return $this->statement->rowCount();
+    }
+
+    /**
+     * tableExists
+     * check if table exisrts
+     * @param string $table. table name
+     * @return bool
+     */
+    public function tableExists($table){
+        $sql = '
+			SELECT table_name
+			FROM information_schema.tables
+			WHERE table_schema = :bbdd_name
+			AND table_name = :table_name
+		';
+        $params = array(
+            'bbdd_name'     => array('value'=>$this->databaseName,  'type'=>\PDO::PARAM_STR),
+            'table_name'    => array('value'=>$table,               'type'=>\PDO::PARAM_STR),
+        );
+        $result = $this->query($sql, $params);
+
+        if( count($result) ){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * fieldType
+     * data type of specific field
+     * @param string $table. table name
+     * @param string $field. field name
+     * @return string
+     */
+    public function fieldType($table, $field){
+        $sql = '
+			SHOW COLUMNS
+			FROM '.$table.'
+			WHERE Field = :field
+		';
+        $params = array(
+            'field' => array('value'=>$field, 'type'=>\PDO::PARAM_STR)
+        );
+        $field = $this->query($sql, $params);
+
+        if( count($field) ){
+            return $field[0]['Type'];
+        }
+        return '';
     }
 
     /**
