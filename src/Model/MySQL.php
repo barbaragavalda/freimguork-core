@@ -146,13 +146,29 @@ class MySQL {
     }
 
     /**
-     * fieldType
-     * data type of specific field
+     * fieldDescription
+     * data type and mandatory information of specific field
      * @param string $table. table name
      * @param string $field. field name
-     * @return string
+     * @return array
      */
-    public function fieldType($table, $field){
+    public function fieldDescription($table, $field){
+        $fieldDesc = $this->field($table, $field);
+        if( !count($fieldDesc) ){
+            $fieldDesc = $this->field($table.'_lang', $field);
+        }
+
+        if( count($fieldDesc) ){
+            $required = $fieldDesc['Null'] == 'NO' ? false : true;
+            return array(
+                'type' => $fieldDesc['Type'],
+                'required' => $required
+            );
+        }
+        return '';
+    }
+
+    private function field($table, $field){
         $sql = '
 			SHOW COLUMNS
 			FROM '.$table.'
@@ -164,9 +180,9 @@ class MySQL {
         $field = $this->query($sql, $params);
 
         if( count($field) ){
-            return $field[0]['Type'];
+            return $field[0];
         }
-        return '';
+        return false;
     }
 
     /**
