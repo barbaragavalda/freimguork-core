@@ -85,15 +85,17 @@ class Bootstrap {
         //controller cache
         $this->controllerCache = new CacheManager();
 
-        //session first initialization with ID
-        $sessionID = $projectFolders[0];
-        Session::getInstance($sessionID);
-
         //language
         $language = new Language($userLang, $project);
         $currentLanguage = $language->getLanguage();
         $config->setDomains( $projects->getDomains($currentLanguage) );
         $config->setLanguage( $currentLanguage );
+
+        //session first initialization with ID
+        //$sessionID = $projectFolders[0];
+        Session::getInstance($config->getDomain());
+
+        $language->initID();
 
         //routing
         $this->projectFolder = $project->getApp();

@@ -14,12 +14,17 @@ namespace Core\Utils;
  */
 class Session{
 
+    const DURATION = 86400;  // 1 day
+
     /**
-     * @var \Core\Utils\Session $instance.  Instance of the singleton
+     * @var \Core\Utils\Session $instance. Instance of the singleton
      */
     private static $instance;
 
-    private $id = '';
+    /**
+     * @var string $domain. The domain that the cookie is available to
+     */
+    private $domain = '';
 
     /**
      * load session
@@ -27,10 +32,7 @@ class Session{
      */
     private function __construct($id = null){
         if( $id != null ){
-            $this->id = $id;
-            if( !array_key_exists($this->id, $_SESSION) ){
-                $_SESSION[$this->id] = array();
-            }
+            $this->domain = $id;
         }
     }
 
@@ -46,26 +48,58 @@ class Session{
         return self::$instance;
     }
 
+    /**
+     * get value of a cookie
+     * @param $key
+     * @return mixed|null
+     */
     public function get($key){
-        if( array_key_exists($key, $_SESSION[$this->id]) ){
-            return $_SESSION[$this->id][$key];
+        if( isset($_COOKIE[$key]) ){
+            return unserialize($_COOKIE[$key]);
         }else{
             return null;
         }
     }
 
+    /**
+     * set cookie
+     * @param $key
+     * @param $value
+     */
     public function set($key, $value){
-        $_SESSION[$this->id][$key] = $value;
+        $this->save($key, $value);
     }
 
+    /**
+     * delete cookie
+     * @param $key
+     */
     public function delete($key){
-        if( array_key_exists($key, $_SESSION[$this->id]) ){
-            unset( $_SESSION[$this->id][$key] );
+        if( isset($_COOKIE[$key]) ){
+            $this->save($key, '', -self::DURATION);
+            unset($_COOKIE[$key]);
         }
     }
 
+    /**
+     * delete all cookies
+     */
     public function clear(){
-        unset( $_SESSION[$this->id] );
+        foreach( $_COOKIE as $key => $value ){
+            $this->delete($key);
+        }
+    }
+
+    /**
+     * save cookie
+     * @param $key
+     * @param $value
+     * @param int $expiration
+     */
+    private function save($key, $value, $expiration = self::DURATION){
+        $value = serialize($value);
+        setcookie($key, $value, time()+$expiration, '/', $this->domain);
+        $_COOKIE[$key] = $value;
     }
 
 }

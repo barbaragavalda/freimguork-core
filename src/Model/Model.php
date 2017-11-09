@@ -24,7 +24,6 @@ class Model {
     public function __construct(){
         $this->mysql = MySQL::getInstance();
 
-        // init language id
         $session = Session::getInstance();
         $this->langID = $session->get('lang_id');
     }

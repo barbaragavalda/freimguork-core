@@ -63,7 +63,6 @@ class Language extends Model {
         }
 
         $this->initCulture();
-        $this->initID();
     }
 
     /**
@@ -81,7 +80,7 @@ class Language extends Model {
         textdomain(self::DOMAIN);
     }
 
-    private function initID(){
+    public function initID(){
         $sql = '
             SELECT id_appacman_lang
             FROM appacman_lang
