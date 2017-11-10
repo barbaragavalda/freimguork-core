@@ -154,12 +154,13 @@ class MySQL {
      */
     public function fieldDescription($table, $field){
         $fieldDesc = $this->field($table, $field);
-        if( !count($fieldDesc) ){
+        if( $fieldDesc === false ){
             $fieldDesc = $this->field($table.'_lang', $field);
         }
 
         if( count($fieldDesc) ){
-            $required = $fieldDesc['Null'] == 'NO' ? false : true;
+            //r($fieldDesc);
+            $required = $fieldDesc['Null'] == 'YES' ? true : false;
             return array(
                 'type' => $fieldDesc['Type'],
                 'required' => $required
