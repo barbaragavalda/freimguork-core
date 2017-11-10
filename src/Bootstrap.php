@@ -2,6 +2,8 @@
 
 namespace Core;
 
+include DIR_ROOT .'vendor/appaqui/freimguork-core/src/Utils/NonExistingFunctions.php';
+
 use Core\Controller\CacheManager;
 use Core\Routing\Projects;
 use Core\Routing\Router;
