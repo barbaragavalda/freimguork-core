@@ -1,9 +1,9 @@
 <?php
 
 namespace Core\Routing;
-use Core\Utils\Config;
-use Core\Utils\StringUtils;
 
+use Core\Model\Utils\StringUtils;
+use Core\Utils\Config;
 
 /**
  * Class URL

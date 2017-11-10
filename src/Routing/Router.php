@@ -2,9 +2,6 @@
 
 namespace Core\Routing;
 
-use Core\Utils\Config;
-use Core\Utils\StringUtils;
-
 /**
  * Class Router
  *

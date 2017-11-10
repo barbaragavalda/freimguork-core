@@ -2,9 +2,9 @@
 
 namespace Core\Routing;
 
+use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
 use Core\Utils\Exception;
-use Core\Utils\StringUtils;
 
 /**
  * Class Projects

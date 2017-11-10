@@ -1,9 +1,9 @@
 <?php
 
-namespace Core\Utils;
+namespace Core\Model\Utils;
 
 
-class StringUtils{
+class StringUtils {
 
     public static function startsWidth($haystack, $needle){
         return strpos($haystack, $needle) === 0;
