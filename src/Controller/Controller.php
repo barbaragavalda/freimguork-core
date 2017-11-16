@@ -112,6 +112,13 @@ abstract class Controller {
     }
 
     /**
+     * reset info array
+     */
+    protected function removeInfo(){
+        $this->info = array();
+    }
+
+    /**
      * returns the final result from the view
      */
     public function getResponse(){
