@@ -146,6 +146,34 @@ class MySQL {
     }
 
     /**
+     * fieldExists
+     * check if field exists in table
+     * @param $table
+     * @param $field
+     * @return bool
+     */
+    public function fieldExists($table, $field){
+        $sql = '
+			SELECT * 
+			FROM information_schema.columns 
+			WHERE table_schema = :bbdd_name
+			AND table_name = :table_name
+			AND column_name = :field
+		';
+        $params = array(
+            'bbdd_name'     => array('value'=>$this->databaseName, 'type'=>\PDO::PARAM_STR),
+            'table_name'    => array('value'=>$table, 'type'=>\PDO::PARAM_STR),
+            'field'         => array('value'=>$field, 'type'=>\PDO::PARAM_STR),
+        );
+        $result = $this->query($sql, $params);
+
+        if( count($result) ){
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * fieldDescription
      * data type and mandatory information of specific field
      * @param string $table. table name
