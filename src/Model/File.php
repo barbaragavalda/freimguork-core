@@ -61,8 +61,12 @@ class File extends Model {
 		if( $this->id ) $this->load();
 	}
 
+	private function getRelativePath(){
+        return $this->relativeFolder . $this->folderID . '/' . $this->fileName;
+    }
+
     public function getAbsolutePath(){
-        $relativePath = $this->relativeFolder . $this->folderID . '/' . $this->fileName;
+        $relativePath = $this->getRelativePath();
         if( file_exists($relativePath) ){
             return $this->absoluteFolder . $this->folderID . '/' . $this->fileName;
         }
@@ -111,6 +115,42 @@ class File extends Model {
 			if( count($img) )  return $img[0]['file_name'];
 		}
 		return '';
+	}
+
+    public function delete($table, $field, $itemID){
+        $tableDelete = false;
+        if( $this->mysql->fieldExists($table, $field) ){
+            $tableDelete = $table;
+        }else if( $this->mysql->fieldExists($table.'_lang', $field) ){
+            $tableDelete = $table . '_lang';
+        }
+
+        if( $tableDelete !== false ){
+            // delete from table
+            $sql = '
+                UPDATE '.$tableDelete.'
+                SET '.$field.' = ""
+                WHERE id_'.$tableDelete.' = :id
+            ';
+            $params = array(
+                'id' => array('value'=>$itemID, 'type'=>\PDO::PARAM_INT)
+            );
+            $this->mysql->query($sql, $params);
+
+            // delete from appacman_file
+            $sql = '
+                DELETE FROM appacman_file
+                WHERE id_appacman_file = :id
+            ';
+            $params = array(
+                'id' => array('value'=>$this->id, 'type'=>\PDO::PARAM_INT)
+            );
+            $this->mysql->query($sql, $params);
+
+            // remove from disk
+            $relativePath = $this->getRelativePath();
+            unlink($relativePath);
+        }
 	}
 
 
