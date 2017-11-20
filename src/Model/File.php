@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\Model;
+use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
 
 /**
@@ -40,13 +41,9 @@ class File extends Model {
      */
 	private $fileName = '';
 
-	private $path = '';			//ruta completa del arxiu
-
 	private $id_contingut = '';	//id del contingut al que pertany
 	private $id_item = '';		//id de l'item al que pertany
     private $nom_camp = '';
-	
-	private $error_upload = false;	//s'ha produit un error al pujar?
 
 	public function __construct( $id = 0 ){
         parent::__construct();
@@ -117,6 +114,12 @@ class File extends Model {
 		return '';
 	}
 
+    /**
+     * delete image form database (1,2) and disc (3)
+     * @param $table
+     * @param $field
+     * @param $itemID
+     */
     public function delete($table, $field, $itemID){
         $tableDelete = false;
         if( $this->mysql->fieldExists($table, $field) ){
@@ -126,7 +129,7 @@ class File extends Model {
         }
 
         if( $tableDelete !== false ){
-            // delete from table
+            // 1. delete from table
             $sql = '
                 UPDATE '.$tableDelete.'
                 SET '.$field.' = ""
@@ -137,7 +140,7 @@ class File extends Model {
             );
             $this->mysql->query($sql, $params);
 
-            // delete from appacman_file
+            // 2. delete from appacman_file
             $sql = '
                 DELETE FROM appacman_file
                 WHERE id_appacman_file = :id
@@ -147,12 +150,96 @@ class File extends Model {
             );
             $this->mysql->query($sql, $params);
 
-            // remove from disk
-            $relativePath = $this->getRelativePath();
-            unlink($relativePath);
+            // 3. remove from disk
+            $this->deleteFromDisk();
         }
 	}
 
+	private function deleteFromDisk(){
+        $relativePath = $this->getRelativePath();
+        unlink($relativePath);
+	}
+
+    /**
+     * save
+     * saves image on disk and database
+     * @param $file
+     * @return false|int
+     */
+	public function save($file){
+		if( $file['error'] == 0 ){
+            $this->id = $this->mysql->getMaxId('appacman_file');
+            $this->fileName = $this->id . '_' . StringUtils::removeSpecialCharacters($file['name']);
+            $this->initFolder();
+
+            // prepare path
+			$this->createFolder($this->relativeFolder);
+			$this->createFolder($this->relativeFolder . $this->folderID);
+            $path = $this->relativeFolder . $this->folderID . '/' . $this->fileName;
+
+			if( move_uploaded_file($file['tmp_name'], $path) ){
+                $this->checkImageOrientation($path);
+
+                $sql = '
+                    INSERT INTO appacman_file
+                    SET id_appacman_file = :id, file_name = :file_name
+                ';
+                $params = array(
+                    'id'        => array('value'=>$this->id,        'type'=>\PDO::PARAM_INT),
+                    'file_name' => array('value'=>$this->fileName,  'type'=>\PDO::PARAM_STR)
+                );
+                $this->mysql->query($sql, $params);
+                if( $this->mysql->rowCount() > 0 ){
+                    return $this->id;
+                }else{
+                    $this->deleteFromDisk();
+                }
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * createFolder
+	 * @param string $folder
+	 */
+	private function createFolder( $folder ){
+		if( !(file_exists($folder) && is_dir($folder)) ){
+			mkdir($folder, 0777);
+		}
+	}
+
+    /**
+     * rotates the image if needed (only jpg images)
+     * @param $path
+     * @return bool
+     */
+    function checkImageOrientation($path){
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        if( $ext == 'jpg' || $ext == 'jpeg' ){
+            $image = imagecreatefromjpeg($path);
+            $exif = exif_read_data($path);
+            if (empty($exif['Orientation'])) {
+                return false;
+            }
+
+            switch ($exif['Orientation']) {
+                case 3:
+                    $image = imagerotate($image, 180, 0);
+                    break;
+                case 6:
+                    $image = imagerotate($image, - 90, 0);
+                    break;
+                case 8:
+                    $image = imagerotate($image, 90, 0);
+                    break;
+            }
+            imagejpeg($image, $path);
+
+            return true;
+        }
+        return false;
+    }
 
 //    /**
 //     * getArxiu
@@ -281,41 +368,8 @@ class File extends Model {
 //		}
 //	}
 //
-//    function image_fix_orientation($path){
-//        $image = imagecreatefromjpeg($path);
-//        $exif = exif_read_data($path);
 //
-//        if (empty($exif['Orientation'])) {
-//            return false;
-//        }
 //
-//        switch ($exif['Orientation']) {
-//            case 3:
-//                $image = imagerotate($image, 180, 0);
-//                break;
-//            case 6:
-//                $image = imagerotate($image, - 90, 0);
-//                break;
-//            case 8:
-//                $image = imagerotate($image, 90, 0);
-//                break;
-//        }
-//
-//        imagejpeg($image, $path);
-//
-//        return true;
-//    }
-//
-//	/**
-//	 * creaCarpeta
-//	 * crea subcarpeta dins de upload (si no existeix)
-//	 * @param string $dir
-//	 */
-//	private function creaCarpeta( $dir ){
-//		if( !$this->existeixCarpeta($dir) ){
-//			mkdir($dir, 0777);
-//		}
-//	}
 //
 //	/**
 //	 * eliminar
