@@ -14,6 +14,10 @@ class StringUtils {
         return $length === 0 || (substr($haystack, -$length) === $needle);
     }
 
+    public static function removeSpecialCharacters($string = ''){
+        return preg_replace('/[^A-Za-z0-9\-_.]/', '', $string);
+    }
+
     public static function truncateHtml($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true) {
         if ($considerHtml) {
             // if the plain text is shorter than the maximum length, return the whole text
