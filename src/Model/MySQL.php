@@ -93,6 +93,10 @@ class MySQL {
         return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getState(){
+        return $this->success;
+    }
+
     /**
      * new free ID form specific table
      * @param string $table

@@ -4,31 +4,31 @@ namespace Core\Model\Utils;
 
 class DateUtils {
 
+    const FORMAT_DATE_DB = 'Y-m-d';
+    const FORMAT_DATE_USER = 'd/m/Y';
     const FORMAT_TIMESTAMP_DB = 'Y-m-d H:i:s';
     const FORMAT_TIMESTAMP_USER = 'H:i:s d/m/Y';
 
-    public static function dmyFormat($string){
-        try{
-            $date = new \DateTime($string);
-            return $date->format('d/m/Y');
-        }catch(\Exception $e){
-            return '-';
-        }
+    public static function userDate($string){
+        return self::format(self::FORMAT_DATE_DB, self::FORMAT_DATE_USER, $string);
+    }
+
+    public static function databaseDate($string){
+        return self::format(self::FORMAT_DATE_USER, self::FORMAT_DATE_DB, $string);
     }
 
     public static function userTimestamp($string){
-        try{
-            $date = \DateTime::createFromFormat(self::FORMAT_TIMESTAMP_DB, $string);
-            return $date->format(self::FORMAT_TIMESTAMP_USER);
-        }catch(\Exception $e){
-            return '-';
-        }
+        return self::format(self::FORMAT_TIMESTAMP_DB, self::FORMAT_TIMESTAMP_USER, $string);
     }
 
     public static function databaseTimestamp($string){
+        return self::format(self::FORMAT_TIMESTAMP_USER, self::FORMAT_TIMESTAMP_DB, $string);
+    }
+
+    private function format($from, $to, $string){
         try{
-            $date = \DateTime::createFromFormat(self::FORMAT_TIMESTAMP_USER, $string);
-            return $date->format(self::FORMAT_TIMESTAMP_DB);
+            $date = \DateTime::createFromFormat($from, $string);
+            return $date->format($to);
         }catch(\Exception $e){
             return '';
         }
