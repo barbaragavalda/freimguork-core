@@ -141,21 +141,25 @@ class File extends Model {
             $this->mysql->query($sql, $params);
 
             // 2. delete from appacman_file
-            $sql = '
-                DELETE FROM appacman_file
-                WHERE id_appacman_file = :id
-            ';
-            $params = array(
-                'id' => array('value'=>$this->id, 'type'=>\PDO::PARAM_INT)
-            );
-            $this->mysql->query($sql, $params);
+            $this->deleteFromFileTable();
 
             // 3. remove from disk
             $this->deleteFromDisk();
         }
 	}
 
-	private function deleteFromDisk(){
+    public function deleteFromFileTable(){
+        $sql = '
+                DELETE FROM appacman_file
+                WHERE id_appacman_file = :id
+            ';
+        $params = array(
+            'id' => array('value'=>$this->id, 'type'=>\PDO::PARAM_INT)
+        );
+        $this->mysql->query($sql, $params);
+    }
+
+	public function deleteFromDisk(){
         $relativePath = $this->getRelativePath();
         unlink($relativePath);
 	}
