@@ -2,7 +2,6 @@
 
 namespace Core\Model\Utils;
 
-
 class StringUtils {
 
     public static function startsWidth($haystack, $needle){
