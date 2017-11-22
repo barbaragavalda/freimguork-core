@@ -26,12 +26,15 @@ class DateUtils {
     }
 
     private function format($from, $to, $string){
-        try{
-            $date = \DateTime::createFromFormat($from, $string);
-            return $date->format($to);
-        }catch(\Exception $e){
-            return '';
+        if( !empty($string) ){
+            try{
+                $date = \DateTime::createFromFormat($from, $string);
+                return $date->format($to);
+            }catch(\Exception $e){
+                return '';
+            }
         }
+        return '';
     }
 
 }
