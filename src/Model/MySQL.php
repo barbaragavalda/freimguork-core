@@ -45,7 +45,7 @@ class MySQL {
         $config = Config::getInstance();
         $dbConfig = $config->get('db');
 
-        if( count($dbConfig) ){
+        if( !empty($dbConfig) && count($dbConfig) ){
             $this->databaseName =  $dbConfig['name'];
 
             $host       = $dbConfig['host'];
@@ -83,14 +83,16 @@ class MySQL {
      * @return array. Result
      */
     public function query($sql, $params = array()) {
-        $this->statement = $this->pdo->prepare($sql);
-        if( !empty($params) ){
-            foreach( $params as $key => $param ){
-                $this->statement->bindParam(':' . $key, $param['value'], $param['type']);
+        if( $this->pdo != null ){
+            $this->statement = $this->pdo->prepare($sql);
+            if( !empty($params) ){
+                foreach( $params as $key => $param ){
+                    $this->statement->bindParam(':' . $key, $param['value'], $param['type']);
+                }
             }
+            $this->success = $this->statement->execute();
+            return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
         }
-        $this->success = $this->statement->execute();
-        return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getState(){
