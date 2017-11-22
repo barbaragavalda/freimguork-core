@@ -26,7 +26,7 @@ class DateUtils {
     }
 
     private function format($from, $to, $string){
-        if( !empty($string) ){
+        if( !empty($string) && is_string($string) ){
             try{
                 $date = \DateTime::createFromFormat($from, $string);
                 return $date->format($to);
