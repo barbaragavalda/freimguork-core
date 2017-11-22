@@ -29,7 +29,7 @@ class HTML extends Response {
         $this->file = $file;
         $this->setHeaderType('text/html');
 
-        $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/' );
+        $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/View/' );
         $this->addViewFolder( APPACMAN_DIR . 'View/' );
     }
 
