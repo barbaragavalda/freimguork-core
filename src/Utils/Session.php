@@ -55,7 +55,7 @@ class Session{
      */
     public function get($key){
         if( isset($_COOKIE[$key]) ){
-            return unserialize($_COOKIE[$key]);
+            return json_decode($_COOKIE[$key], true);
         }else{
             return null;
         }
@@ -97,7 +97,7 @@ class Session{
      * @param int $expiration
      */
     private function save($key, $value, $expiration = self::DURATION){
-        $value = serialize($value);
+        $value = json_encode($value);
         setcookie($key, $value, time()+$expiration, '/', $this->domain);
         $_COOKIE[$key] = $value;
     }
