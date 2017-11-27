@@ -194,7 +194,7 @@ class MySQL {
 
         if( count($fieldDesc) ){
             //r($fieldDesc);
-            $required = $fieldDesc['Null'] == 'YES' ? true : false;
+            $required = $fieldDesc['Null'] == 'YES' ? false : true;
             return array(
                 'type' => $fieldDesc['Type'],
                 'required' => $required

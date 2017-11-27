@@ -10,19 +10,35 @@ class DateUtils {
     const FORMAT_TIMESTAMP_USER = 'H:i:s d/m/Y';
 
     public static function userDate($string){
-        return self::format(self::FORMAT_DATE_DB, self::FORMAT_DATE_USER, $string);
+        $value = self::format(self::FORMAT_DATE_DB, self::FORMAT_DATE_USER, $string);
+        if( $value )
+            return $value;
+        else
+            return null;
     }
 
     public static function databaseDate($string){
-        return self::format(self::FORMAT_DATE_USER, self::FORMAT_DATE_DB, $string);
+        $value = self::format(self::FORMAT_DATE_USER, self::FORMAT_DATE_DB, $string);
+        if( $value )
+            return $value;
+        else
+            return null;
     }
 
     public static function userTimestamp($string){
-        return self::format(self::FORMAT_TIMESTAMP_DB, self::FORMAT_TIMESTAMP_USER, $string);
+        $value = self::format(self::FORMAT_TIMESTAMP_DB, self::FORMAT_TIMESTAMP_USER, $string);
+        if( $value )
+            return $value;
+        else
+            return null;
     }
 
     public static function databaseTimestamp($string){
-        return self::format(self::FORMAT_TIMESTAMP_USER, self::FORMAT_TIMESTAMP_DB, $string);
+        $value = self::format(self::FORMAT_TIMESTAMP_USER, self::FORMAT_TIMESTAMP_DB, $string);
+        if( $value )
+            return $value;
+        else
+            return null;
     }
 
     private function format($from, $to, $string){
@@ -31,10 +47,10 @@ class DateUtils {
                 $date = \DateTime::createFromFormat($from, $string);
                 return $date->format($to);
             }catch(\Exception $e){
-                return '';
+                return false;
             }
         }
-        return '';
+        return false;
     }
 
 }
