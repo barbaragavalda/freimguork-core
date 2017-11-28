@@ -28,9 +28,9 @@ class Model {
         $this->langID = $session->get('lang_id');
     }
 
-    protected function getFile($fileID){
+    protected function getFile($fileID, $suffix = ''){
         $file = new File($fileID);
-        return $file->getAbsolutePath();
+        return $file->getAbsolutePath($suffix);
     }
 
     public function getCacheDef(array $params) {
