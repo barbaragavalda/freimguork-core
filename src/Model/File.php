@@ -58,7 +58,7 @@ class File extends Model {
 		if( $this->id ) $this->load();
 	}
 
-	private function getRelativePath(){
+    public function getRelativePath(){
         return $this->relativeFolder . $this->folderID . '/' . $this->fileName;
     }
 

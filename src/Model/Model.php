@@ -28,6 +28,11 @@ class Model {
         $this->langID = $session->get('lang_id');
     }
 
+    protected function getFile($fileID){
+        $file = new File($fileID);
+        return $file->getAbsolutePath();
+    }
+
     public function getCacheDef(array $params) {
         return false;
         // or return array('ttl' => 300, 'key' => $params);
