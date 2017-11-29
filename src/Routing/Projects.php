@@ -82,6 +82,7 @@ class Projects{
         //static domain
         $parts = explode('/', $url);
         $staticURL = $parts[0] . '/';
+        //$staticURL = $url;
 
         return array(
             'app'       => $protocol . $url,
