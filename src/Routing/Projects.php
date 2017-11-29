@@ -61,6 +61,14 @@ class Projects{
     }
 
     /**
+     * user can specify language on url?
+     * @return bool
+     */
+    public function hasCustomLanguage(){
+        return strpos($this->currentProject->getURL(), '{lang}') !== false;
+    }
+
+    /**
      * current project
      * @return \Core\Routing\Project
      */

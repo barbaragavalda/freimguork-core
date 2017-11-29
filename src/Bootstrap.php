@@ -6,6 +6,7 @@ include DIR_ROOT .'vendor/appaqui/freimguork-core/src/Utils/NonExistingFunctions
 
 use Core\Controller\CacheManager;
 use Core\Routing\Projects;
+use Core\Routing\RedirectRouter;
 use Core\Routing\Router;
 use Core\Utils\Config;
 
@@ -78,6 +79,7 @@ class Bootstrap {
         }
 
         $userLang = $projects->getUserLanguage();
+        $hasCustomLanguage = $projects->hasCustomLanguage();
         $project = $projects->getProject();
         $projectFolders = $project->getFolders();
 
@@ -94,16 +96,19 @@ class Bootstrap {
         $config->setDomains( $projects->getDomains($currentLanguage) );
         $config->setLanguage( $currentLanguage );
 
-        //session first initialization with ID
-        //$sessionID = $projectFolders[0];
-        Session::getInstance($config->getDomain());
+        if( ($hasCustomLanguage && $userLang) || !$hasCustomLanguage ){
+            //session first initialization with ID
+            Session::getInstance($config->getDomain());
 
-        $language->initID();
+            $language->initID();
 
-        //routing
-        $this->projectFolder = $project->getApp();
-        $this->router = new Router( $this->projectFolder );
-        $this->router->doRouting( $config->get('routing') );
+            //routing
+            $this->projectFolder = $project->getApp();
+            $this->router = new Router( $this->projectFolder );
+            $this->router->doRouting( $config->get('routing') );
+        }else{
+            $this->router = new RedirectRouter();
+        }
     }
 
     /**

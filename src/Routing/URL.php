@@ -70,10 +70,7 @@ class URL{
 
         $routingRegExp = $this->prepareRouting();
         foreach($routingRegExp as $regExp){
-
             if( preg_match($regExp['regExp'], $userPetition) === 1 ){
-
-
                 //controller found
                 $this->controller = $regExp['controller'];
 
@@ -92,7 +89,6 @@ class URL{
                 }
                 break;
             }
-
         }
     }
 

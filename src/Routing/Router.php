@@ -23,12 +23,12 @@ class Router{
      */
     private $appFolder = null;
 
-    public function __construct( $appFolder ){
+    public function __construct( $appFolder = null ){
         $this->url = new URL();
         $this->appFolder = $appFolder;
     }
 
-    public function doRouting( $routing ){
+    public function doRouting( $routing){
         $this->url->setRouting($routing);
         $this->url->loadParams();
     }
@@ -37,7 +37,7 @@ class Router{
         $controller = $this->url->getController();
         $namespace = $this->appFolder . '\\Controller\\';
 
-        if( class_exists($namespace . $controller) ) {
+        if (class_exists($namespace . $controller)) {
             return $namespace . $controller;
         } else {
             return $namespace . 'DefaultController';
