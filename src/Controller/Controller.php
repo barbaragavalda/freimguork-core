@@ -126,6 +126,15 @@ abstract class Controller {
     }
 
     /**
+     * renders a template file (twig)
+     * @param string $file . Name of the template file
+     */
+    protected function template($file) {
+        $this->view->setInfo($this->info);
+        $this->view->template($file);
+    }
+
+    /**
      * renders a json
      */
     protected function json(){
@@ -148,13 +157,9 @@ abstract class Controller {
         }
     }
 
-    /**
-     * renders a template file (twig)
-     * @param string $file . Name of the template file
-     */
-    protected function template($file) {
+    protected function export($tableName){
         $this->view->setInfo($this->info);
-        $this->view->template($file);
+        $this->view->export($tableName);
     }
 
     /**

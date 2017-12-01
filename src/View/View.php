@@ -2,6 +2,7 @@
 
 namespace Core\View;
 use Core\Utils\Exception;
+use Core\View\Response\CSV;
 use Core\View\Response\HTML;
 use Core\View\Response\HTMLResponse;
 use Core\View\Response\Json;
@@ -88,6 +89,15 @@ class View{
         } catch (Exception $e) {
             $e->showException();
         }
+    }
+
+    /**
+     * downloads a csv file
+     * @param $tableName. Table name for file name
+     */
+    public function export($tableName){
+        $this->response = new CSV($tableName);
+        $this->render();
     }
 
 }

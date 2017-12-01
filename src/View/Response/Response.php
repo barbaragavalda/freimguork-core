@@ -37,7 +37,7 @@ abstract class Response{
      * @param int $status. Code of the status
      */
     protected function setHeaderStatus( $status ){
-        header ('HTTP/1.1 ' . $status);
+        $this->setHeader('HTTP/1.1', $status);
     }
 
     /**
@@ -45,7 +45,7 @@ abstract class Response{
      * @param string $type. Type of file
      */
     protected function setHeaderType( $type ){
-        header('Content-Type: ' . $type);
+        $this->setHeader('Content-Type', $type);
     }
 
     /**
@@ -53,7 +53,16 @@ abstract class Response{
      * @param string $url. URL to be redirect
      */
     protected function setHeaderLocation( $url ){
-        header('Location: ' . $url);
+        $this->setHeader('Location', $url);
+    }
+
+    /**
+     * sets any header parameter
+     * @param $key
+     * @param $value
+     */
+    protected function setHeader($key, $value){
+        header($key . ': ' . $value);
     }
 
 }
