@@ -121,6 +121,7 @@ class File extends Model {
      * @param $table
      * @param $field
      * @param $itemID
+     * @return bool
      */
     public function delete($table, $field, $itemID){
         $tableDelete = false;
@@ -147,7 +148,10 @@ class File extends Model {
 
             // 3. remove from disk
             $this->deleteFromDisk();
+
+            return true;
         }
+        return false;
 	}
 
     public function deleteFromFileTable(){
