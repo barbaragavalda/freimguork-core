@@ -299,7 +299,9 @@ class File extends Model {
      * @return resource
      */
     private function resizedImage($image, $max_width, $max_height){
-        list($orig_width, $orig_height) = getimagesize($image);
+        $size = $this->getSize();
+        $orig_width = $size['width'];
+        $orig_height = $size['height'];
         $width = $orig_width;
         $height = $orig_height;
 
@@ -323,6 +325,17 @@ class File extends Model {
         $source = $this->createEmptyImage( $image );
         imagecopyresampled($newImage, $source, 0, 0, 0, 0, $width, $height, $orig_width, $orig_height);
         return $newImage;
+    }
+
+    public function getSize($suffix = ''){
+        $size = getimagesize($this->getRelativePath($suffix));
+        if( $size !== false ){
+            return array(
+                'width' => $size[0],
+                'height' => $size[1]
+            );
+        }
+        return false;
     }
 
     /**

@@ -33,6 +33,19 @@ class Model {
         return $file->getAbsolutePath($suffix);
     }
 
+    protected function getFBImage($fileID, $suffix = ''){
+        $file = new File($fileID);
+        $size = $file->getSize($suffix);
+        if( $size !== false ){
+            return array(
+                'image' => $file->getAbsolutePath($suffix),
+                'width' => $size['width'],
+                'height' => $size['height']
+            );
+        }
+        return null;
+    }
+
     public function getCacheDef(array $params) {
         return false;
         // or return array('ttl' => 300, 'key' => $params);
