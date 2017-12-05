@@ -110,7 +110,7 @@ class URL{
                     foreach($explode as $part){
                         if( $regExp != '' ) $regExp .= '(/)';
                         if( StringUtils::startsWidth($part, '{') ){
-                            $regExp .= '(\w+)';
+                            $regExp .= '([a-zA-Z0-9-_.%]+)';
                         }else{
                             if( $part == '' ){
                                 $regExp .= '$^';
