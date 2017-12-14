@@ -88,9 +88,9 @@ class Projects{
         $url = str_replace('{lang}', $language, $this->currentProject->getURL());
 
         //static domain
-        //$parts = explode('/', $url);
-        //$staticURL = $parts[0] . '/';
-        $staticURL = str_replace('{lang}/', '', $this->currentProject->getURL());
+        $parts = explode('/', $url);
+        $staticURL = $parts[0] . '/';
+        //$staticURL = str_replace('{lang}/', '', $this->currentProject->getURL());
 
         return array(
             'app'       => $protocol . $url,
