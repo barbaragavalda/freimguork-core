@@ -156,9 +156,9 @@ class File extends Model {
 
     public function deleteFromFileTable(){
         $sql = '
-                DELETE FROM appacman_file
-                WHERE id_appacman_file = :id
-            ';
+            DELETE FROM appacman_file
+            WHERE id_appacman_file = :id
+        ';
         $params = array(
             'id' => array('value'=>$this->id, 'type'=>\PDO::PARAM_INT)
         );

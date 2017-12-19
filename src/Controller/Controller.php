@@ -104,8 +104,8 @@ abstract class Controller {
 
     /***
      * saves info that the view needs
-     * @param $var_name     key
-     * @param $value        value
+     * @param $var_name     string
+     * @param $value        mixed
      */
     public function assign( $var_name, $value ){
         $this->info[$var_name] = $value;

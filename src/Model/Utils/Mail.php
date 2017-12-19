@@ -29,7 +29,7 @@ class Mail {
      * email account
      * @var string
      */
-    private $username = '';
+    protected $username = '';
 
     /**
      * password account
@@ -50,10 +50,10 @@ class Mail {
 
     /**
      * send an email
-     * @param array $from       array("email"=>"", "name"=>"")
-     * @param array $to         array( array("email"=>"", "name"=>"") )
-     * @param string $subject
-     * @param HTML $message
+     * @param $from             array ("email"=>"", "name"=>"")
+     * @param $to               array( array("email"=>"", "name"=>"") )
+     * @param $subject          string
+     * @param $message          string HTML
      * @return bool
      */
     public function send($from, $to, $subject, $message){
