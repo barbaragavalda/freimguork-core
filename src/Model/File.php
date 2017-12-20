@@ -54,6 +54,10 @@ class File extends Model {
 		if( $this->id ) $this->load();
 	}
 
+	public function getID(){
+        return $this->id;
+    }
+
     public function getRelativePath($suffix = ''){
         return $this->relativeFolder . $this->folderID . '/' . $this->getFileNameWidthSuffix($suffix);
     }
