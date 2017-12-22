@@ -15,17 +15,43 @@ use Core\Utils\Session;
 class Model {
 
     /**
-     * @var null Core|Model|MySQL. Database connection
+     * @var  \Core|Model|MySQL  Database connection
      */
     protected $mysql = null;
 
+    /**
+     * @var int  current lang id
+     */
     protected $langID = 0;
+
+    /**
+     * @var int     identifier
+     */
+    protected $id = 0;
+
+    /**
+     * @var string  encrypting key
+     */
+    protected $key = '';
+
+    /**
+     * @var null    creation timestamp
+     */
+    protected $created = null;
 
     public function __construct(){
         $this->mysql = MySQL::getInstance();
 
         $session = Session::getInstance();
         $this->langID = $session->get('lang_id');
+    }
+
+    public function getID(){
+        return $this->id;
+    }
+
+    protected function setKey(){
+        $this->key = $this->id . '_' . $this->created . '_';
     }
 
     protected function getFile($fileID, $suffix = ''){
@@ -44,6 +70,15 @@ class Model {
             );
         }
         return null;
+    }
+
+    protected function uploadFile($postFile){
+        $file = null;
+        if( !empty($postFile) ){
+            $file = new File();
+            $file->save($postFile);
+        }
+        return $file;
     }
 
     public function getCacheDef(array $params) {

@@ -17,11 +17,6 @@ use Core\Utils\Config;
 class File extends Model {
 
     /**
-     * @var int $id. Id from table appacman_file
-     */
-	private $id = 0;
-
-    /**
      * @var int $folderID. Folder number where the file is
      */
     private $folderID = 0;
