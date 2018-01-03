@@ -82,6 +82,7 @@ class Bootstrap {
         $hasCustomLanguage = $projects->hasCustomLanguage();
         $project = $projects->getProject();
         $projectFolders = $project->getFolders();
+        $language = new Language($userLang, $project);
 
         //load project configs
         $config = Config::getInstance();
@@ -91,7 +92,6 @@ class Bootstrap {
         $this->controllerCache = new CacheManager();
 
         //language
-        $language = new Language($userLang, $project);
         $currentLanguage = $language->getLanguage();
         $config->setDomains( $projects->getDomains($currentLanguage) );
         $config->setLanguage( $currentLanguage );

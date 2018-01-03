@@ -33,8 +33,6 @@ class Language extends Model {
     }
 
     public function __construct($userLanguage, $currentProject){
-        parent::__construct();
-
         $this->initLanguage($userLanguage, $currentProject);
         $this->initGettext();
     }
@@ -81,6 +79,8 @@ class Language extends Model {
     }
 
     public function initID(){
+        parent::__construct();
+
         $sql = '
             SELECT id_appacman_lang
             FROM appacman_lang
