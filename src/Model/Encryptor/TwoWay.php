@@ -32,7 +32,7 @@ class TwoWay {
         return $encrypted_string;
     }
 
-    public static function decrypy($encrypted, $key){
+    public static function decrypt($encrypted, $key){
         $key = self::initKey($key);
 
         $iv_strlen = 2  * self::iv_bytes();

@@ -37,6 +37,7 @@ class Router{
         $controller = $this->url->getController();
         $namespace = $this->appFolder . '\\Controller\\';
 
+
         if (class_exists($namespace . $controller)) {
             return $namespace . $controller;
         } else {
