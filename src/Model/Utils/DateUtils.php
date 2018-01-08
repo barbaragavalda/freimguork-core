@@ -41,7 +41,7 @@ class DateUtils {
             return null;
     }
 
-    private function format($from, $to, $string){
+    public static function format($from, $to, $string){
         if( !empty($string) && is_string($string) ){
             try{
                 $date = \DateTime::createFromFormat($from, $string);
@@ -51,6 +51,34 @@ class DateUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * time between two dates
+     * @param $startDate    \DateTime
+     * @param $endDate      \DateTime
+     * @return string       "'y' years 'm' months 'd' days 'h' hours 'm' minutes 's' seconds"
+     */
+    public static function timeBetween($startDate, $endDate){
+        $interval = $startDate->diff($endDate);
+
+        $time = array();
+        self::addTime($interval->y, 'año', 'años', $time);
+        self::addTime($interval->m, 'mes', 'meses', $time);
+        self::addTime($interval->d, 'día', 'días', $time);
+        self::addTime($interval->h, 'hora', 'horas', $time);
+        self::addTime($interval->i, 'minuto', 'minutos', $time);
+        self::addTime($interval->s, 'segundo', 'segundos', $time);
+
+        return implode(' ', $time);
+    }
+
+    private function addTime($value, $singular, $plural, &$time){
+        if( $value == 1 ){
+            $time[] = '1 ' . gettext($singular);
+        } elseif ( $value > 1 ){
+            $time[] = $value . ' ' . gettext($plural);
+        }
     }
 
 }
