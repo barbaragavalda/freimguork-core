@@ -3,6 +3,7 @@
 namespace Core\Model;
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
+use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
 
 /**
  * Class File
@@ -186,36 +187,54 @@ class File extends Model {
      */
 	public function save($file){
 		if( $file['error'] == 0 ){
-            $this->id = $this->mysql->getMaxId('appacman_file');
-            $this->fileName = $this->id . '_' . StringUtils::removeSpecialCharacters($file['name']);
-
-            // prepare path
-            $this->initFolder();
-			$this->createFolder($this->relativeFolder);
-			$this->createFolder($this->relativeFolder . $this->folderID);
+            $this->prepareSave($file['name']);
             $path = $this->getRelativePath();
 
 			if( move_uploaded_file($file['tmp_name'], $path) ){
                 $this->checkImageOrientation($path);
-
-                $sql = '
-                    INSERT INTO appacman_file
-                    SET id_appacman_file = :id, file_name = :file_name
-                ';
-                $params = array(
-                    'id'        => array('value'=>$this->id,        'type'=>\PDO::PARAM_INT),
-                    'file_name' => array('value'=>$this->fileName,  'type'=>\PDO::PARAM_STR)
-                );
-                $this->mysql->query($sql, $params);
-                if( $this->mysql->rowCount() > 0 ){
-                    return $this->id;
-                }else{
-                    $this->deleteFromDisk();
-                }
+                return $this->saveToDatabase();
 			}
 		}
 		return false;
 	}
+
+	public function saveQr($text, $qrName){
+        $this->prepareSave($qrName);
+        $path = $this->getRelativePath();
+
+        $qr = new BaconQrCodeGenerator();
+        $qr->format('svg');
+        $qr->generate($text, $path);
+        return $this->saveToDatabase();
+	}
+
+    private function prepareSave($fileName){
+        $this->id = $this->mysql->getMaxId('appacman_file');
+        $this->fileName = $this->id . '_' . StringUtils::removeSpecialCharacters($fileName);
+
+        // prepare path
+        $this->initFolder();
+        $this->createFolder($this->relativeFolder);
+        $this->createFolder($this->relativeFolder . $this->folderID);
+    }
+
+    private function saveToDatabase(){
+        $sql = '
+                INSERT INTO appacman_file
+                SET id_appacman_file = :id, file_name = :file_name
+            ';
+        $params = array(
+            'id'        => array('value'=>$this->id,        'type'=>\PDO::PARAM_INT),
+            'file_name' => array('value'=>$this->fileName,  'type'=>\PDO::PARAM_STR)
+        );
+        $this->mysql->query($sql, $params);
+        if( $this->mysql->rowCount() > 0 ){
+            return $this->id;
+        }else{
+            $this->deleteFromDisk();
+        }
+        return false;
+    }
 
 	/**
 	 * createFolder
