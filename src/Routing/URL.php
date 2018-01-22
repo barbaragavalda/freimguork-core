@@ -67,8 +67,20 @@ class URL{
         $domain = $config->getDomain();
         $userURL = $this->getFullUserURL();
         $userPetition = str_replace($domain, '', $userURL);
-
         $routingRegExp = $this->prepareRouting();
+
+        if( $_SERVER['REQUEST_METHOD'] == 'GET' ){
+            $query = $_SERVER['QUERY_STRING'];
+            if( !empty($query) ){
+                $userPetition = str_replace('?'.$query, '', $userPetition);
+                $params = explode('&', $query);
+                foreach($params as $param){
+                    $info = explode('=', $param);
+                    $this->params[$info[0]] = $info[1];
+                }
+            }
+        }
+
         foreach($routingRegExp as $regExp){
             if( preg_match($regExp['regExp'], $userPetition) === 1 ){
                 //controller found
