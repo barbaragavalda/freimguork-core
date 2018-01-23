@@ -58,6 +58,7 @@ class Config{
     private function __construct(){
         $this->folders = array(
             DIR_ROOT . 'config/',
+            DIR_ROOT . 'config/' . (( IS_DEV ) ? 'dev/' : 'prod/'),
             APPACMAN_DIR . 'config/'
         );
 
@@ -130,6 +131,8 @@ class Config{
      */
     public function loadConfigs( $projectFolders ){
         foreach($this->folders as $folder){
+            $this->loadFolder($folder);
+
             foreach($projectFolders as $projectFolder){
                 // common folder
                 $dir = $folder . $projectFolder . '/';
@@ -150,7 +153,7 @@ class Config{
         $files = @scandir($projectFolder);
         if( $files !== false ){
             foreach($files as $file){
-                if( !is_dir($projectFolder . $file) && !in_array($file, array('.', '..', '.DS_Store')) ){
+                if( !is_dir($projectFolder . $file) && !in_array($file, array('.', '..', '.DS_Store', 'projects.dev.php', 'projects.prod.php')) ){
                     // load config
                     $this->config = array_merge_recursive($this->config, $this->load($projectFolder . $file));
                 }
