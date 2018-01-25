@@ -45,7 +45,7 @@ abstract class Controller {
     /**
      * @var array $info. Content of the variables that the view needs
      */
-    private $info = array();
+    protected $info = array();
 
     /**
      * @var \Core\Controller\CacheManager $modelCache. Cache Manager
