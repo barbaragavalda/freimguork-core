@@ -35,6 +35,11 @@ class Config{
     /**
      * @var string $domain. App domain
      */
+    private $baseDomain = '';
+
+    /**
+     * @var string $domain. App domain
+     */
     private $domain = '';
 
     /**
@@ -65,6 +70,8 @@ class Config{
         //load projects info
         $projectFile = 'projects' . (( IS_DEV ) ? '.dev' : '.prod') . '.php';
         $this->projects = $this->load($this->folders[0] . $projectFile);
+        $this->baseDomain = $this->projects['base_domain'];
+        unset($this->projects['base_domain']);
     }
 
     /**
@@ -84,6 +91,14 @@ class Config{
      */
     public function getProjects(){
         return $this->projects;
+    }
+
+    /**
+     * returns the base app url
+     * @return string
+     */
+    public function getBaseDomain(){
+        return $this->baseDomain;
     }
 
     /**

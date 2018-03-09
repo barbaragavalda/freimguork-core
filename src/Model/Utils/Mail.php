@@ -67,7 +67,14 @@ class Mail {
             $mail->Username = $this->username;
             $mail->Password = $this->password;
             $mail->Port = $this->port;
-
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+            
             // Recipients
             $mail->setFrom($from['email'], $from['name']);
             $mail->addReplyTo($this->username, $this->name);

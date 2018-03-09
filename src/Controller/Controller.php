@@ -59,7 +59,8 @@ abstract class Controller {
         //domains
         $config = Config::getInstance();
         $this->domain = $config->getDomain();
-        $this->static_domain = $config->getStaticDomain();
+        $this->static_domain = $config->getBaseDomain();
+        
         $this->assign('domain', $this->domain);
         $this->assign('static_domain', $this->static_domain);
 

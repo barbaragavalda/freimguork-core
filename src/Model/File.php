@@ -42,7 +42,7 @@ class File extends Model {
 
         // init directory
         $config = Config::getInstance();
-        $this->absoluteFolder = $config->getStaticDomain() . 'public/upload/';
+        $this->absoluteFolder = $config->getBaseDomain() . 'public/upload/';
         $this->relativeFolder = 'upload/';
 
         //load current image

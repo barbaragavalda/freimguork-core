@@ -59,6 +59,12 @@ class HTML extends Response {
         $loader = new \Twig_Loader_Filesystem($this->twigFolders);
         $twig = new \Twig_Environment($loader, $twigConfig);
         $twig->addExtension( new \Twig_Extensions_Extension_I18n() );
+        if( array_key_exists('twig_filters', $info) ){
+            foreach($info['twig_filters'] as $filter){
+                $twig->addFilter($filter);
+            }
+            unset($info['twig_filters']);
+        }
 
         //response
         $template = $twig->load($this->file);
