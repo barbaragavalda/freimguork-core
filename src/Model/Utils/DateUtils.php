@@ -54,12 +54,49 @@ class DateUtils {
     }
 
     /**
+     * minutes between two dates
+     * @param $startDate    \DateTime
+     * @param $endDate      \DateTime
+     * @return int
+     */
+    public static function minutesBetween($startDate, $endDate){
+        $interval = $startDate->diff($endDate);
+        $minutes = $interval->days * 24 * 60;
+        $minutes += $interval->h * 60;
+        $minutes += $interval->i;
+
+        return $minutes;
+    }
+
+    /**
+     * time between two dates
+     * @param $startDate    \DateTime
+     * @param $endDate      \DateTime
+     * @return string       hours:min
+     */
+    public static function timeBetween($startDate, $endDate){
+        if( $startDate < $endDate ){
+            $interval = $startDate->diff($endDate);
+
+            $hours = $interval->y * 8760;
+            $hours += $interval->m * 1440;
+            $hours += $interval->d * 24;
+            $hours += $interval->h;
+
+            $hours = substr('0'.$hours, 0, 2);
+            $minutes = substr('0'.$interval->i, 0, 2);
+            return $hours . ':' . $minutes;
+        }
+        return '00:00';
+    }
+
+    /**
      * time between two dates
      * @param $startDate    \DateTime
      * @param $endDate      \DateTime
      * @return string       "'y' years 'm' months 'd' days 'h' hours 'm' minutes 's' seconds"
      */
-    public static function timeBetween($startDate, $endDate){
+    public static function describeTimeBetween($startDate, $endDate){
         $interval = $startDate->diff($endDate);
 
         $time = array();

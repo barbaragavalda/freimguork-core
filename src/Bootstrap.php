@@ -52,6 +52,7 @@ class Bootstrap {
      */
     public function __construct($isDev){
         define('IS_DEV', $isDev);
+        date_default_timezone_set('Europe/Madrid');
     }
 
     /**
