@@ -198,6 +198,23 @@ class File extends Model {
 		return false;
 	}
 
+    /**
+     * copy file to uploads
+     * @param $fileName
+     * @param $origin
+     * @return false|int
+     */
+	public function copy($fileName, $origin){
+        $this->prepareSave($fileName);
+        $path = $this->getRelativePath();
+
+        if( copy($origin, $path) ){
+            $this->checkImageOrientation($path);
+            return $this->saveToDatabase();
+        }
+        return false;
+    }
+
 	public function saveQr($text, $qrName){
         $this->prepareSave($qrName);
         $path = $this->getRelativePath();
