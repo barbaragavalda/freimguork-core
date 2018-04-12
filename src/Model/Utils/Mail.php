@@ -88,9 +88,8 @@ class Mail {
             $mail->Subject = $subject;
             $mail->Body = $message;
             $mail->AltBody = strip_tags($message);
-
-            $mail->send();
-            return true;
+			
+			return $mail->send();
         } catch (Exception $e) {
             //echo 'Mailer Error: ' . $mail->ErrorInfo;
             return false;

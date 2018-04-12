@@ -22,9 +22,11 @@ class Push {
      * send push notification
      * @param $platforms
      * @param $message
-     * @param string $urlScheme
+     * @param string $deepLink
      */
-    private function send($platforms, $message, $urlScheme = ''){
+    public function send($platforms, $message, $deepLink = ''){
+        if( $deepLink != '' ) $urlScheme = $this->urlScheme . $deepLink;
+
         $android = $ios = array();
         foreach($platforms as $platform){
             $tokens = explode(',', $platform['tokens']);
@@ -35,13 +37,13 @@ class Push {
         }
 
         if( count($android) ){
-            $pushAndroid = new Android($message, $android, $urlScheme);
+            $pushAndroid = new Android($message, $android, $deepLink);
             $pushAndroid->send();
             $pushAndroid->close();
         }
 
         if( count($ios) ){
-            $pushiOS = new iOS($message, $ios, $urlScheme);
+            $pushiOS = new iOS($message, $ios, $deepLink);
             $pushiOS->send();
             $pushiOS->close();
         }
