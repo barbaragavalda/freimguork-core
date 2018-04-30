@@ -56,7 +56,7 @@ class Mail {
      * @param $message          string HTML
      * @return bool
      */
-    public function send($from, $to, $subject, $message){
+    public function send($from, $to, $subject, $message, $attach = null){
         $mail = new \PHPMailer();
         try{
             // Server settings
@@ -74,7 +74,7 @@ class Mail {
                     'allow_self_signed' => true
                 )
             );
-            
+
             // Recipients
             $mail->setFrom($from['email'], $from['name']);
             $mail->addReplyTo($this->username, $this->name);
@@ -88,8 +88,12 @@ class Mail {
             $mail->Subject = $subject;
             $mail->Body = $message;
             $mail->AltBody = strip_tags($message);
-			
-			return $mail->send();
+            if( $attach && $attach != null ){
+                $mail->addAttachment($attach);
+            }
+
+            $mail->send();
+            return true;
         } catch (Exception $e) {
             //echo 'Mailer Error: ' . $mail->ErrorInfo;
             return false;
