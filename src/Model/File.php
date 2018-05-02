@@ -215,12 +215,13 @@ class File extends Model {
         return false;
     }
 
-	public function saveQr($text, $qrName){
+	public function saveQr($text, $qrName, $size = 1000){
         $this->prepareSave($qrName);
         $path = $this->getRelativePath();
 
         $qr = new BaconQrCodeGenerator();
-        $qr->format('svg');
+        $qr->format('png');
+        $qr->size($size);
         $qr->generate($text, $path);
         return $this->saveToDatabase();
 	}

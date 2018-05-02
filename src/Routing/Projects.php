@@ -87,12 +87,9 @@ class Projects{
         //ap domain
         $url = str_replace('{lang}', $language, $this->currentProject->getURL());
 
-        //static domain
-        $staticURL = str_replace('{lang}/', '', $this->currentProject->getURL());
-
         return array(
             'app'       => $protocol . $url,
-            'static'    => $protocol . $staticURL
+            'static'    => $this->config->getBaseDomain()
         );
     }
 
