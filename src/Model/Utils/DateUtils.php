@@ -83,8 +83,8 @@ class DateUtils {
             $hours += $interval->d * 24;
             $hours += $interval->h;
 
-            $hours = substr('0'.$hours, 0, 2);
-            $minutes = substr('0'.$interval->i, 0, 2);
+            $hours = substr('0'.$hours, -2);
+            $minutes = substr('0'.$interval->i, -2);
             return $hours . ':' . $minutes;
         }
         return '00:00';
