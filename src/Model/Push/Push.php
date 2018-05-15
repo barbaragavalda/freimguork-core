@@ -25,6 +25,7 @@ class Push {
      * @param string $deepLink
      */
     public function send($platforms, $message, $deepLink = ''){
+        $urlScheme = '';
         if( $deepLink != '' ) $urlScheme = $this->urlScheme . $deepLink;
 
         $android = $ios = array();
@@ -37,13 +38,13 @@ class Push {
         }
 
         if( count($android) ){
-            $pushAndroid = new Android($message, $android, $deepLink);
+            $pushAndroid = new Android($message, $android, $urlScheme);
             $pushAndroid->send();
             $pushAndroid->close();
         }
 
         if( count($ios) ){
-            $pushiOS = new iOS($message, $ios, $deepLink);
+            $pushiOS = new iOS($message, $ios, $urlScheme);
             $pushiOS->send();
             $pushiOS->close();
         }
