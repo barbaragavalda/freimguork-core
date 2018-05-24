@@ -24,7 +24,14 @@ class CSV extends Response{
      */
     public function initResponse( $info = null ) {
         $f = fopen('php://output', 'w');
-        foreach($info['csv'] as $item){
+        fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        // titles
+        array_unshift($info['csv']['titles'], '');
+        fputcsv($f, $info['csv']['titles'], ';');
+
+        // list
+        foreach($info['csv']['list'] as $item){
             fputcsv($f, $item, ';');
         }
 
