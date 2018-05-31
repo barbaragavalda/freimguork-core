@@ -38,15 +38,23 @@ class Push {
         }
 
         if( count($android) ){
-            $pushAndroid = new Android($message, $android, $urlScheme);
-            $pushAndroid->send();
-            $pushAndroid->close();
+            if( IS_DEV ) {
+                echo '<p>Fake push notification for Android: <b>' . $message . '</b></p>';
+            }else{
+                $pushAndroid = new Android($message, $android, $urlScheme);
+                $pushAndroid->send();
+                $pushAndroid->close();
+            }
         }
 
         if( count($ios) ){
-            $pushiOS = new iOS($message, $ios, $urlScheme);
-            $pushiOS->send();
-            $pushiOS->close();
+            if( IS_DEV ){
+                echo '<p>Fake push notification for iOS: <b>'.$message.'</b></p>';
+            }else{
+                $pushiOS = new iOS($message, $ios, $urlScheme);
+                $pushiOS->send();
+                $pushiOS->close();
+            }
         }
 
     }
