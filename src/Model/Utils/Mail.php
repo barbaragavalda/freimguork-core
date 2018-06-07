@@ -76,6 +76,12 @@ class Mail {
             );
 
             // Recipients
+            if( $from == null ){
+                $from = array(
+                    'name' => $this->name,
+                    'email' => $this->username
+                );
+            }
             $mail->setFrom($from['email'], $from['name']);
             $mail->addReplyTo($this->username, $this->name);
             foreach($to as $recipient){
