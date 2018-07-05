@@ -54,8 +54,8 @@ class Session{
      * @return mixed|null
      */
     public function get($key){
-        if( isset($_COOKIE[$key]) ){
-            return json_decode($_COOKIE[$key], true);
+        if( isset($_SESSION[$key]) ){
+            return json_decode($_SESSION[$key], true);
         }else{
             return null;
         }
@@ -75,9 +75,9 @@ class Session{
      * @param $key
      */
     public function delete($key){
-        if( isset($_COOKIE[$key]) ){
-            $this->save($key, '', -self::DURATION);
-            unset($_COOKIE[$key]);
+        if( isset($_SESSION[$key]) ){
+            //$this->save($key, '', -self::DURATION);
+            unset($_SESSION[$key]);
         }
     }
 
@@ -85,7 +85,7 @@ class Session{
      * delete all cookies
      */
     public function clear(){
-        foreach( $_COOKIE as $key => $value ){
+        foreach( $_SESSION as $key => $value ){
             $this->delete($key);
         }
     }
@@ -98,8 +98,8 @@ class Session{
      */
     private function save($key, $value, $expiration = self::DURATION){
         $value = json_encode($value);
-        setcookie($key, $value, time()+$expiration, '/', $this->domain);
-        $_COOKIE[$key] = $value;
+        //setcookie($key, $value, time()+$expiration, '/', $this->domain);
+        $_SESSION[$key] = $value;
     }
 
 }
