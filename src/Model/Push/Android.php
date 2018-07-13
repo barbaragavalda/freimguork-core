@@ -11,13 +11,17 @@ class Android extends Base {
     private $API_KEY = null;
     private $APP_NAME = null;
 
+    private $tokens = array();
     private $headers = array();
     private $fields = array();
     private $ch = null;
 
     public function __construct( $message, $tokens, $urlScheme = '' ){
+        parent::__construct();
+
         $config = Config::getInstance();
         $pushConfig = $config->get('push');
+        $this->tokens = $tokens;
         $this->API_KEY = $pushConfig['android_key'];
         $this->APP_NAME = $pushConfig['android_app_name'];
 
@@ -26,7 +30,7 @@ class Android extends Base {
             'Content-Type: application/json'
         );
         $this->fields = array(
-            'registration_ids'  => $tokens,
+            'registration_ids'  => $this->tokens,
             'data'              => array( "title" => $this->APP_NAME, "message" => $message )
         );
         if( $urlScheme ){
@@ -50,10 +54,47 @@ class Android extends Base {
             'ko' => $result['failure'],
         );
 
+        $this->log($result);
     }
 
     public function close(){
         //close socket
         curl_close($this->ch);
     }
+
+    private function log($result){
+        if( $this->mysql->tableExists('appacman_log_android') ){
+            $tokens = array_map(function($n){ return '"' . $n . '"'; }, $this->tokens);
+            $tokens = implode(',', $tokens);
+            $sql = '
+                SELECT GROUP_CONCAT(id_user) AS users
+                FROM appacman_push_device
+                WHERE token IN('.$tokens.')
+            ';
+            $users = $this->mysql->query($sql);
+
+            $data = json_encode($this->fields['data'], JSON_UNESCAPED_SLASHES);
+            $result = json_encode($result, JSON_UNESCAPED_SLASHES);
+            $sql = '
+                INSERT INTO appacman_log_android
+                SET tokens = :tokens, data = :data, result = :result
+            ';
+            $params = array(
+                'tokens'    => array('value' => $tokens,	'type' => \PDO::PARAM_STR),
+                'data'      => array('value' => $data,     	'type' => \PDO::PARAM_STR),
+                'result'    => array('value' => $result,	'type' => \PDO::PARAM_STR),
+            );
+            if( count($users) ){
+                $sql .= ', users = :users';
+                $params['users'] = array('value' => $users[0]['users'], 'type' => \PDO::PARAM_STR);
+            }
+
+            $this->mysql->query($sql, $params);
+        }
+    }
+
+    public function addQuotes($element){
+        return '"' . $element . '"';
+    }
+
 }

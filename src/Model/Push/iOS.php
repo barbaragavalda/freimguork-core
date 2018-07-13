@@ -17,6 +17,8 @@ class iOS extends Base {
     private $tokens = null;
 
     public function __construct( $message, $tokens, $urlScheme = '' ){
+        parent::__construct();
+
         $this->tokens = $tokens;
 
         $config = Config::getInstance();
@@ -46,7 +48,9 @@ class iOS extends Base {
     public function send(){
         foreach($this->tokens as $token){
             $apnsMessage = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $token)) . chr(0) . chr(strlen($this->payload)) . $this->payload;
-            $a = fwrite($this->apns, $apnsMessage);
+            $result = fwrite($this->apns, $apnsMessage);
+
+            $this->log($result, $token);
         }
     }
 
@@ -54,6 +58,40 @@ class iOS extends Base {
         //close socket
         socket_close($this->apns);
         fclose($this->apns);
+    }
+
+    private function log($result, $token){
+        if( $this->mysql->tableExists('appacman_log_ios') ){
+            $sql = '
+                SELECT id_user
+                FROM appacman_push_device
+                WHERE token = :token
+            ';
+            $params = array(
+                'token' => array('value' => $token, 'type' => \PDO::PARAM_STR)
+            );
+            $users = $this->mysql->query($sql, $params);
+            $userID = '';
+            if( count($users) ){
+                $userID = $users[0]['id_user'];
+            }
+
+            $data = json_encode($this->payload, JSON_UNESCAPED_SLASHES);
+            $data = str_replace('\"', "'", $data);
+            $data = str_replace('"', '', $data);
+            $data = str_replace('\\\/', '/', $data);
+            $sql = '
+                INSERT INTO appacman_log_ios
+                SET token = :token, id_user = :id_user, data = :data, result = :result
+            ';
+            $params = array(
+                'token'    	=> array('value' => $token,     'type' => \PDO::PARAM_STR),
+                'id_user'   => array('value' => $userID,    'type' => \PDO::PARAM_STR),
+                'data'      => array('value' => $data,		'type' => \PDO::PARAM_STR),
+                'result'    => array('value' => $result,    'type' => \PDO::PARAM_STR),
+            );
+            $this->mysql->query($sql, $params);
+        }
     }
 
 }

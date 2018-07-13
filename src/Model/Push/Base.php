@@ -2,7 +2,9 @@
 
 namespace Core\Model\Push;
 
-abstract class Base {
+use Core\Model\Model;
+
+abstract class Base extends Model {
 
     protected $result = array();
 
