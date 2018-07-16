@@ -58,6 +58,7 @@ class MySQL {
                 try {
                     $this->pdo = new \PDO($dsn, $user, $password);
                     $this->pdo->exec("SET CHARACTER SET utf8");
+                    $this->pdo->exec("SET SESSION group_concat_max_len = 10000000");
                 } catch (\PDOException $e) {
                     throw new Exception("PDO connection error: <em>" . $e->getMessage() . "</em>");
                 }

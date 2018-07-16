@@ -2,6 +2,7 @@
 
 namespace Core\Model\Push;
 
+use Core\Model\Utils\Mail;
 use Core\Utils\Config;
 
 class Push {
@@ -11,11 +12,18 @@ class Push {
      */
     protected $urlScheme = '';
 
+
+    /**
+     * @var string  email to sent the report
+     */
+    private $reportEmail = '';
+
     public function __construct(){
         // url scheme
         $config = Config::getInstance();
         $webserviceConfig = $config->get('webservice');
         $this->urlScheme = $webserviceConfig['url_scheme'];
+        $this->reportEmail = $config->get('push', 'report');
     }
 
     /**
@@ -37,6 +45,7 @@ class Push {
             }
         }
 
+        $emailMessage = '<p><b>Texto: </b>' . $message . '</p>';
         if( count($android) ){
             if( IS_DEV ) {
                 echo '<p>Fake push notification for Android: <b>' . $message . '</b></p>';
@@ -44,6 +53,9 @@ class Push {
                 $pushAndroid = new Android($message, $android, $urlScheme);
                 $pushAndroid->send();
                 $pushAndroid->close();
+
+
+                $emailMessage .= '<p><b>Android: </b>' . $pushAndroid->getEmailResult() . '</p>';
             }
         }
 
@@ -54,7 +66,19 @@ class Push {
                 $pushiOS = new iOS($message, $ios, $urlScheme);
                 $pushiOS->send();
                 $pushiOS->close();
+
+                $emailMessage .= '<p><b>iOS: </b>' . $pushiOS->getEmailResult() . '</p>';
             }
+        }
+
+        if( $message && $this->reportEmail ){
+            $email = new Mail();
+            $email->send(
+                null,
+                array( array('email' => $this->reportEmail, 'name' => 'El Chollo Marcas') ),
+                'Estadísticas notificaciones push',
+                $emailMessage
+            );
         }
 
     }

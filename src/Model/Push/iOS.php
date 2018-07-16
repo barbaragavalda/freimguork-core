@@ -16,10 +16,13 @@ class iOS extends Base {
     private $payload = null;
     private $tokens = null;
 
+
+
     public function __construct( $message, $tokens, $urlScheme = '' ){
         parent::__construct();
 
         $this->tokens = $tokens;
+        $this->total = count($this->tokens);
 
         $config = Config::getInstance();
         $pushConfig = $config->get('push');
@@ -49,6 +52,7 @@ class iOS extends Base {
         foreach($this->tokens as $token){
             $apnsMessage = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $token)) . chr(0) . chr(strlen($this->payload)) . $this->payload;
             $result = fwrite($this->apns, $apnsMessage);
+            if( $result > 0 ) $this->ok += 1;
 
             $this->log($result, $token);
         }

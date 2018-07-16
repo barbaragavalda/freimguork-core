@@ -22,6 +22,7 @@ class Android extends Base {
         $config = Config::getInstance();
         $pushConfig = $config->get('push');
         $this->tokens = $tokens;
+        $this->total = count($this->tokens);
         $this->API_KEY = $pushConfig['android_key'];
         $this->APP_NAME = $pushConfig['android_app_name'];
 
@@ -49,10 +50,27 @@ class Android extends Base {
 
         // Execute post
         $result = curl_exec($this->ch);
-        $this->result = array(
-            'ok' => $result['success'],
-            'ko' => $result['failure'],
-        );
+        $result = json_decode($result, true);
+        $this->ok = $result['success'];
+
+        for($i=0; $i<count($result['results']); $i++){
+            if( array_key_exists('error', $result['results'][$i]) ){
+                switch ($result['results'][$i]['error']){
+                    case 'NotRegistered':
+                        $this->deleteDevice($this->tokens[$i]);
+                        $this->total -= 1;
+                        break;
+                    case 'InvalidParameters':
+                        $this->tokens[$i] = str_replace('"', '', $this->tokens[$i]);
+                        if( $this->tokens[$i] == 'BLACKLISTED' ){
+                            $this->deleteDevice($this->tokens[$i]);
+                            $this->total -= 1;
+                        }
+                        break;
+                }
+
+            }
+        }
 
         $this->log($result);
     }

@@ -25,7 +25,7 @@ class CSV extends Response{
     public function initResponse( $info = null ) {
         $this->setHeaderType('application/csv');
         $this->setHeader('Content-Disposition', 'attachment; filename="' . $this->fieldName . '";');
-        
+
         $f = fopen('php://output', 'w');
         fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
 
