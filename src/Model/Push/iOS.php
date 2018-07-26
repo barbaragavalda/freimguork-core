@@ -12,11 +12,8 @@ class iOS extends Base {
     private $APNS_CERT = null;
     private $APNS_PASSWORD = null;
 
-    private $apns = null;
     private $payload = null;
     private $tokens = null;
-
-
 
     public function __construct( $message, $tokens, $urlScheme = '' ){
         parent::__construct();
@@ -29,12 +26,6 @@ class iOS extends Base {
         $this->APNS_HOST = $pushConfig['ios_host'];
         $this->APNS_CERT = $pushConfig['ios_cert'];
         $this->APNS_PASSWORD = $pushConfig['ios_password'];
-
-        //open socket
-        $streamContext = stream_context_create();
-        stream_context_set_option($streamContext, 'ssl', 'local_cert', $this->APNS_CERT);
-        stream_context_set_option($streamContext, 'ssl', 'passphrase', $this->APNS_PASSWORD);
-        $this->apns = stream_socket_client('ssl://' . $this->APNS_HOST . ':' . self::APNS_PORT, $error, $errorString, 2, STREAM_CLIENT_CONNECT, $streamContext);
 
         //info
         $this->payload['aps'] = array(
@@ -50,18 +41,24 @@ class iOS extends Base {
 
     public function send(){
         foreach($this->tokens as $token){
+            $streamContext = stream_context_create();
+            stream_context_set_option($streamContext, 'ssl', 'local_cert', $this->APNS_CERT);
+            stream_context_set_option($streamContext, 'ssl', 'passphrase', $this->APNS_PASSWORD);
+            $apns = stream_socket_client('ssl://' . $this->APNS_HOST . ':' . self::APNS_PORT, $error, $errorString, 2, STREAM_CLIENT_CONNECT, $streamContext);
+
             $apnsMessage = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $token)) . chr(0) . chr(strlen($this->payload)) . $this->payload;
-            $result = fwrite($this->apns, $apnsMessage);
+            $result = fwrite($apns, $apnsMessage);
             if( $result > 0 ) $this->ok += 1;
 
             $this->log($result, $token);
+
+            socket_close($apns);
+            fclose($apns);
         }
     }
 
     public function close(){
-        //close socket
-        socket_close($this->apns);
-        fclose($this->apns);
+        // nothing
     }
 
     private function log($result, $token){
