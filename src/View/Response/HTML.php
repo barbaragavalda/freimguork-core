@@ -18,7 +18,7 @@ class HTML extends Response {
     /**
      * @var array $twigFolders . Directory of the template files
      */
-    private $twigFolders = '';
+    private $twigFolders = array();
 
     /**
      * set the header of the response

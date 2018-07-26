@@ -364,12 +364,15 @@ class File extends Model {
     }
 
     public function getSize($suffix = ''){
-        $size = getimagesize($this->getRelativePath($suffix));
-        if( $size !== false ){
-            return array(
-                'width' => $size[0],
-                'height' => $size[1]
-            );
+        $relativePath = $this->getRelativePath($suffix);
+        if( file_exists($relativePath) ){
+            $size = getimagesize($relativePath);
+            if( $size !== false ){
+                return array(
+                    'width' => $size[0],
+                    'height' => $size[1]
+                );
+            }
         }
         return false;
     }
