@@ -50,6 +50,10 @@ class Model {
         return $this->id;
     }
 
+    public function setID($id){
+        $this->id = $id;
+    }
+
     protected function setKey(){
         $this->key = $this->id . '_' . $this->created . '_';
     }
