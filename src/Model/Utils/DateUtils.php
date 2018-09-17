@@ -92,11 +92,12 @@ class DateUtils {
 
     /**
      * time between two dates
-     * @param $startDate    \DateTime
-     * @param $endDate      \DateTime
+     * @param $startDate            \DateTime
+     * @param $endDate              \DateTime
+     * @param $fullDescription      boolean
      * @return string       "'y' years 'm' months 'd' days 'h' hours 'm' minutes 's' seconds"
      */
-    public static function describeTimeBetween($startDate, $endDate){
+    public static function describeTimeBetween($startDate, $endDate, $fullDescription = true){
         $interval = $startDate->diff($endDate);
 
         $time = array();
@@ -107,7 +108,11 @@ class DateUtils {
         self::addTime($interval->i, 'minuto', 'minutos', $time);
         self::addTime($interval->s, 'segundo', 'segundos', $time);
 
-        return implode(' ', $time);
+        if( $fullDescription ){
+            return implode(' ', $time);
+        }else{
+            return $time[0];
+        }
     }
 
     private function addTime($value, $singular, $plural, &$time){
