@@ -10,6 +10,7 @@ abstract class Base extends Model {
 
     protected $total = 0;
     protected $ok = 0;
+    protected $error = '';
 
     public function getResult(){
         return $this->result;
@@ -31,8 +32,10 @@ abstract class Base extends Model {
         $ko = $this->total - intval($this->ok);
 
         $result = ' enviada a ' . $this->ok .' dispositivos';
-        if( $ko > 0 ) $result .= ' <span style="color:red">(fallido en ' . $ko . ' dispositivos)</span>';
-        else $result .= ' (ninguno fallido)';
+        if( $ko > 0 ){
+            $result .= ' <span style="color:red">(fallido en ' . $ko . ' dispositivos)</span>';
+            if( $this->error != '' ) $result .= ' <div style="color:red"><b>ERROR RESPUESTA: </b>' . $this->error . '</div>';
+        }else $result .= ' (ninguno fallido)';
         return $result;
     }
 

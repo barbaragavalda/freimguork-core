@@ -51,28 +51,33 @@ class Android extends Base {
         // Execute post
         $result = curl_exec($this->ch);
         $result = json_decode($result, true);
-        $this->ok = $result['success'];
+        if( $result == null || $result == 'null' ){
+            $this->error = curl_error($this->ch);
+            $this->log(array('curl_error' => $this->error));
+        }else{
+            $this->ok = $result['success'];
 
-        for($i=0; $i<count($result['results']); $i++){
-            if( array_key_exists('error', $result['results'][$i]) ){
-                switch ($result['results'][$i]['error']){
-                    case 'NotRegistered':
-                        $this->deleteDevice($this->tokens[$i]);
-                        $this->total -= 1;
-                        break;
-                    case 'InvalidParameters':
-                        $this->tokens[$i] = str_replace('"', '', $this->tokens[$i]);
-                        if( $this->tokens[$i] == 'BLACKLISTED' ){
+            for($i=0; $i<count($result['results']); $i++){
+                if( array_key_exists('error', $result['results'][$i]) ){
+                    switch ($result['results'][$i]['error']){
+                        case 'NotRegistered':
                             $this->deleteDevice($this->tokens[$i]);
                             $this->total -= 1;
-                        }
-                        break;
+                            break;
+                        case 'InvalidParameters':
+                            $this->tokens[$i] = str_replace('"', '', $this->tokens[$i]);
+                            if( $this->tokens[$i] == 'BLACKLISTED' ){
+                                $this->deleteDevice($this->tokens[$i]);
+                                $this->total -= 1;
+                            }
+                            break;
+                    }
+
                 }
-
             }
-        }
 
-        $this->log($result);
+            $this->log($result);
+        }
     }
 
     public function close(){
