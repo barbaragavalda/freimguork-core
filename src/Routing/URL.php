@@ -44,6 +44,9 @@ class URL{
     }
 
     public function getController(){
+        if( is_array($this->controller) ){
+            return $this->controller[0];
+        }
         return $this->controller;
     }
 
