@@ -31,7 +31,7 @@ class Android extends Base {
             'Content-Type: application/json'
         );
         $this->fields = array(
-            'registration_ids'  => $this->tokens,
+            /*'registration_ids'  => $this->tokens,*/
             'data'              => array( "title" => $this->APP_NAME, "message" => $message )
         );
         if( $urlScheme ){
@@ -40,54 +40,63 @@ class Android extends Base {
     }
 
     public function send(){
-        // Open connection
-        $this->ch = curl_init();
-        curl_setopt( $this->ch, CURLOPT_URL, self::URL);
-        curl_setopt( $this->ch, CURLOPT_POST, true );
-        curl_setopt( $this->ch, CURLOPT_HTTPHEADER, $this->headers);
-        curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt( $this->ch, CURLOPT_POSTFIELDS, json_encode( $this->fields ) );
+        $this->tokens = array_chunk($this->tokens, 300);
 
-        // Execute post
-        $result = curl_exec($this->ch);
-        $result = json_decode($result, true);
-        if( $result == null || $result == 'null' ){
-            $this->error = curl_error($this->ch);
-            $this->log(array('curl_error' => $this->error));
-        }else{
-            $this->ok = $result['success'];
+        foreach($this->tokens as $registrationIDs){
+            // set tokens
+            $this->fields['registration_ids'] = $registrationIDs;
 
-            for($i=0; $i<count($result['results']); $i++){
-                if( array_key_exists('error', $result['results'][$i]) ){
-                    switch ($result['results'][$i]['error']){
-                        case 'NotRegistered':
-                            $this->deleteDevice($this->tokens[$i]);
-                            $this->total -= 1;
-                            break;
-                        case 'InvalidParameters':
-                            $this->tokens[$i] = str_replace('"', '', $this->tokens[$i]);
-                            if( $this->tokens[$i] == 'BLACKLISTED' ){
+            // Open connection
+            $this->ch = curl_init();
+            curl_setopt( $this->ch, CURLOPT_URL, self::URL);
+            curl_setopt( $this->ch, CURLOPT_POST, true );
+            curl_setopt( $this->ch, CURLOPT_HTTPHEADER, $this->headers);
+            curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $this->ch, CURLOPT_POSTFIELDS, json_encode( $this->fields ) );
+
+            // Execute post
+            $result = curl_exec($this->ch);
+            $result = json_decode($result, true);
+            if( $result == null || $result == 'null' ){
+                $this->error = curl_error($this->ch);
+                $this->log(array('curl_error' => $this->error));
+            }else{
+                $this->ok += $result['success'];
+
+                for($i=0; $i<count($result['results']); $i++){
+                    if( array_key_exists('error', $result['results'][$i]) ){
+                        switch ($result['results'][$i]['error']){
+                            case 'NotRegistered':
                                 $this->deleteDevice($this->tokens[$i]);
                                 $this->total -= 1;
-                            }
-                            break;
-                    }
+                                break;
+                            case 'InvalidParameters':
+                                $this->tokens[$i] = str_replace('"', '', $this->tokens[$i]);
+                                if( $this->tokens[$i] == 'BLACKLISTED' ){
+                                    $this->deleteDevice($this->tokens[$i]);
+                                    $this->total -= 1;
+                                }
+                                break;
+                        }
 
+                    }
                 }
+
+                $this->log($result, $registrationIDs);
             }
 
-            $this->log($result);
+            //close socket
+            curl_close($this->ch);
         }
     }
 
     public function close(){
-        //close socket
-        curl_close($this->ch);
+        // nothing
     }
 
-    private function log($result){
+    private function log($result, $tokens){
         if( $this->mysql->tableExists('appacman_log_android') ){
-            $tokens = array_map(function($n){ return '"' . $n . '"'; }, $this->tokens);
+            $tokens = array_map(function($n){ return '"' . $n . '"'; }, $tokens);
             $tokens = implode(',', $tokens);
             $sql = '
                 SELECT GROUP_CONCAT(id_user) AS users
