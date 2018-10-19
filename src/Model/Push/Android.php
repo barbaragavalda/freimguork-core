@@ -16,7 +16,7 @@ class Android extends Base {
     private $fields = array();
     private $ch = null;
 
-    public function __construct( $message, $tokens, $urlScheme = '' ){
+    public function __construct( $message, $tokens, $urlScheme = ''){
         parent::__construct();
 
         $config = Config::getInstance();
@@ -31,7 +31,6 @@ class Android extends Base {
             'Content-Type: application/json'
         );
         $this->fields = array(
-            /*'registration_ids'  => $this->tokens,*/
             'data'              => array( "title" => $this->APP_NAME, "message" => $message )
         );
         if( $urlScheme ){

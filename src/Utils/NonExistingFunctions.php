@@ -44,3 +44,9 @@ if(!function_exists('getallheaders')){
         return $headers;
     }
 }
+
+if( !function_exists('boolval')) {
+    function boolval($var){
+        return !! $var;
+    }
+}

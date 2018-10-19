@@ -16,9 +16,7 @@ class iOS extends Base {
     private $payload = null;
     private $tokens = null;
 
-
-
-    public function __construct( $message, $tokens, $urlScheme = '' ){
+    public function __construct( $message, $tokens, $urlScheme = ''){
         parent::__construct();
 
         $this->tokens = $tokens;

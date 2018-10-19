@@ -16,6 +16,10 @@ abstract class Base extends Model {
         return $this->result;
     }
 
+    public function getOk(){
+        return $this->ok;
+    }
+
     public function deleteDevice($token){
         $token = str_replace('"', '', $token);
         $sql = '
