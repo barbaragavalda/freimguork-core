@@ -8,7 +8,7 @@ use Core\Model\Utils\Mail;
 use Core\Utils\Config;
 
 class Push extends Model {
-
+    
     /**
      * @var string  app name
      */
@@ -18,14 +18,14 @@ class Push extends Model {
      * @var string  deep linking protocol
      */
     protected $urlScheme = '';
-
+    
     /**
      * @var string  email to sent the report
      */
     private $reportEmail = '';
-
+    
     /**
-     * @var bool    save push statistics
+     * @var bool  save oush statistics
      */
     private $hasStatistics = false;
 
@@ -38,7 +38,7 @@ class Push extends Model {
         $this->appName = $webserviceConfig['app_name'];
         $this->urlScheme = $webserviceConfig['url_scheme'];
         $this->reportEmail = $config->get('push', 'report');
-
+        
         $this->hasStatistics = $this->mysql->tableExists('appacman_push_statistic');
     }
 
@@ -59,7 +59,7 @@ class Push extends Model {
             }
             $deepLink .= 'push_id=' . $this->id;
         }
-
+        
         $urlScheme = '';
         if( $deepLink != '' ) $urlScheme = $this->urlScheme . $deepLink;
 
@@ -71,7 +71,7 @@ class Push extends Model {
                 case 'ios':     $ios = $tokens;     break;
             }
         }
-
+        
         $devices = 0;
         $emailMessage = '<p><b>Texto: </b>' . $message . '</p>';
         if( count($android) ){
@@ -91,7 +91,7 @@ class Push extends Model {
             if( IS_DEV ){
                 echo '<p>Fake push notification for iOS: <b>'.$message.'</b></p>';
             }else{
-                $pushiOS = new iOS($message, $ios, $urlScheme);
+                $pushiOS = new iOSPush($message, $ios, $urlScheme);
                 $pushiOS->send();
                 $pushiOS->close();
 
@@ -102,9 +102,9 @@ class Push extends Model {
 
         $this->statistics($message, $emailMessage, $devices);
     }
-
+    
     private function statistics($message, $emailMessage, $devices){
-        if( $message && $this->reportEmail ){
+        if( $message && $emailMessage && $this->reportEmail ){
             $email = new Mail();
             $email->send(
                 null,
@@ -113,7 +113,7 @@ class Push extends Model {
                 $emailMessage
             );
         }
-
+        
         if( $this->hasStatistics ){
             $statistics = new Statistic($this->id);
             $statistics->update(0, $devices);

@@ -10,6 +10,7 @@ abstract class Base extends Model {
 
     protected $total = 0;
     protected $ok = 0;
+    protected $ko = 0;
     protected $error = '';
 
     public function getResult(){
@@ -33,7 +34,14 @@ abstract class Base extends Model {
     }
 
     public function getEmailResult(){
-        $ko = $this->total - intval($this->ok);
+        $ko = $this->ko;
+        if( $ko == 0 ){
+            // android
+            $ko = $this->total - intval($this->ok);
+        }else{
+            // ios
+            $this->ok = $this->total - $this->ko;
+        }
 
         $result = ' enviada a ' . $this->ok .' dispositivos';
         if( $ko > 0 ){
@@ -47,4 +55,4 @@ abstract class Base extends Model {
 
     abstract public function close();
 
-} 
+}
