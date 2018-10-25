@@ -35,11 +35,9 @@ abstract class Base extends Model {
 
     public function getEmailResult(){
         $ko = $this->ko;
-        if( $ko == 0 ){
-            // android
+        if( get_class($this) == 'Core\\Model\\Push\\Android' ){
             $ko = $this->total - intval($this->ok);
         }else{
-            // ios
             $this->ok = $this->total - $this->ko;
         }
 
