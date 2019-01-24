@@ -3,6 +3,7 @@
 namespace Core\View\Response;
 
 use Core\Utils\Config;
+use Core\View\Extension\Twig;
 
 /**
  * Class HTMLResponse
@@ -59,6 +60,7 @@ class HTML extends Response {
         $loader = new \Twig_Loader_Filesystem($this->twigFolders);
         $twig = new \Twig_Environment($loader, $twigConfig);
         $twig->addExtension( new \Twig_Extensions_Extension_I18n() );
+        $twig->addExtension( new Twig() );
         if( array_key_exists('twig_filters', $info) ){
             foreach($info['twig_filters'] as $filter){
                 $twig->addFilter($filter);
