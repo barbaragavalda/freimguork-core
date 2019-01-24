@@ -58,6 +58,10 @@ class Model {
         $this->key = $this->id . '_' . $this->created . '_';
     }
 
+    public function getCreated(){
+        return $this->created;
+    }
+
     protected function getFile($fileID, $suffix = ''){
         $file = new File($fileID);
         return $file->getAbsolutePath($suffix);

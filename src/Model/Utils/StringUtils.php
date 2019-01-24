@@ -115,4 +115,12 @@ class StringUtils {
         return str_replace($a, $b, $str);
     }
 
+    public static function checkEmbedYoutube($url){
+        $url = str_replace('youtu.be', 'youtube.com', $url);
+        if( strpos($url, 'embed') === false ){
+            $url = str_replace('youtube.com/', 'youtube.com/embed/', $url);
+        }
+        return $url;
+    }
+
 }
