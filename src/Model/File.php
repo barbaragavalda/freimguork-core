@@ -67,8 +67,11 @@ class File extends Model {
     }
 
     private function getFileNameWidthSuffix($suffix = ''){
-        $fileName = $this->fileName;
-        if( $suffix != '' ) $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '-' . $suffix . '.' . pathinfo($fileName, PATHINFO_EXTENSION);
+        $fileBasename = pathinfo($this->fileName, PATHINFO_FILENAME);
+        $fileExtension = strtolower( pathinfo($this->fileName, PATHINFO_EXTENSION) );
+
+        $fileName = $fileBasename . '.' . $fileExtension;
+        if( $suffix != '' ) $fileName = $fileBasename . '-' . $suffix . '.' . $fileExtension;
         return $fileName;
     }
 
