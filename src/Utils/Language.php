@@ -32,9 +32,11 @@ class Language extends Model {
         return $this->language;
     }
 
-    public function __construct($userLanguage, $currentProject){
-        $this->initLanguage($userLanguage, $currentProject);
-        $this->initGettext();
+    public function __construct($userLanguage = null, $currentProject = null){
+        if( $userLanguage != null && $currentProject != null ){
+            $this->initLanguage($userLanguage, $currentProject);
+            $this->initGettext();
+        }
     }
 
     /**
@@ -66,7 +68,7 @@ class Language extends Model {
     /**
      * initializes the gettext function with the current language
      */
-    private function initGettext(){
+    public function initGettext(){
         putenv('LC_ALL='.$this->culture);
         setlocale(LC_ALL, $this->culture);
 
@@ -99,9 +101,13 @@ class Language extends Model {
 
     /**
      * get culture depending on language
+     * @param $languageID
      * @return string
      */
-    private function initCulture(){
+    public function initCulture($languageID = null){
+        if( $languageID !== null ){
+            $this->language = $languageID;
+        }
         $this->culture = $this->configuration[ $this->language ];
     }
 
