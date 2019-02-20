@@ -78,7 +78,7 @@ class URL{
                 $userPetition = str_replace('?'.$query, '', $userPetition);
                 $params = explode('&', $query);
                 foreach($params as $param){
-                    $info = explode('=', $param);
+                    $info = explode('=', $param, 2);
                     $this->params[$info[0]] = $info[1];
                 }
             }
