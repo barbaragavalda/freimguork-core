@@ -26,6 +26,7 @@ class Language extends Model {
         'en' => 'en_UK',
         'fr' => 'fr_FR',
         'it' => 'it_IT',
+        'eu' => 'eu_ES',
     );
 
     public function getLanguage(){
@@ -33,7 +34,7 @@ class Language extends Model {
     }
 
     public function __construct($userLanguage = null, $currentProject = null){
-        if( $userLanguage != null && $currentProject != null ){
+        if( $currentProject != null ){
             $this->initLanguage($userLanguage, $currentProject);
             $this->initGettext();
         }
