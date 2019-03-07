@@ -138,7 +138,7 @@ class File extends Model {
             // 1. delete from table
             $sql = '
                 UPDATE '.$tableDelete.'
-                SET '.$field.' = ""
+                SET '.$field.' = "0"
                 WHERE id_'.$tableDelete.' = :id
             ';
             $params = array(
