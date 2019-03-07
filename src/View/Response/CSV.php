@@ -1,5 +1,5 @@
 <?php
-
+    
 namespace Core\View\Response;
 
 /**
@@ -7,32 +7,37 @@ namespace Core\View\Response;
  * @package Core\Views\Response
  */
 class CSV extends Response{
-
+    
     /**
-     * field to be downloaded
+     * tableName
      * @var string
      */
-    private $fieldName = '';
-
+    private $tableName = '';
+    
     public function __construct($tableName){
-        $this->fieldName = $tableName . '-' . date('Y-m-d-His') . '.csv';
+        $this->tableName = $tableName;
     }
-
+    
     /**
      * creates a file and downloads it through the browser
      * @param array $info . Is always null
      */
     public function initResponse( $info = null ) {
+        $file = $this->tableName . '-' . date('Y-m-d-His') . '.csv';
+        if( array_key_exists('export_without_date', $info) ){
+            $file = $this->tableName . '.csv';
+        }
+        
         $this->setHeaderType('application/csv');
-        $this->setHeader('Content-Disposition', 'attachment; filename="' . $this->fieldName . '";');
-
+        $this->setHeader('Content-Disposition', 'attachment; filename="' . $file . '";');
+        
         $f = fopen('php://output', 'w');
         fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
-
+        
         // titles
         array_unshift($info['csv']['titles'], '');
         fputcsv($f, $info['csv']['titles'], ';');
-
+        
         // list
         foreach($info['csv']['list'] as $item){
             fputcsv($f, $item, ';');
