@@ -14,7 +14,7 @@
     "require": {
         "php": ">=5.3",
         "twig/twig": "^2.0",
-        "twig/extensions": "^1.5",
+        "twig/extensions": "^1.5.4",
         "digitalnature/php-ref": "dev-master",
         "phpmailer/phpmailer": "~5.0",
         "simplesoftwareio/simple-qrcode": "~1"
