@@ -23,7 +23,7 @@ class Mail {
      * display name
      * @var string
      */
-    private $name = '';
+    protected $name = '';
 
     /**
      * email account
