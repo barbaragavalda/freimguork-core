@@ -229,21 +229,26 @@ class File extends Model {
         return $this->saveToDatabase();
 	}
 
-    private function prepareSave($fileName){
+    public function prepareSave($fileName, $withID = true){
         $this->id = $this->mysql->getMaxId('appacman_file');
-        $this->fileName = $this->id . '_' . StringUtils::removeSpecialCharacters($fileName);
-
+        
+        $this->fileName = '';
+        if ($withID) {
+            $this->fileName = $this->id . '_';
+        }
+        $this->fileName .= StringUtils::removeSpecialCharacters($fileName);
+        
         // prepare path
         $this->initFolder();
         $this->createFolder($this->relativeFolder);
         $this->createFolder($this->relativeFolder . $this->folderID);
     }
 
-    private function saveToDatabase(){
+    public function saveToDatabase(){
         $sql = '
-                INSERT INTO appacman_file
-                SET id_appacman_file = :id, file_name = :file_name
-            ';
+            INSERT INTO appacman_file
+            SET id_appacman_file = :id, file_name = :file_name
+        ';
         $params = array(
             'id'        => array('value'=>$this->id,        'type'=>\PDO::PARAM_INT),
             'file_name' => array('value'=>$this->fileName,  'type'=>\PDO::PARAM_STR)
