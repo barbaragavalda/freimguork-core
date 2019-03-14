@@ -22,8 +22,10 @@ class OneWay {
     }
 
     public static function check($encrypted, $unencrypted, $key){
-        if( hash_equals($encrypted, self::encrypt($unencrypted, $key)) ){
-            return true;
+        if( $encrypted && $unencrypted ){
+            if( hash_equals($encrypted, self::encrypt($unencrypted, $key)) ){
+                return true;
+            }
         }
         return false;
     }
