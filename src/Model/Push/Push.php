@@ -82,8 +82,8 @@ class Push extends Model {
                 $pushAndroid->send();
                 $pushAndroid->close();
 
-                $devices += $pushAndroid->getOk();
                 $emailMessage .= '<p><b>Android: </b>' . $pushAndroid->getEmailResult() . '</p>';
+                $devices += $pushAndroid->getOk();
             }
         }
 
@@ -95,8 +95,8 @@ class Push extends Model {
                 $pushiOS->send();
                 $pushiOS->close();
 
-                $devices += $pushiOS->getOk();
                 $emailMessage .= '<p><b>iOS: </b>' . $pushiOS->getEmailResult() . '</p>';
+                $devices += $pushiOS->getOk();
             }
         }
 
@@ -116,7 +116,7 @@ class Push extends Model {
         
         if( $this->hasStatistics ){
             $statistics = new Statistic($this->id);
-            $statistics->update(0, $devices);
+            $statistics->update($devices);
         }
     }
 
