@@ -3,6 +3,7 @@
 namespace Core\Model\Push;
 
 use Appacman\Model\Push\Statistic;
+use Appacman\Model\Utils\Admin;
 use Core\Model\Model;
 use Core\Model\Utils\Mail;
 use Core\Utils\Config;
@@ -18,11 +19,6 @@ class Push extends Model {
      * @var string  deep linking protocol
      */
     protected $urlScheme = '';
-    
-    /**
-     * @var string  email to sent the report
-     */
-    private $reportEmail = '';
     
     /**
      * @var bool  save oush statistics
@@ -104,11 +100,12 @@ class Push extends Model {
     }
     
     private function statistics($message, $emailMessage, $devices){
-        if( $message && $emailMessage && $this->reportEmail ){
+        if( $message && $emailMessage ){
+            $admin = new Admin();
             $email = new Mail();
             $email->send(
                 null,
-                array( array('email' => $this->reportEmail, 'name' => $this->appName) ),
+                $admin->getEmails(),
                 'Estadísticas notificaciones push',
                 $emailMessage
             );
