@@ -61,12 +61,7 @@ class DateUtils {
      */
     public static function minutesBetween($startDate, $endDate){
         $interval = $startDate->diff($endDate);
-        if( !date('I', $startDate->getTimestamp()) && date('I', $endDate->getTimestamp()) ){
-            $interval->h--;
-        }
-        if( date('I', $startDate->getTimestamp()) && !date('I', $endDate->getTimestamp()) ){
-            $interval->h++;
-        }
+        $interval = self::checkInterval($startDate, $endDate, $interval);
 
         $minutes = $interval->d * 24 * 60;
         $minutes += $interval->h * 60;
@@ -84,13 +79,13 @@ class DateUtils {
     public static function timeBetween($startDate, $endDate){
         if( $startDate < $endDate ){
             $interval = $startDate->diff($endDate);
+            $interval = self::checkInterval($startDate, $endDate, $interval);
 
             $hours = $interval->y * 8760;
             $hours += $interval->m * 1440;
             $hours += $interval->d * 24;
             $hours += $interval->h;
 
-            $hours = substr('0'.$hours, -2);
             $minutes = substr('0'.$interval->i, -2);
             return $hours . ':' . $minutes;
         }
@@ -106,6 +101,7 @@ class DateUtils {
      */
     public static function describeTimeBetween($startDate, $endDate, $fullDescription = true){
         $interval = $startDate->diff($endDate);
+        $interval = self::checkInterval($startDate, $endDate, $interval);
 
         $time = array();
         self::addTime($interval->y, 'año', 'años', $time);
@@ -120,6 +116,23 @@ class DateUtils {
         }else{
             return $time[0];
         }
+    }
+
+    /**
+     * check summer time zone
+     * @param $startDate            \DateTime
+     * @param $endDate              \DateTime
+     * @param $interval             \DateInterval
+     * @return \DateInterval
+     */
+    private static function checkInterval($startDate, $endDate, $interval){
+        if( !date('I', $startDate->getTimestamp()) && date('I', $endDate->getTimestamp()) ){
+            $interval->h--;
+        }
+        if( date('I', $startDate->getTimestamp()) && !date('I', $endDate->getTimestamp()) ){
+            $interval->h++;
+        }
+        return $interval;
     }
 
     private function addTime($value, $singular, $plural, &$time){
