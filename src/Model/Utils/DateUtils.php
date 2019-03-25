@@ -61,7 +61,14 @@ class DateUtils {
      */
     public static function minutesBetween($startDate, $endDate){
         $interval = $startDate->diff($endDate);
-        $minutes = $interval->days * 24 * 60;
+        if( !date('I', $startDate->getTimestamp()) && date('I', $endDate->getTimestamp()) ){
+            $interval->h--;
+        }
+        if( date('I', $startDate->getTimestamp()) && !date('I', $endDate->getTimestamp()) ){
+            $interval->h++;
+        }
+
+        $minutes = $interval->d * 24 * 60;
         $minutes += $interval->h * 60;
         $minutes += $interval->i;
 
