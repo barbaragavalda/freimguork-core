@@ -12,7 +12,7 @@ use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
  * o
  *
  * @package Core\Routing
- * @author B√†rbara Gavald√† <bgavalda@appaqui.com>
+ * @author B‡rbara Gavald‡ <bgavalda@appaqui.com>
  * @date 25/10/2017
  */
 class File extends Model {
@@ -281,7 +281,7 @@ class File extends Model {
         $ext = $this->getImageExtension();
         if( $ext == 'jpg' || $ext == 'jpeg' ){
             $image = imagecreatefromjpeg($path);
-            $exif = exif_read_data($path);
+            $exif = @exif_read_data($path);
             if (empty($exif['Orientation'])) {
                 return false;
             }
