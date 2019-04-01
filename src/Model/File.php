@@ -170,14 +170,16 @@ class File extends Model {
 
 	public function deleteFromDisk(){
         $filePath = $this->getRelativePath();
-        if( file_exists($filePath) ) unlink($filePath);
+        if( file_exists($filePath) && !is_dir($filePath) ) unlink($filePath);
 
         $fileName = pathinfo($filePath, PATHINFO_FILENAME);
         $files = scandir($this->relativeFolder . $this->folderID . '/');
         foreach($files as $file){
-            if( StringUtils::startsWidth($file, $fileName) ){
-                $suffixFilePath = $this->relativeFolder . $this->folderID . '/' . $file;
-                if( file_exists($suffixFilePath) ) unlink($suffixFilePath);
+            if( $file != '.' && $file != '..' ){
+                if( StringUtils::startsWidth($file, $fileName) ){
+                    $suffixFilePath = $this->relativeFolder . $this->folderID . '/' . $file;
+                    if( file_exists($suffixFilePath) ) unlink($suffixFilePath);
+                }
             }
         }
 	}
