@@ -6,7 +6,7 @@ use Core\Utils\Config;
 
 class Android extends Base {
 
-    const URL = 'https://android.googleapis.com/gcm/send';
+    const URL = 'https://fcm.googleapis.com/fcm/send';
 
     private $API_KEY = null;
     private $APP_NAME = null;
@@ -31,7 +31,7 @@ class Android extends Base {
             'Content-Type: application/json'
         );
         $this->fields = array(
-            'data'              => array( "title" => $this->APP_NAME, "message" => $message )
+            'data'              => array( 'title' => $this->APP_NAME, 'message' => $message )
         );
         if( $urlScheme ){
             $this->fields['data']['link'] = $urlScheme;
