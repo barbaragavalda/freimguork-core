@@ -36,6 +36,12 @@ class Mail {
      * @var string
      */
     private $password = '';
+    
+    /**
+     * timeout php mailer
+     * @var string
+     */
+    private $timeout = 30;
 
     public function __construct(){
         $config = Config::getInstance();
@@ -46,6 +52,9 @@ class Mail {
         $this->name = $mailConfig['name'];
         $this->username = $mailConfig['username'];
         $this->password = $mailConfig['password'];
+        if( $mailConfig['timeout'] ){
+            $this->timeout = $mailConfig['timeout'];
+        }
     }
 
     /**
@@ -67,6 +76,7 @@ class Mail {
             $mail->Username = $this->username;
             $mail->Password = $this->password;
             $mail->Port = $this->port;
+            $mail->Timeout = $this->timeout;
             $mail->SMTPOptions = array(
                 'ssl' => array(
                     'verify_peer' => false,
