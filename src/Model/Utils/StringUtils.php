@@ -128,22 +128,22 @@ class StringUtils {
     }
 
     public static function validateNifCif($string){
-        if (strlen($string) < 9)
-            return false;
-        if ($string[0] == "(" && $string[strlen($string) - 1] == ")") {
-            return true;
-        }
-        $string = strtoupper($string);
         return self::validateCif($string) || self::validateNif($string);
     }
 
     // Valida CIFs
-    private static function validateCif($cif /*$check*/){
+    public static function validateCif($cif){
+        if (strlen($cif) < 9)
+            return false;
+        if ($cif[0] == "(" && $cif[strlen($cif) - 1] == ")") {
+            return true;
+        }
+        $cif = strtoupper($cif);
         $cif_codes = 'JABCDEFGHI';
-
+        
         $sum = (string)self::getCifSum($cif);
         $n = (10 - substr($sum, -1)) % 10;
-
+        
         if (preg_match('/^[ABCDEFGHJNPQRSUVW]{1}/', $cif)) {
             if (in_array($cif[0], array('A', 'B', 'E', 'H'))) {
                 // Numerico
@@ -160,27 +160,33 @@ class StringUtils {
                 }
             }
         }
-
+        
         return false;
     }
 
     // Valida NIFs (DNIs y NIFs especiales)
-    private static function validateNif($nif /*$check*/){
+    public static function validateNif($nif){
+        if (strlen($nif) < 9)
+            return false;
+        if ($nif[0] == "(" && $nif[strlen($nif) - 1] == ")") {
+            return true;
+        }
+        $nif = strtoupper($nif);
         $nif_codes = 'TRWAGMYFPDXBNJZSQVHLCKE';
-
+        
         $sum = (string)self::getCifSum($nif);
         $n = 10 - substr($sum, -1);
-
+        
         if (preg_match('/^[0-9]{8}[A-Z]{1}$/', $nif)) {
             // DNIs
             $num = substr($nif, 0, 8);
-
+            
             return ($nif[8] == $nif_codes[$num % 23]);
         } elseif (preg_match('/^[XYZ][0-9]{7}[A-Z]{1}$/', $nif)) {
             // NIEs normales
             $tmp = substr($nif, 1, 7);
             $tmp = strtr(substr($nif, 0, 1), 'XYZ', '012') . $tmp;
-
+            
             return ($nif[8] == $nif_codes[$tmp % 23]);
         } elseif (preg_match('/^[KLM]{1}/', $nif)) {
             // NIFs especiales
@@ -189,7 +195,7 @@ class StringUtils {
             // NIE extraño
             return true;
         }
-
+        
         return false;
     }
 
