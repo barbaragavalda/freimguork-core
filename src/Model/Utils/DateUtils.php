@@ -143,4 +143,16 @@ class DateUtils {
         }
     }
 
+    /**
+     * calculate age of a person
+     * @param $date
+     * @param string $format
+     * @return int
+     */
+    public static function age($date, $format = self::FORMAT_DATE_USER){
+        return \DateTime::createFromFormat($format, $date)
+            ->diff(new \DateTime())
+            ->y;
+    }
+
 }
