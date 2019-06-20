@@ -19,7 +19,7 @@ class Projects{
 
     const LANG_PATTERN = '{lang}';
     const LANG_PATTERN_REG_EXPRESSION = '/(\w*{lang}\w*)/';
-    const LANG_CODE_REG_EXPRESSION = '([a-z]{2})';
+    const LANG_CODE_REG_EXPRESSION = '[a-z]{2}';
 
     /**
      * @var \Core\Utils\Config $config. load some configs
@@ -110,10 +110,10 @@ class Projects{
                 if( preg_match($domainRegExp, $currentURL) ){
                     $found = true;
                 }else if( StringUtils::endsWidth($domain, self::LANG_PATTERN) || StringUtils::endsWidth($domain, self::LANG_PATTERN.'/') ){
-                    //if not found, try if the user didb't enter the language
+                    //if not found, try if the user didn't enter the language
                     $domainRegExp = str_replace(self::LANG_PATTERN .'/', '', $domain);
                     $domainRegExp = str_replace(self::LANG_PATTERN, '', $domainRegExp);
-                    $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(.*)/';
+                    $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(' . self::LANG_CODE_REG_EXPRESSION . '\/)/';
                     if( preg_match($domainRegExp, $currentURL) ){
                         $found = true;
                     }
@@ -159,7 +159,7 @@ class Projects{
             $i = 1;
             foreach($explode as $part){
                 if( $part == self::LANG_PATTERN ){
-                    $domainRegExp .= self::LANG_CODE_REG_EXPRESSION;
+                    $domainRegExp .= '(' . self::LANG_CODE_REG_EXPRESSION . ')';
                     $langPosition = $i;
                 }else{
                     $domainRegExp .= '(' . $part . ')';

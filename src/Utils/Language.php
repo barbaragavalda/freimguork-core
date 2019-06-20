@@ -97,6 +97,7 @@ class Language extends Model {
         if( count($language) ){
             $session = Session::getInstance();
             $session->set('lang_id', $language[0]['id_appacman_lang']);
+            $session->set('lang_culture', $this->language);
         }
     }
 
