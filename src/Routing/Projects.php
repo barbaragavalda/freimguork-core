@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Core\Routing;
 
@@ -113,9 +113,15 @@ class Projects{
                     //if not found, try if the user didn't enter the language
                     $domainRegExp = str_replace(self::LANG_PATTERN .'/', '', $domain);
                     $domainRegExp = str_replace(self::LANG_PATTERN, '', $domainRegExp);
+
                     $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(' . self::LANG_CODE_REG_EXPRESSION . '\/)/';
                     if( preg_match($domainRegExp, $currentURL) ){
                         $found = true;
+                    }else{
+                        $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(' . self::LANG_CODE_REG_EXPRESSION . ')/';
+                        if( preg_match($domainRegExp, $currentURL) ){
+                            $found = true;
+                        }
                     }
                 }
 

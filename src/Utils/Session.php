@@ -76,7 +76,6 @@ class Session{
      */
     public function delete($key){
         if( isset($_SESSION[$key]) ){
-            //$this->save($key, '', -self::DURATION);
             unset($_SESSION[$key]);
         }
     }
