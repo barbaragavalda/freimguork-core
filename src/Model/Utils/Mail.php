@@ -63,9 +63,10 @@ class Mail {
      * @param $to               array( array("email"=>"", "name"=>"") )
      * @param $subject          string
      * @param $message          string HTML
+     * @param $attachments      array
      * @return bool
      */
-    public function send($from, $to, $subject, $message, $attach = null){
+    public function send($from, $to, $subject, $message, $attachments = array()){
         $mail = new \PHPMailer();
         try{
             // Server settings
@@ -104,8 +105,10 @@ class Mail {
             $mail->Subject = $subject;
             $mail->Body = $message;
             $mail->AltBody = strip_tags($message);
-            if( $attach && $attach != null ){
-                $mail->addAttachment($attach);
+            if( count($attachments) ){
+                foreach($attachments as $attachment){
+                    $mail->addAttachment($attachment);
+                }
             }
 
             $mail->send();
