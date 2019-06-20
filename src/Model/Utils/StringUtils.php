@@ -209,4 +209,13 @@ class StringUtils {
         return $sum;
     }
 
+    public static function generateToken($length){
+        $permittedChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $token = '';
+        for($i=0; $i<$length; $i++){
+            $token .= $permittedChars[ rand(0, strlen($permittedChars)-1) ];
+        }
+        return $token;
+    }
+
 }
