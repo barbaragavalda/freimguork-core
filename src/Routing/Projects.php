@@ -110,18 +110,16 @@ class Projects{
                 if( preg_match($domainRegExp, $currentURL) ){
                     $found = true;
                 }else if( StringUtils::endsWidth($domain, self::LANG_PATTERN) || StringUtils::endsWidth($domain, self::LANG_PATTERN.'/') ){
+
                     //if not found, try if the user didn't enter the language
                     $domainRegExp = str_replace(self::LANG_PATTERN .'/', '', $domain);
                     $domainRegExp = str_replace(self::LANG_PATTERN, '', $domainRegExp);
+                    $domainRegExp = str_replace('/', '\/', $domainRegExp);
 
-                    $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(' . self::LANG_CODE_REG_EXPRESSION . '\/)/';
-                    if( preg_match($domainRegExp, $currentURL) ){
+                    $domainRegExpLangSlash = '/' . $domainRegExp . '(' . self::LANG_CODE_REG_EXPRESSION . '\/)/';
+
+                    if( preg_match($domainRegExpLangSlash, $currentURL) ){
                         $found = true;
-                    }else{
-                        $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(' . self::LANG_CODE_REG_EXPRESSION . ')/';
-                        if( preg_match($domainRegExp, $currentURL) ){
-                            $found = true;
-                        }
                     }
                 }
 
