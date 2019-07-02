@@ -124,7 +124,7 @@ class StringUtils {
     }
 
     public static function formatPrice($value, $currency = '&euro;'){
-        return number_format($value, 2, '.', '') . $currency;
+        return number_format($value, 2, '.', ',') . $currency;
     }
 
     public static function validateNifCif($string){
