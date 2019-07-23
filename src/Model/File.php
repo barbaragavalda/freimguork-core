@@ -173,12 +173,14 @@ class File extends Model {
         if( file_exists($filePath) && !is_dir($filePath) ) unlink($filePath);
 
         $fileName = pathinfo($filePath, PATHINFO_FILENAME);
-        $files = scandir($this->relativeFolder . $this->folderID . '/');
-        foreach($files as $file){
-            if( $file != '.' && $file != '..' ){
-                if( StringUtils::startsWidth($file, $fileName) ){
-                    $suffixFilePath = $this->relativeFolder . $this->folderID . '/' . $file;
-                    if( file_exists($suffixFilePath) ) unlink($suffixFilePath);
+        if( $fileName ){
+            $files = scandir($this->relativeFolder . $this->folderID . '/');
+            foreach($files as $file){
+                if( $file != '.' && $file != '..' ){
+                    if( StringUtils::startsWidth($file, $fileName) ){
+                        $suffixFilePath = $this->relativeFolder . $this->folderID . '/' . $file;
+                        if( file_exists($suffixFilePath) ) unlink($suffixFilePath);
+                    }
                 }
             }
         }

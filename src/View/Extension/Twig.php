@@ -13,7 +13,8 @@ class Twig extends AbstractExtension{
         ];
     }
 
-    public function formatPrice($price){
-        return StringUtils::formatPrice($price);
+    public function formatPrice($price, $decimals = 2, $thousandsSep = '.', $decPoint = ','){
+        return StringUtils::formatPrice($price, $decimals, $thousandsSep, $decPoint);
     }
+    
 }
