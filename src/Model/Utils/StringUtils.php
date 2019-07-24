@@ -123,8 +123,8 @@ class StringUtils {
         return $url;
     }
 
-    public static function formatPrice($value, $currency = '&euro;'){
-        return number_format($value, 2, '.', ',') . $currency;
+    public static function formatPrice($value, $decimals = 2, $thousandsSep = '.', $decPoint = ',', $currency = '&euro;'){
+        return number_format($value, $decimals, $decPoint, $thousandsSep) . $currency;
     }
 
     public static function validateNifCif($string){

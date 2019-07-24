@@ -43,7 +43,7 @@ class Projects{
         $this->config = Config::getInstance();
         $this->url = new URL();
         $this->searchProject();
-	}
+    }
 
     /**
      * language set on URL (if any)
@@ -96,7 +96,7 @@ class Projects{
     /**
      * search for the current project
      */
-	private function searchProject(){
+    private function searchProject(){
         try{
             $projects = $this->config->getProjects();
 
