@@ -43,7 +43,7 @@ class Projects{
         $this->config = Config::getInstance();
         $this->url = new URL();
         $this->searchProject();
-    }
+	}
 
     /**
      * language set on URL (if any)
@@ -96,12 +96,23 @@ class Projects{
     /**
      * search for the current project
      */
-    private function searchProject(){
+	private function searchProject(){
         try{
             $projects = $this->config->getProjects();
 
             $currentURL = $this->url->getUserURL();
             $defaultProject = new Project();
+            foreach($projects as $domain => $project){
+                if( array_key_exists('isDefault', $project) && $project['isDefault'] ){
+                    $domainRegExpInfo = $this->getRegularExpression($domain, $project);
+                    $domainRegExp = $domainRegExpInfo['regExp'];
+
+                    $defaultProject->setURL($domain);
+                    $defaultProject->setRegularExpression($domainRegExp);
+                    $defaultProject->setInfo($project);
+                }
+            }
+
             foreach($projects as $domain => $project){
                 $domainRegExpInfo = $this->getRegularExpression($domain, $project, $defaultProject);
                 $domainRegExp = $domainRegExpInfo['regExp'];
@@ -122,7 +133,7 @@ class Projects{
                         $found = true;
                     }
                 }
-
+                
                 if( $found ){
                     $this->currentProject = new Project();
                     $this->currentProject->setURL($domain);
@@ -147,12 +158,12 @@ class Projects{
 
     /**
      * regular expresion for the URL
-     * @param $domain           current domain
-     * @param $project          current project
-     * @param $defaultProject   by reference, default project if no project found
+     * @param $domain           string  current domain
+     * @param $project          array   current project
+     * @param $defaultProject   \Core\Routing\Project by reference, default project if no project found
      * @return array            regular expression for the doamin and language position
      */
-    private function getRegularExpression($domain, $project, &$defaultProject){
+    private function getRegularExpression($domain, $project, &$defaultProject = null){
         $domainRegExp = '(' . $domain . ')';
         $langPosition = 0;
 
@@ -173,10 +184,12 @@ class Projects{
         }
 
         $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(.*)/';
-        if( $pos == 0 && $defaultProject->isEmpty() ){
-            $defaultProject->setURL($domain);
-            $defaultProject->setRegularExpression($domainRegExp);
-            $defaultProject->setInfo($project);
+        if( $defaultProject != null ){
+            if( $pos == 0 && $defaultProject->isEmpty() ){
+                $defaultProject->setURL($domain);
+                $defaultProject->setRegularExpression($domainRegExp);
+                $defaultProject->setInfo($project);
+            }
         }
 
         return array(
