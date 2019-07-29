@@ -40,6 +40,9 @@ class CSV extends Response{
         
         // list
         foreach($info['csv']['list'] as $item){
+            foreach($item as &$value){
+                $value = strip_tags($value);
+            }
             fputcsv($f, $item, ';');
         }
     }
