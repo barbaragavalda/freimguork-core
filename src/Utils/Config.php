@@ -67,11 +67,26 @@ class Config{
             APPACMAN_DIR . 'config/'
         );
 
-        //load projects info
-        $projectFile = 'projects' . (( IS_DEV ) ? '.dev' : '.prod') . '.php';
-        $this->projects = $this->load($this->folders[0] . $projectFile);
-        $this->baseDomain = $this->projects['base_domain'];
-        unset($this->projects['base_domain']);
+        // load projects info
+        $projectFile = $this->folders[0] . 'projects.php';
+        if( !file_exists($projectFile) ){
+            $projectFile = $this->folders[0] . 'projects' . (( IS_DEV ) ? '.dev' : '.prod') . '.php';
+        }
+        $this->projects = $this->load($projectFile);
+        if( array_key_exists('base_domain', $this->projects) ){
+            $this->baseDomain = $this->projects['base_domain'];
+            unset($this->projects['base_domain']);
+        }
+
+        // create base domain if not specified
+        if( !$this->baseDomain ){
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
+            $this->baseDomain = $protocol . $_SERVER['SERVER_NAME'];
+            if( !in_array($_SERVER['SERVER_PORT'], array(80, 443)) ){
+                $this->baseDomain .= ':' . $_SERVER['SERVER_PORT'];
+            }
+            $this->baseDomain .= '/';
+        }
     }
 
     /**
@@ -168,7 +183,7 @@ class Config{
         $files = @scandir($projectFolder);
         if( $files !== false ){
             foreach($files as $file){
-                if( !is_dir($projectFolder . $file) && !in_array($file, array('.', '..', '.DS_Store', 'projects.dev.php', 'projects.prod.php')) ){
+                if( !is_dir($projectFolder . $file) && pathinfo($file, PATHINFO_EXTENSION) == 'php' && !in_array($file, array('.', '..', '.DS_Store', 'projects.php', 'projects.dev.php', 'projects.prod.php')) ){
                     // load config
                     $this->config = array_merge_recursive($this->config, $this->load($projectFolder . $file));
                 }

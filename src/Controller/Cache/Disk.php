@@ -33,7 +33,7 @@ class Disk extends Cache {
         $environment = IS_DEV ? 'dev' : 'prod';
         $this->folder = DIR_ROOT . 'src/cache/' . $environment . '/freimguork/';
         if( !is_dir($this->folder) ){
-            mkdir($this->folder, 0777, true);
+            @mkdir($this->folder, 0777, true);
         }
     }
 

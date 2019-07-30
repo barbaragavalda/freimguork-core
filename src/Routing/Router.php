@@ -28,7 +28,7 @@ class Router{
         $this->appFolder = $appFolder;
     }
 
-    public function doRouting( $routing){
+    public function doRouting($routing){
         $this->url->setRouting($routing);
         $this->url->loadParams();
     }
@@ -36,7 +36,6 @@ class Router{
     public function getController(){
         $controller = $this->url->getController();
         $namespace = $this->appFolder . '\\Controller\\';
-
         if (class_exists($namespace . $controller)) {
             return $namespace . $controller;
         } else {

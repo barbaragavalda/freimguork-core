@@ -82,13 +82,17 @@ class Projects{
      * @return string
      */
     public function getDomains($language){
-        $protocol = $this->url->getProtocol();
-
-        //ap domain
+        //app domain
         $url = str_replace('{lang}', $language, $this->currentProject->getURL());
+        if( !StringUtils::startsWidth($url, 'http') ){
+           $url = $this->config->getBaseDomain() . $url;
+        }
+        if( !StringUtils::endsWidth($url, '/') ){
+            $url .= '/';
+        }
 
         return array(
-            'app'       => $protocol . $url,
+            'app'       => $url,
             'static'    => $this->config->getBaseDomain()
         );
     }
