@@ -94,4 +94,16 @@ class Model {
         // or return array('ttl' => 300, 'key' => $params);
     }
 
+    /**
+     * Magic method that tries to call the function in the MySQL class instead of this (SQL Manager) class.
+     * @param $function_name String name of the function.
+     * @param $args array with the parameters passed to the function
+     * @return mixed return of the called function
+     */
+    public function __call($function_name, $args){
+        if( method_exists($this->mysql, $function_name) /*|| method_exists($this, '__call')*/ ){
+            return call_user_func_array(array($this->mysql, $function_name), $args);
+        }
+    }
+
 }

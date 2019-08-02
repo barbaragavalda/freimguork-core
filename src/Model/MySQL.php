@@ -17,7 +17,7 @@ use Core\Utils\Exception;
 class MySQL {
 
     /**
-     * @var \Core\Utils\MySQL. singleton
+     * @var \Core\Model\MySQL. singleton
      */
     private static $instance;
 
@@ -57,11 +57,11 @@ class MySQL {
                 $dsn = 'mysql:dbname=' . $database . ';host=' . $host;
                 try {
                     $this->pdo = new \PDO($dsn, $user, $password);
-                    $this->pdo->exec("SET CHARACTER SET utf8");
-                    $this->pdo->exec("SET SESSION group_concat_max_len = 10000000");
-                    $this->pdo->exec("SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+                    $this->pdo->exec('SET CHARACTER SET utf8');
+                    $this->pdo->exec('SET SESSION group_concat_max_len = 10000000');
+                    $this->pdo->exec('SET GLOBAL sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"');
                 } catch (\PDOException $e) {
-                    throw new Exception("PDO connection error: <em>" . $e->getMessage() . "</em>");
+                    throw new Exception('PDO connection error: <em>' . $e->getMessage() . '</em>');
                 }
             }
         }
@@ -233,8 +233,41 @@ class MySQL {
         if (method_exists($this->pdo, $function_name)) {
             return call_user_func_array(array($this->pdo, $function_name), $args);
         } else {
-            throw new Exception("The method <em>" . $function_name . "</em> doesn't exists on PDO. Check <a href='http://es.php.net/manual/en/book.pdo.php' target='_blank'>the manual</a> for more information");
+            throw new Exception('The method <em>' . $function_name . '</em> doesn\'t exists on PDO. Check <a href="http://es.php.net/manual/en/book.pdo.php" target="_blank">the manual</a> for more information');
         }
+    }
+
+    /**
+     * Starts MySQL
+     * @return bool if we were able to start MySQL
+     */
+    public function start(){
+        $answer = shell_exec('sudo /etc/init.d/mysql start 2>&1');
+        if(strcmp(trim($answer),'Starting mysql (via systemctl): mysql.service.')==0) $ok = true;
+        else $ok = false;
+        return $ok;
+    }
+
+    /**
+     * Stops MySQL
+     * @return bool if we were able to stop MySQL
+     */
+    public function stop(){
+        $answer = shell_exec('sudo /etc/init.d/mysql stop 2>&1');
+        if(strcmp(trim($answer),'Stopping mysql (via systemctl): mysql.service.')==0) $ok = true;
+        else $ok = false;
+        return $ok;
+    }
+
+    /**
+     * Restarts MySQL
+     * @return bool if we were able to start and stop MySQL
+     */
+    public function restart(){
+        $ok = true;
+        $ok *= $this->stop();
+        $ok *= $this->start();
+        return $ok;
     }
 
 }
