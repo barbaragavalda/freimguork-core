@@ -7,6 +7,7 @@ use Core\View\Response\HTML;
 use Core\View\Response\HTMLResponse;
 use Core\View\Response\Json;
 use Core\View\Response\Redirect;
+use Core\View\Response\XML;
 
 /**
  * Class View
@@ -61,7 +62,7 @@ class View{
 
     /**
      * renders a twig template
-     * @param string $file. Temaplte name
+     * @param string $file. Template name
      */
     public function template( $file ) {
         if( !$this->response ) {
@@ -76,6 +77,17 @@ class View{
     public function json() {
         if( !$this->response ) {
             $this->response = new Json();
+            $this->render();
+        }
+    }
+
+    /**
+     * renders a xml with twig template
+     * @param string $file. Template name
+     */
+    public function xml( $file ){
+        if( !$this->response ) {
+            $this->response = new XML($file, $this->projectFolder);
             $this->render();
         }
     }

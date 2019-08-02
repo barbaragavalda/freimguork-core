@@ -137,7 +137,7 @@ class Projects{
                         $found = true;
                     }
                 }
-                
+
                 if( $found ){
                     $this->currentProject = new Project();
                     $this->currentProject->setURL($domain);

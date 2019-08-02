@@ -38,7 +38,7 @@ abstract class Controller {
     protected $parts = array();
 
     /**
-     * @var \Core\View $view. View class
+     * @var \Core\View\View $view. View class
      */
     private $view = array();
 
@@ -127,7 +127,7 @@ abstract class Controller {
     }
 
     /**
-     * renders a template file (twig)
+     * renders a template file (twig) to html format
      * @param string $file . Name of the template file
      */
     protected function template($file) {
@@ -141,6 +141,15 @@ abstract class Controller {
     protected function json(){
         $this->view->setInfo($this->info);
         $this->view->json();
+    }
+
+    /**
+     * renders a template file (twig) to xml format
+     * @param string $file . Name of the template file
+     */
+    protected function xml($file){
+        $this->view->setInfo($this->info);
+        $this->view->xml($file);
     }
 
     /**
