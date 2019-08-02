@@ -13,7 +13,7 @@ namespace Core\Routing;
  */
 class Project{
 
-    private $url = '';
+    private $url = null;
     private $regularExpression = '';
     private $langPosition = 0;
 
@@ -22,7 +22,7 @@ class Project{
     private $languages = array();
 
     public function isEmpty(){
-        return $this->url == '';
+        return $this->url === null;
     }
 
     public function getURL(){

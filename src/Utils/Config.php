@@ -231,7 +231,7 @@ class Config{
      * @return mixed
      * @throws \Exception
      */
-    private function load($file){
+    public function load($file){
         if( @include($file) ) {
             return $config;
         }else{
