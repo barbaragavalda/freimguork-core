@@ -64,16 +64,20 @@ class View{
      * @param string $file. Temaplte name
      */
     public function template( $file ) {
-        $this->response = new HTML($file, $this->projectFolder);
-        $this->render();
+        if( !$this->response ) {
+            $this->response = new HTML($file, $this->projectFolder);
+            $this->render();
+        }
     }
 
     /**
      * renders a json file
      */
     public function json() {
-        $this->response = new Json();
-        $this->render();
+        if( !$this->response ) {
+            $this->response = new Json();
+            $this->render();
+        }
     }
 
     /**
@@ -83,11 +87,13 @@ class View{
      * @throws exception
      */
     public function redirect( $url, $status ) {
-        try{
-            $this->response = new Redirect($url, $status);
-            $this->render();
-        } catch (Exception $e) {
-            $e->showException();
+        if( !$this->response ){
+            try{
+                $this->response = new Redirect($url, $status);
+                $this->render();
+            } catch (Exception $e) {
+                $e->showException();
+            }
         }
     }
 
@@ -96,8 +102,10 @@ class View{
      * @param $tableName. Table name for file name
      */
     public function export($tableName){
-        $this->response = new CSV($tableName);
-        $this->render();
+        if( !$this->response ){
+            $this->response = new CSV($tableName);
+            $this->render();
+        }
     }
 
 }
