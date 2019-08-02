@@ -115,6 +115,47 @@ class StringUtils {
         return str_replace($a, $b, $str);
     }
 
+    public static function replaceAccents($str){
+        $a = array('À','Ä','Á','È','Ë','É','Ì','Ï','Í','Ò','Ö','Ó','Ù','Ü','Ú','à','ä','á','è','ë','é','ì','ï','í','ò','ö','ó','ù','ü','ú','¡','!','¿','?');
+        $b = array(
+            htmlentities('À',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ä',ENT_QUOTES,"UTF-8"),
+            htmlentities('Á',ENT_QUOTES,"UTF-8"),
+            htmlentities('È',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ë',ENT_QUOTES,"UTF-8"),
+            htmlentities('É',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ì',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ï',ENT_QUOTES,"UTF-8"),
+            htmlentities('Í',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ò',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ö',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ó',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ù',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ü',ENT_QUOTES,"UTF-8"),
+            htmlentities('Ú',ENT_QUOTES,"UTF-8"),
+            htmlentities('à',ENT_QUOTES,"UTF-8"),
+            htmlentities('ä',ENT_QUOTES,"UTF-8"),
+            htmlentities('á',ENT_QUOTES,"UTF-8"),
+            htmlentities('è',ENT_QUOTES,"UTF-8"),
+            htmlentities('ë',ENT_QUOTES,"UTF-8"),
+            htmlentities('é',ENT_QUOTES,"UTF-8"),
+            htmlentities('ì',ENT_QUOTES,"UTF-8"),
+            htmlentities('ï',ENT_QUOTES,"UTF-8"),
+            htmlentities('í',ENT_QUOTES,"UTF-8"),
+            htmlentities('ò',ENT_QUOTES,"UTF-8"),
+            htmlentities('ö',ENT_QUOTES,"UTF-8"),
+            htmlentities('ó',ENT_QUOTES,"UTF-8"),
+            htmlentities('ù',ENT_QUOTES,"UTF-8"),
+            htmlentities('ü',ENT_QUOTES,"UTF-8"),
+            htmlentities('ú',ENT_QUOTES,"UTF-8"),
+            htmlentities('¡',ENT_QUOTES,"UTF-8"),
+            htmlentities('!',ENT_QUOTES,"UTF-8"),
+            htmlentities('¿',ENT_QUOTES,"UTF-8"),
+            htmlentities('?',ENT_QUOTES,"UTF-8")
+        );
+        return str_replace($a, $b, $str);
+    }
+
     public static function checkEmbedYoutube($url){
         $url = str_replace('youtu.be', 'youtube.com', $url);
         if( strpos($url, 'embed') === false ){

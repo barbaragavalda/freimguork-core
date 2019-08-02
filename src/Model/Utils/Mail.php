@@ -7,54 +7,44 @@ use Core\Utils\Exception;
 
 class Mail {
 
-    /**
-     * SMTP host
-     * @var string
-     */
-    private $host = '';
+    private $mail = null;
 
-    /**
-     * SMTP port
-     * @var int
-     */
-    private $port = 0;
+    private $config = array();
 
-    /**
-     * display name
-     * @var string
-     */
-    protected $name = '';
+    private $fromEmail = '';
 
-    /**
-     * email account
-     * @var string
-     */
-    protected $username = '';
-
-    /**
-     * password account
-     * @var string
-     */
-    private $password = '';
-    
-    /**
-     * timeout php mailer
-     * @var string
-     */
-    private $timeout = 30;
+    private $fromName = '';
 
     public function __construct(){
         $config = Config::getInstance();
-        $mailConfig = $config->get('mail');
+        $this->config = $config->get('mail');
 
-        $this->host = $mailConfig['host'];
-        $this->port = $mailConfig['port'];
-        $this->name = $mailConfig['name'];
-        $this->username = $mailConfig['username'];
-        $this->password = $mailConfig['password'];
-        if( $mailConfig['timeout'] ){
-            $this->timeout = $mailConfig['timeout'];
+        $this->fromEmail = $this->config['username'];
+        if( array_key_exists('from_name', $this->config) ) $this->fromName = $this->config['from_name'];
+    }
+
+    private function getSender(){
+        if( $this->mail == null ){
+            $this->mail = new \PHPMailer();
+
+            $this->mail->Host = $this->config['host'];
+            $this->mail->Port = $this->config['port'];
+            $this->mail->From = $this->config['username'];
+            $this->mail->Username = $this->config['username'];
+            $this->mail->Password = $this->config['password'];
+
+            if( array_key_exists('timeout', $this->config) ) $this->mail->Timeout = $this->config['timeout'];
+
+            $this->mail->isSMTP();
+            $this->mail->SMTPAuth = true;
+            $this->mail->SMTPSecure = 'tls';
+            if( array_key_exists('protocol', $this->config) ) $this->mail->Mailer = $this->config['protocol'];
+            if( array_key_exists('smtp_auth', $this->config) ) $this->mail->SMTPAuth = $this->config['smtp_auth'];
+            if( array_key_exists('smtp_secure', $this->config) ) $this->mail->SMTPSecure = $this->config['smtp_secure'];
+
+            return $this->mail;
         }
+        return $this->mail;
     }
 
     /**
@@ -67,34 +57,13 @@ class Mail {
      * @return bool
      */
     public function send($from, $to, $subject, $message, $attachments = array()){
-        $mail = new \PHPMailer();
+        $mail = $this->getSender();
         try{
-            // Server settings
-            $mail->isSMTP();
-            $mail->SMTPAuth = true;
-            $mail->SMTPSecure = 'tls';
-            $mail->Host = $this->host;
-            $mail->Username = $this->username;
-            $mail->Password = $this->password;
-            $mail->Port = $this->port;
-            $mail->Timeout = $this->timeout;
-            $mail->SMTPOptions = array(
-                'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                )
-            );
-
             // Recipients
-            if( $from == null ){
-                $from = array(
-                    'name' => $this->name,
-                    'email' => $this->username
-                );
+            if( $from != null ){
+                $mail->setFrom($from['email'], $from['name']);
             }
-            $mail->setFrom($from['email'], $from['name']);
-            $mail->addReplyTo($this->username, $this->name);
+            $mail->addReplyTo($this->fromEmail, $this->fromName);
             foreach($to as $recipient){
                 $mail->addAddress($recipient['email'], $recipient['name']);
             }
@@ -112,11 +81,74 @@ class Mail {
             }
 
             $mail->send();
+            $this->mail = null;
             return true;
         } catch (Exception $e) {
-            //echo 'Mailer Error: ' . $mail->ErrorInfo;
             return false;
         }
+    }
+
+    private $data = array();
+    private $header = true;
+    private $footer = true;
+    private $signature = true;
+
+    public function sendTwig($to, $subject, $template = 'new_mail.twig'){
+        $mail = $this->getSender();
+
+        if( isset($to) ) $mail->addAddress($to);
+        $mail->Subject = $subject;
+
+        $this->data['header'] = $this->header;
+        $this->data['footer'] = $this->footer;
+        $this->data['signature'] = $this->signature;
+        $this->data['hostname'] = gethostname();
+
+        // We prepare the html for the e-mail
+        $response = new \Core\View\Response\Mail('Mail/'.$template);
+        $response->initResponse($this->data);
+
+        $mail->Body = StringUtils::replaceAccents( $response->get() );
+        $mail->AltBody = strip_tags($mail->Body);
+        $success = $mail->Send();
+
+        $tries=1;
+        while( (!$success) && ($tries < 5) ){
+            sleep(5);
+            $success = $mail->Send();
+            $tries++;
+        }
+
+        //TODO keep some kind of log of what we sent.
+        $this->mail = null;
+        if( !$success ){
+            echo $mail->ErrorInfo;
+            return false;
+        }
+        else return true;
+    }
+    /**
+     * Adds an attachment to the mail.
+     * @param $path String with the path to the file to attach.
+     * @param $name String containing the name shown as attached file.
+     */
+    public function addAttachment($path,$name){
+        $mail = $this->getSender();
+        $mail->AddAttachment($path,$name);
+    }
+
+    public function addAddress($to){
+        $mail = $this->getSender();
+        $mail->AddAddress($to);
+    }
+
+    /**
+     * Assigns variables to be shown on the mail
+     * @param string $var_name containing the name of the variable.
+     * @param mixed $value the value of the variable
+     */
+    public function assign($var_name, $value){
+        $this->data[$var_name] = $value;
     }
 
 }
