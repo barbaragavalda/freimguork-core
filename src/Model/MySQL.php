@@ -27,6 +27,16 @@ class MySQL {
     private $databaseName = '';
 
     /**
+     * @var string $user
+     */
+    private $user = '';
+
+    /**
+     * @var string $password
+     */
+    private $password = '';
+
+    /**
      * @var null. Database connection
      */
     private $pdo = null;
@@ -46,17 +56,15 @@ class MySQL {
         $dbConfig = $config->get('db');
 
         if( !empty($dbConfig) && count($dbConfig) ){
-            $this->databaseName =  $dbConfig['name'];
-
+            $this->databaseName = $dbConfig['name'];
+            $this->user = $dbConfig['user'];
+            $this->password = $dbConfig['password'];
             $host       = $dbConfig['host'];
-            $user       = $dbConfig['user'];
-            $password   = $dbConfig['password'];
-            $database   = $this->databaseName;
 
-            if( $host != '' && $user != '' && $database != '' ){
-                $dsn = 'mysql:dbname=' . $database . ';host=' . $host;
+            if( $host != '' && $this->user != '' && $this->databaseName != '' ){
+                $dsn = 'mysql:dbname=' . $this->databaseName . ';host=' . $host;
                 try {
-                    $this->pdo = new \PDO($dsn, $user, $password);
+                    $this->pdo = new \PDO($dsn, $this->user, $this->password);
                     $this->pdo->exec('SET CHARACTER SET utf8');
                     $this->pdo->exec('SET SESSION group_concat_max_len = 10000000');
                     $this->pdo->exec('SET GLOBAL sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"');
@@ -69,7 +77,7 @@ class MySQL {
 
     /**
      * initializes the instance (if needed) based on the singleton pattern
-     * @return \Core\Config
+     * @return \Core\Model\MySQL
      */
     public static function getInstance(){
         if( self::$instance === null) {
@@ -80,9 +88,9 @@ class MySQL {
 
     /**
      * return the result of a simple query
-     * @param string $sql . Query
-     * @param array $params . binding params
-     * @return array. Result
+     * @param string $sql       Query
+     * @param array $params     binding params
+     * @return array            Result
      */
     public function query($sql, $params = array()) {
         if( $this->pdo != null ){
@@ -95,6 +103,7 @@ class MySQL {
             $this->success = $this->statement->execute();
             return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
         }
+        return array();
     }
 
     public function getState(){
@@ -104,7 +113,7 @@ class MySQL {
     /**
      * new free ID form specific table
      * @param string $table
-     * @return number
+     * @return number|bool
      */
     public function getMaxId( $table ){
         $sql = '
@@ -129,9 +138,8 @@ class MySQL {
     }
 
     /**
-     * tableExists
      * check if table exisrts
-     * @param string $table. table name
+     * @param string $table     table name
      * @return bool
      */
     public function tableExists($table){
@@ -154,10 +162,9 @@ class MySQL {
     }
 
     /**
-     * fieldExists
      * check if field exists in table
-     * @param $table
-     * @param $field
+     * @param string $table     table name
+     * @param string $field     field name
      * @return bool
      */
     public function fieldExists($table, $field){
@@ -182,10 +189,9 @@ class MySQL {
     }
 
     /**
-     * fieldDescription
      * data type and mandatory information of specific field
-     * @param string $table. table name
-     * @param string $field. field name
+     * @param string $table     table name
+     * @param string $field     field name
      * @return array
      */
     public function fieldDescription($table, $field){
@@ -202,7 +208,7 @@ class MySQL {
                 'required' => $required
             );
         }
-        return '';
+        return array();
     }
 
     private function field($table, $field){
@@ -224,9 +230,9 @@ class MySQL {
 
     /**
      * magic method that allows to invoke any method of PDO
-     * @param string $function_name . Function name
-     * @param array $args . Parameters of the function
-     * @return mixed. result of the function
+     * @param string $function_name     Function name
+     * @param array $args               Parameters of the function
+     * @return mixed                    result of the function
      * @throws Exception
      */
     public function __call($function_name, $args) {
@@ -238,8 +244,76 @@ class MySQL {
     }
 
     /**
+     * Dumps a given database to a given file.
+     * @param string $bd        is the database to dump.
+     * @param string $file      is the file where it'll be dumped to.
+     * @param bool $inserts     if we need to add the table content to the dumped DB.
+     * @return string           with the executed command.
+     */
+    public function dumpDB($bd,$file,$inserts=false){
+        echo 'Generanting file for '.$bd.'...\n';
+
+        if( $inserts )  $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :NOM_FITXER 2>&1';
+        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :NOM_FITXER 2>&1';
+
+        $command = str_replace(':USER',$this->user,$command);
+        $command = str_replace(':PASSWORD',$this->password,$command);
+        $command = str_replace(':BD',$bd,$command);
+        $command = str_replace(':NOM_FITXER',$file,$command);
+
+        echo $command;
+        return system($command);
+    }
+
+    /**
+     * Imports a database into MySQL given a filename.
+     * @param string $db_name       name to use in the local MySQL for the database
+     * @param string $sqlFile       path where the sql file to import is located.
+     * @param string $sqlTmpFile    path where the temporary sql file must be stored.
+     */
+    public function importDatabase($db_name,$sqlFile,$sqlTmpFile){
+        echo 'Importing '.$sqlFile.' as '.$db_name.' ('.$sqlTmpFile.')...\n';
+        // We remove the database if it exists
+        system('rm '.$sqlTmpFile);
+        $this->query('DROP database '.$db_name);
+        $command = 'cp '.$sqlFile.' '.$sqlTmpFile;
+        system($command);
+
+        // We get the name of the database to import.
+        $db_info = shell_exec('cat '.$sqlTmpFile.' | grep USE');
+        $db_info = explode('`',$db_info);
+        $db_current_name = $db_info[1];
+
+        // We replace the current name with the name we want to use.
+        $command = 'echo "%s/'.$db_current_name.'/'.$db_name.'/g
+					w
+					q
+					" | ex '.$sqlTmpFile;
+        system($command);
+
+        // We import the new database to our mysql server
+        $command = 'mysql -u:USER -p:PASSWORD < '.$sqlTmpFile;
+        $command = str_replace(':USER',$this->user,$command);
+        $command = str_replace(':PASSWORD',$this->password,$command);
+        system($command);
+    }
+
+    /**
+     * This function compares two databases. It requires the installation of mysql-utilities (aptitude install mysql-utilities)
+     * @param string $current_db    with the current database.
+     * @param string $new_db        with the new database.
+     */
+    public function compareDatabase($current_db,$new_db){
+        echo 'Comparing databases '.$current_db.' and '.$new_db.'...\n';
+        $command = 'mysqldbcompare --server1=:USER::PASSWORD@localhost --server2=:USER::PASSWORD@localhost '.$current_db.':'.$new_db.' --run-all-tests --skip-data-check --skip-row-count';
+        $command = str_replace(':USER',$this->user,$command);
+        $command = str_replace(':PASSWORD',$this->password,$command);
+        system($command);
+    }
+
+    /**
      * Starts MySQL
-     * @return bool if we were able to start MySQL
+     * @return bool     if we were able to start MySQL
      */
     public function start(){
         $answer = shell_exec('sudo /etc/init.d/mysql start 2>&1');
@@ -250,7 +324,7 @@ class MySQL {
 
     /**
      * Stops MySQL
-     * @return bool if we were able to stop MySQL
+     * @return bool     if we were able to stop MySQL
      */
     public function stop(){
         $answer = shell_exec('sudo /etc/init.d/mysql stop 2>&1');
@@ -261,7 +335,7 @@ class MySQL {
 
     /**
      * Restarts MySQL
-     * @return bool if we were able to start and stop MySQL
+     * @return bool     if we were able to start and stop MySQL
      */
     public function restart(){
         $ok = true;
