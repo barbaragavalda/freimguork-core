@@ -3,7 +3,6 @@
 namespace Core\View\Response;
 
 use Core\Routing\Projects;
-use Core\View\Response\Response;
 
 /**
  * Class MailResponse
@@ -31,14 +30,19 @@ class Mail extends Response {
 
     /**
      * set the header of the response
-     * @param $file . Name of the template file
+     * @param string $file              Name of the template file
+     * @param string $projectFolder     Folder of views
      */
-    public function __construct($file){
+    public function __construct($file, $projectFolder = null){
         $this->file = $file;
 
-        $projects = new Projects();
-        $project = $projects->getProject();
-        $this->directory = DIR_ROOT . 'src/' . $project->getApp() . '/View/';
+        if( $projectFolder == null ){
+            $projects = new Projects();
+            $project = $projects->getProject();
+            $projectFolder = $project->getApp();
+        }
+        $this->directory = DIR_ROOT . 'src/' . $projectFolder . '/View/';
+
     }
 
     /**
