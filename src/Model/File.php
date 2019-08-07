@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\Model;
+
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
 use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
@@ -12,7 +13,7 @@ use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
  * o
  *
  * @package Core\Routing
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
+ * @author Bï¿½rbara Gavaldï¿½ <bgavalda@appaqui.com>
  * @date 25/10/2017
  */
 class File extends Model {
@@ -77,7 +78,6 @@ class File extends Model {
 
 	/**
 	 * load
-	 * @return string
 	 */
 	private function load(){
 		$this->initFolder();
@@ -89,17 +89,14 @@ class File extends Model {
 	}
 
 	/**
-	 * initFolder
 	 * we calculate to which subfolder the file is based on its id
      * every 20 files go to a different folder
-	 * @return int
 	 */
 	private function initFolder(){
 		$this->folderID = ceil( $this->id / 20 );
 	}
 
 	/**
-	 * getFileName
 	 * get the file name from the database
      * @return string
 	 */
@@ -121,9 +118,9 @@ class File extends Model {
 
     /**
      * delete image form database (1,2) and disc (3)
-     * @param $table
-     * @param $field
-     * @param $itemID
+     * @param string $table
+     * @param string $field
+     * @param integer $itemID
      * @return bool
      */
     public function delete($table, $field, $itemID){
@@ -189,7 +186,7 @@ class File extends Model {
     /**
      * save
      * saves image on disk and database
-     * @param $file
+     * @param array $file
      * @return false|int
      */
 	public function save($file){
@@ -207,8 +204,8 @@ class File extends Model {
 
     /**
      * copy file to uploads
-     * @param $fileName
-     * @param $origin
+     * @param string $fileName
+     * @param string $origin
      * @return false|int
      */
 	public function copy($fileName, $origin){
@@ -278,7 +275,7 @@ class File extends Model {
 
     /**
      * rotates the image if needed (only jpg images)
-     * @param $path
+     * @param string $path
      * @return bool
      */
     function checkImageOrientation($path){
@@ -310,7 +307,7 @@ class File extends Model {
 
     /**
      * resize image and save it
-     * @param $dimensions
+     * @param array $dimensions
      */
     public function resize($dimensions){
         foreach($dimensions as $dimension){
@@ -341,9 +338,9 @@ class File extends Model {
 
     /**
      * create image with new dimensions keeping aspect ratio
-     * @param $image
-     * @param $max_width
-     * @param $max_height
+     * @param string $image
+     * @param integer $max_width
+     * @param integer $max_height
      * @return resource
      */
     private function resizedImage($image, $max_width, $max_height){

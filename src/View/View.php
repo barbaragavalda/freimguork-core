@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\View;
+
 use Core\Utils\Exception;
 use Core\View\Response\CSV;
 use Core\View\Response\HTML;

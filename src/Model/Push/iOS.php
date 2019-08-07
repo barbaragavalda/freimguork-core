@@ -11,6 +11,9 @@ abstract class iOS extends Base {
     protected $APNS_CERT = null;
     protected $APNS_PASSWORD = null;
 
+    /**
+     * @var resource
+     */
     protected $apns = false;
     protected $currentSocket = 0;
 

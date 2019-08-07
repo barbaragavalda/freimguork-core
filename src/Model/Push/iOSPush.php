@@ -171,9 +171,9 @@ class iOSPush extends iOS {
             // update log
             if( $this->hasLog ){
                 $sql = '
-                UPDATE appacman_log_ios
-                SET result = :result
-                WHERE id_appacman_log_ios = :id
+                    UPDATE appacman_log_ios
+                    SET result = :result
+                    WHERE id_appacman_log_ios = :id
                 ';
                 $params = array(
                     'id'        => array('value' => $this->logIDs[$id], 'type' => \PDO::PARAM_INT),

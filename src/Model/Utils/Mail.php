@@ -49,11 +49,11 @@ class Mail {
 
     /**
      * send an email
-     * @param $from             array ("email"=>"", "name"=>"")
-     * @param $to               array( array("email"=>"", "name"=>"") )
-     * @param $subject          string
-     * @param $message          string HTML
-     * @param $attachments      array
+     * @param array $from           who is sending ("email"=>"", "name"=>"")
+     * @param array $to             array of recipients ( array("email"=>"", "name"=>"") )
+     * @param string $subject
+     * @param string $message       HTML text
+     * @param array $attachments    array of files to be attached
      * @return bool
      */
     public function send($from, $to, $subject, $message, $attachments = array()){
@@ -93,7 +93,7 @@ class Mail {
     private $footer = true;
     private $signature = true;
 
-    public function sendTwig($to, $subject, $template = 'new_mail.twig'){
+    public function sendTwig($to, $subject, $template = 'new_mail.twig', $projectFolder = null){
         $mail = $this->getSender();
 
         if( isset($to) ) $mail->addAddress($to);
@@ -105,7 +105,7 @@ class Mail {
         $this->data['hostname'] = gethostname();
 
         // We prepare the html for the e-mail
-        $response = new \Core\View\Response\Mail('Mail/'.$template);
+        $response = new \Core\View\Response\Mail('Mail/'.$template, $projectFolder);
         $response->initResponse($this->data);
 
         $mail->Body = StringUtils::replaceAccents( $response->get() );
@@ -129,8 +129,8 @@ class Mail {
     }
     /**
      * Adds an attachment to the mail.
-     * @param $path String with the path to the file to attach.
-     * @param $name String containing the name shown as attached file.
+     * @param string $path      with the path to the file to attach.
+     * @param string $name      containing the name shown as attached file.
      */
     public function addAttachment($path,$name){
         $mail = $this->getSender();
@@ -144,8 +144,8 @@ class Mail {
 
     /**
      * Assigns variables to be shown on the mail
-     * @param string $var_name containing the name of the variable.
-     * @param mixed $value the value of the variable
+     * @param string $var_name  containing the name of the variable.
+     * @param mixed $value      the value of the variable
      */
     public function assign($var_name, $value){
         $this->data[$var_name] = $value;

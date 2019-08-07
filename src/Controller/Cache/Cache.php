@@ -1,14 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: barbaragavaldabalada
- * Date: 19/03/14
- * Time: 19.34
- */
 
 namespace Core\Controller\Cache;
-use Core\Utils\Config;
 
+use Core\Utils\Config;
 
 /**
  * Class Disk
@@ -35,10 +29,10 @@ abstract class Cache {
 
     /**
      * check if cache is enabled to save something on it
-     * @param $key string       name of the cache file
-     * @param $content mixed    content to be cached
-     * @param $expiration int   cache expiration
-     * @return bool             can be saved or not
+     * @param string $key           name of the cache file
+     * @param mixed $content        content to be cached
+     * @param integer $expiration   cache expiration
+     * @return bool                 can be saved or not
      */
     public function set($key, $content, $expiration){
         if( $this->isCaching ){
@@ -52,7 +46,7 @@ abstract class Cache {
 
     /**
      * check if cache is enabled to return it's content
-     * @param $key string   name of the cache file
+     * @param string $key   name of the cache file
      * @return null|mixed   null = cannot be returned | mixed = cache content
      */
     public function get($key){
@@ -69,23 +63,23 @@ abstract class Cache {
 
     /**
      * saves cache
-     * @param $key string       name of the cache file
-     * @param $content mixed    to be cached
-     * @param $expiration int   cache expiration
-     * @return bool             can be saved or not
+     * @param string $key           name of the cache file
+     * @param mixed $content        to be cached
+     * @param integer $expiration   cache expiration
+     * @return bool                 can be saved or not
      */
     abstract protected function saveCache($key, $content, $expiration);
 
     /**
      * returns the content of the cache if isn't expired
-     * @param $key string   name of cache
+     * @param string $key   name of cache
      * @return null|mixed   null = cannot be returned | mixed = cache content
      */
     abstract protected function getCache($key);
 
     /**
      * delete a key from cache
-     * @param $key string   name of the cache file
+     * @param string $key   name of the cache file
      * @return bool         can be deleted or not
      */
     abstract protected function delete($key);

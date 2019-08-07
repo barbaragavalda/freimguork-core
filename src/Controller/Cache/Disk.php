@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: barbaragavaldabalada
- * Date: 19/03/14
- * Time: 19.32
- */
 
 namespace Core\Controller\Cache;
 
@@ -39,10 +33,10 @@ class Disk extends Cache {
 
     /**
      * saves a cache on disk
-     * @param $key string       name of the cache file
-     * @param $content mixed    content to be cached
-     * @param $expiration int   cache expiration
-     * @return bool         can be saved or not
+     * @param string $key           name of the cache file
+     * @param mixed $content        content to be cached
+     * @param integer $expiration   cache expiration
+     * @return bool                 can be saved or not
      */
     public function saveCache($key, $content, $expiration) {
         if ($expiration > 0) {
@@ -63,7 +57,7 @@ class Disk extends Cache {
 
     /**
      * returns the content of the cache if isn't expired
-     * @param $key string   name of the cache file
+     * @param string $key   name of the cache file
      * @return null|mixed   null = cannot be returned | mixed = cache content
      */
     public function getCache($key) {
@@ -86,8 +80,8 @@ class Disk extends Cache {
 
     /**
      * delete a cache file
-     * @param $key string   name of the cache file
-     * @return bool     can be deleted or not
+     * @param string $key   name of the cache file
+     * @return bool         can be deleted or not
      */
     public function delete($key) {
         $path = $this->getPath($key);
@@ -99,8 +93,8 @@ class Disk extends Cache {
 
     /**
      * get final path of the file that contains $key cache
-     * @param $key string   name of the cache file
-     * @return string   full path of the cahce file
+     * @param string $key   name of the cache file
+     * @return string       full path of the cahce file
      */
     private function getPath($key) {
         return $this->folder . $key;

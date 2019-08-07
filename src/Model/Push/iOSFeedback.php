@@ -2,8 +2,6 @@
 
 namespace Core\Model\Push;
 
-use Core\Utils\Config;
-
 class iOSFeedback extends iOS {
 
     public function __construct(){

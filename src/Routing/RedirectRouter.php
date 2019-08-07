@@ -13,9 +13,6 @@ namespace Core\Routing;
  */
 class RedirectRouter extends Router {
 
-    public function __construct( $appFolder = null ){
-    }
-
     public function getController(){
         return 'Core\\Controller\\RedirectLang';
     }

@@ -1,7 +1,6 @@
 <?php
 
 namespace Core\View\Response;
-use Core\Utils\Exception;
 
 /**
  * Class RedirectResponse
@@ -21,8 +20,8 @@ class Redirect extends Response{
 
     /**
      * set the header of the response
-     * @param $url
-     * @param $status
+     * @param string $url
+     * @param integer $status
      */
     public function __construct($url, $status){
         $this->url = $url;
@@ -33,7 +32,7 @@ class Redirect extends Response{
     /**
      * redirect to an specific URL
      * if mode debug is on, it stops on each redirection to inform to the user that a redirection is going to happen
-     * @param array $info . Is always null
+     * @param array $info   Is always null
      * @throws \Exception
      */
     public function initResponse( $info = null ) {

@@ -2,7 +2,6 @@
 
 namespace Core\Utils;
 
-
 /**
  * Class Session
  *
@@ -28,7 +27,7 @@ class Session{
 
     /**
      * load session
-     * @param $id
+     * @param string $id
      */
     private function __construct($id = null){
         if( $id != null ){
@@ -38,7 +37,7 @@ class Session{
 
     /**
      * initializes the instance (if needed) based on the singleton pattern
-     * @param $id
+     * @param string $id
      * @return \Core\Utils\Session
      */
     public static function getInstance($id = null){
@@ -50,7 +49,7 @@ class Session{
 
     /**
      * get value of a cookie
-     * @param $key
+     * @param string $key
      * @return mixed|null
      */
     public function get($key){
@@ -63,8 +62,8 @@ class Session{
 
     /**
      * set cookie
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      */
     public function set($key, $value){
         $this->save($key, $value);
@@ -72,7 +71,7 @@ class Session{
 
     /**
      * delete cookie
-     * @param $key
+     * @param string $key
      */
     public function delete($key){
         if( isset($_SESSION[$key]) ){
@@ -91,13 +90,11 @@ class Session{
 
     /**
      * save cookie
-     * @param $key
-     * @param $value
-     * @param int $expiration
+     * @param string $key
+     * @param mixed $value
      */
-    private function save($key, $value, $expiration = self::DURATION){
+    private function save($key, $value){
         $value = json_encode($value);
-        //setcookie($key, $value, time()+$expiration, '/', $this->domain);
         $_SESSION[$key] = $value;
     }
 

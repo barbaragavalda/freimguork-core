@@ -32,7 +32,7 @@ class Projects{
     private $currentProject = array();
 
     /**
-     * @var obj $url. object that parses the URL
+     * @var \Core\Routing\URL $url. object that parses the URL
      */
     private $url = null;
 
@@ -78,8 +78,8 @@ class Projects{
 
     /**
      * base URL
-     * @param $language
-     * @return string
+     * @param string $language
+     * @return array
      */
     public function getDomains($language){
         //app domain
@@ -162,10 +162,10 @@ class Projects{
 
     /**
      * regular expresion for the URL
-     * @param $domain           string  current domain
-     * @param $project          array   current project
-     * @param $defaultProject   \Core\Routing\Project by reference, default project if no project found
-     * @return array            regular expression for the doamin and language position
+     * @param string $domain                            current domain
+     * @param array $project                            current project
+     * @param \Core\Routing\Project $defaultProject     by reference, default project if no project found
+     * @return array                                    regular expression for the domain and language position
      */
     private function getRegularExpression($domain, $project, &$defaultProject = null){
         $domainRegExp = '(' . $domain . ')';

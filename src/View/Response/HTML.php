@@ -23,8 +23,8 @@ class HTML extends Response {
 
     /**
      * set the header of the response
-     * @param $projectFolder. Folder for project
-     * @param $file. Name of the twig file
+     * @param string $file              Name of the twig file
+     * @param string $projectFolder     Folder for project
      */
     public function __construct($file, $projectFolder) {
         $this->file = $file;

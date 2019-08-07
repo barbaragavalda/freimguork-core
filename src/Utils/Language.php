@@ -1,6 +1,7 @@
 <?php
 
 namespace Core\Utils;
+
 use Core\Model\Model;
 
 /**
@@ -42,8 +43,8 @@ class Language extends Model {
 
     /**
      * check the language of the user
-     * @param $userLanguage
-     * @param $currentProject
+     * @param string $userLanguage
+     * @param string $currentProject
      */
     private function initLanguage($userLanguage, $currentProject){
         $projectLanguages = $currentProject->getLanguages();
@@ -103,8 +104,7 @@ class Language extends Model {
 
     /**
      * get culture depending on language
-     * @param $languageID
-     * @return string
+     * @param string $languageID
      */
     public function initCulture($languageID = null){
         if( $languageID !== null ){

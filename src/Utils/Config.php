@@ -18,7 +18,7 @@ define("APPACMAN_DIR", DIR_ROOT . APPACMAN);
 class Config{
 
     /**
-     * @var Config $instance.  Instance of the singleton
+     * @var \Core\Utils\Config $instance.  Instance of the singleton
      */
     private static $instance;
 
@@ -79,7 +79,7 @@ class Config{
         }
 
         // create base domain if not specified
-        if( !$this->baseDomain ){
+        if( !$this->baseDomain && array_key_exists('SERVER_NAME', $_SERVER) ){
             $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
             $this->baseDomain = $protocol . $_SERVER['SERVER_NAME'];
             if( !in_array($_SERVER['SERVER_PORT'], array(80, 443)) ){
@@ -91,7 +91,7 @@ class Config{
 
     /**
      * initializes the instance (if needed) based on the singleton pattern
-     * @return \Core\Config
+     * @return \Core\Utils\Config
      */
     public static function getInstance(){
         if( self::$instance === null) {
@@ -134,7 +134,7 @@ class Config{
 
     /**
      * sets the base url
-     * @param $domain array. Set app and static domains
+     * @param array $domain     Set app and static domains
      */
     public function setDomains($domain){
         $this->domain = $domain['app'];
@@ -142,14 +142,14 @@ class Config{
     }
 
     /**
-     * @return string. Get current language
+     * @return string   Get current language
      */
     public function getLanguage(){
         return $this->language;
     }
 
     /**
-     * @param $language string. Set current language
+     * @param string $language  Set current language
      */
     public function setLanguage($language){
         $this->language = $language;
@@ -157,7 +157,7 @@ class Config{
 
     /**
      * load all the configurations on a specific folder
-     * @param $projectFolders
+     * @param array $projectFolders
      */
     public function loadConfigs( $projectFolders ){
         foreach($this->folders as $folder){
@@ -193,7 +193,7 @@ class Config{
 
     /**
      * returns the value for the given key
-     * @return string
+     * @return string|array
      */
     public function get(){
         $args = func_get_args();
@@ -218,7 +218,7 @@ class Config{
 
     /**
      * returns the value for the given key
-     * @param $key
+     * @param string $key
      * @return string
      */
     public function __get( $key ){
@@ -227,8 +227,8 @@ class Config{
 
     /**
      * load the config named $file_name
-     * @param $file
-     * @return mixed
+     * @param string $file
+     * @return array
      * @throws \Exception
      */
     public function load($file){

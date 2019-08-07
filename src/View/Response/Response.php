@@ -20,7 +20,7 @@ abstract class Response{
 
     /**
      * abstract function that specifies how to render the response
-     * @param array $info. Variables involved on the view
+     * @param array $info       Variables involved on the view
      */
     abstract public function initResponse( $info = null );
 
@@ -34,7 +34,7 @@ abstract class Response{
 
     /**
      * sets the header status of HTTP protocol
-     * @param int $status. Code of the status
+     * @param int $status       Code of the status
      */
     protected function setHeaderStatus( $status ){
         $this->setHeader('HTTP/1.1', $status);
@@ -42,7 +42,7 @@ abstract class Response{
 
     /**
      * sets the header type of HTTP protocol
-     * @param string $type. Type of file
+     * @param string $type      Type of file
      */
     protected function setHeaderType( $type ){
         $this->setHeader('Content-Type', $type);
@@ -50,7 +50,7 @@ abstract class Response{
 
     /**
      * sets the header location of the HTTP protocol
-     * @param string $url. URL to be redirect
+     * @param string $url       URL to be redirect
      */
     protected function setHeaderLocation( $url ){
         $this->setHeader('Location', $url);
@@ -58,8 +58,8 @@ abstract class Response{
 
     /**
      * sets any header parameter
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param string $value
      */
     protected function setHeader($key, $value){
         header($key . ': ' . $value);

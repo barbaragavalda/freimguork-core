@@ -20,7 +20,7 @@ class CSV extends Response{
     
     /**
      * creates a file and downloads it through the browser
-     * @param array $info . Is always null
+     * @param array $info   Is always null
      */
     public function initResponse( $info = null ) {
         $file = $this->tableName . '-' . date('Y-m-d-His') . '.csv';

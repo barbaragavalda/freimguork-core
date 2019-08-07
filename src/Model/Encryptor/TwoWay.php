@@ -2,17 +2,29 @@
 
 namespace Core\Model\Encryptor;
 
-
+/**
+ * Class TwoWay
+ *
+ * encrypts a string that will not be decrypted
+ *
+ * @package Core\Model\Encryptor
+ * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
+ * @date 26/10/2017
+ */
 class TwoWay {
 
     const METHOD = 'AES-128-CTR';
 
+    /**
+     * set encryption key. If you don't supply your own key, this will be the default
+     * @param bool $key
+     * @return bool|string
+     */
     private static function initKey($key = false){
-        if(!$key) {
-            // if you don't supply your own key, this will be the default
+        if( !$key ){
             $key = gethostname() . "|" . ip2long($_SERVER['SERVER_ADDR']);
         }
-        if(ctype_print($key)) {
+        if( ctype_print($key) ){
             // convert key to binary format
             $key = openssl_digest($key, 'SHA256', true);
         }
@@ -24,6 +36,11 @@ class TwoWay {
         return openssl_cipher_iv_length(self::METHOD);
     }
 
+    /**
+     * @param string $string    to be encrypted
+     * @param string $key       key used to encrypt
+     * @return string           encrypted string
+     */
     public static function encrypt($string, $key){
         $key = self::initKey($key);
 
@@ -32,6 +49,12 @@ class TwoWay {
         return $encrypted_string;
     }
 
+    /**
+     * decrypt string
+     * @param string $encrypted     encrypted string
+     * @param string $key           key used to encrypt
+     * @return string|bool          decrypted string or false
+     */
     public static function decrypt($encrypted, $key){
         $key = self::initKey($key);
 

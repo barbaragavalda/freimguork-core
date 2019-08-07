@@ -1,12 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: barbaragavaldabalada
- * Date: 27/03/14
- * Time: 15.23
- */
 
 namespace Core\Controller;
+
 use Core\Controller\Cache\Disk;
 
 /**

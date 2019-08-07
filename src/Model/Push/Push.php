@@ -25,6 +25,11 @@ class Push extends Model {
      */
     private $hasStatistics = false;
 
+    /**
+     * @var string
+     */
+    private $reportEmail = '';
+
     public function __construct(){
         parent::__construct();
 

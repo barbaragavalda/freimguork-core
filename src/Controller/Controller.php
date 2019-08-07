@@ -2,7 +2,6 @@
 
 namespace Core\Controller;
 
-use Core\Session;
 use Core\Utils\Config;
 use Core\Utils\Exception;
 
@@ -97,7 +96,7 @@ abstract class Controller {
 
     /***
      * sets the object view
-     * @param \Core\View $view.
+     * @param \Core\View\View $view.
      */
     public function setView($view) {
         $this->view = $view;
@@ -105,8 +104,8 @@ abstract class Controller {
 
     /***
      * saves info that the view needs
-     * @param $var_name     string
-     * @param $value        mixed
+     * @param string $var_name
+     * @param mixed $value
      */
     public function assign( $var_name, $value ){
         $this->info[$var_name] = $value;
@@ -128,7 +127,7 @@ abstract class Controller {
 
     /**
      * renders a template file (twig) to html format
-     * @param string $file . Name of the template file
+     * @param string $file      Name of the template file
      */
     protected function template($file) {
         $this->view->setInfo($this->info);
@@ -145,7 +144,7 @@ abstract class Controller {
 
     /**
      * renders a template file (twig) to xml format
-     * @param string $file . Name of the template file
+     * @param string $file      Name of the template file
      */
     protected function xml($file){
         $this->view->setInfo($this->info);
@@ -154,8 +153,8 @@ abstract class Controller {
 
     /**
      * makes a redirection
-     * @param string $url . URL to be redirect
-     * @param int $status . Code (301, 302)
+     * @param string $url       URL to be redirect
+     * @param int $status       Code (301, 302)
      * @throws exception
      */
     protected function redirect($url, $status = 301){
@@ -174,8 +173,8 @@ abstract class Controller {
 
     /**
      * returns the value of a parameter on the URL
-     * @param $param
-     * @return bool | string
+     * @param string $param
+     * @return bool|string
      */
     protected function getParam( $param ){
         if( array_key_exists($param, $this->params) )
@@ -197,9 +196,9 @@ abstract class Controller {
 
     /**
      * loads the cache from a model
-     * @param $params_cache
-     * @param $model
-     * @param $function
+     * @param array $params_cache
+     * @param \Core\Model\Model $model
+     * @param string $function
      * @param array $function_params
      * @return mixed|null
      */

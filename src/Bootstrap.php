@@ -49,7 +49,7 @@ class Bootstrap {
 
     /**
      * Bootstrap constructor.
-     * @param $isDev    indicates if the environment is development or production
+     * @param boolean $isDev    indicates if the environment is development or production
      */
     public function __construct($isDev){
         define('IS_DEV', $isDev);
