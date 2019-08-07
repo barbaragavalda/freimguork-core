@@ -25,7 +25,9 @@ class URL{
     private $params = array();
 
     public function __construct(){
-        $this->userURL = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        if( array_key_exists('HTTP_HOST', $_SERVER) && array_key_exists('REQUEST_URI', $_SERVER) ){
+            $this->userURL = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        }
         if( substr($this->userURL, -1) != '/' ) $this->userURL .= '/';
 
         $this->protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
