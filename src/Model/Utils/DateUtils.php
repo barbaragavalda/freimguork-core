@@ -68,10 +68,10 @@ class DateUtils {
      * @param string $date      date to be formatted
      * @return bool|string      date formatted or false
      */
-    public static function format($from, $to, $date){
-        if( !empty($date) && is_string($date) ){
+     public static function format($from, $to, $string){
+     	if( !empty($string) && is_string($string) ){
             try{
-                $dateTime = \DateTime::createFromFormat($from, $date);
+            	$dateTime = \DateTime::createFromFormat($from, $date);
                 return $dateTime->format($to);
             }catch(\Exception $e){
                 return false;
@@ -81,14 +81,24 @@ class DateUtils {
     }
 
     /**
+     * time interval between two dates
+     * @param $startDate    \DateTime
+     * @param $endDate      \DateTime
+     * @return \DateInterval
+     */
+    public static function getTimeInterval($startDate, $endDate){
+        $interval = $startDate->diff($endDate);
+        return self::checkInterval($startDate, $endDate, $interval);
+    }
+
+    /**
      * minutes between two dates
-     * @param \DateTime $startDate
-     * @param \DateTime $endDate
-     * @return integer
+     * @param $startDate    \DateTime
+     * @param $endDate      \DateTime
+     * @return int
      */
     public static function minutesBetween($startDate, $endDate){
-        $interval = $startDate->diff($endDate);
-        $interval = self::checkInterval($startDate, $endDate, $interval);
+        $interval = self::getTimeInterval($startDate, $endDate);
 
         $minutes = $interval->d * 24 * 60;
         $minutes += $interval->h * 60;
@@ -105,8 +115,7 @@ class DateUtils {
      */
     public static function timeBetween($startDate, $endDate){
         if( $startDate < $endDate ){
-            $interval = $startDate->diff($endDate);
-            $interval = self::checkInterval($startDate, $endDate, $interval);
+            $interval = self::getTimeInterval($startDate, $endDate);
 
             $hours = $interval->y * 8760;
             $hours += $interval->m * 1440;
@@ -127,8 +136,7 @@ class DateUtils {
      * @return string                       "'y' years 'm' months 'd' days 'h' hours 'm' minutes 's' seconds" if $fullDescription = true, 'y' if false
      */
     public static function describeTimeBetween($startDate, $endDate, $fullDescription = true){
-        $interval = $startDate->diff($endDate);
-        $interval = self::checkInterval($startDate, $endDate, $interval);
+        $interval = self::getTimeInterval($startDate, $endDate);
 
         $time = array();
         self::addTime($interval->y, 'año', 'años', $time);
@@ -169,7 +177,7 @@ class DateUtils {
         }
         return $interval;
     }
-
+    
     /**
      * calculate age of a date
      * @param string $date
@@ -180,6 +188,6 @@ class DateUtils {
         return \DateTime::createFromFormat($format, $date)
             ->diff(new \DateTime())
             ->y;
-    }
+	}
 
 }
