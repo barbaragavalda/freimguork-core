@@ -322,4 +322,20 @@ class StringUtils {
         return $token;
     }
 
+    /**
+     * Gets the string between two specific characters
+     * @param string $string    with the text to search in.
+     * @param string $start     that represents the start.
+     * @param string $end       that represents the end.
+     * @return string           between the start and the end.
+     */
+    public static function getStringBetween($string, $start, $end){
+        $string = ' '.$string;
+        $ini = strpos($string,$start);
+        if ($ini == 0) return '';
+        $ini += strlen($start);
+        $len = strpos($string,$end,$ini) - $ini;
+        return substr($string,$ini,$len);
+    }
+
 }
