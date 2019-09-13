@@ -51,6 +51,8 @@ class MySQL {
      */
     public $success = false;
 
+    private $activeTransaction = false;
+
     private function __construct() {
         $config = Config::getInstance();
         $dbConfig = $config->get('db');
@@ -226,6 +228,22 @@ class MySQL {
             return $field[0];
         }
         return false;
+    }
+
+    public function beginTransaction(){
+        if( !$this->activeTransaction ){
+            $this->pdo->beginTransaction();
+        }
+    }
+
+    public function commit(){
+        $this->pdo->commit();
+        $this->activeTransaction = false;
+    }
+
+    public function rollBack(){
+        $this->pdo->rollBack();
+        $this->activeTransaction = false;
     }
 
     /**
