@@ -52,10 +52,15 @@ class Language extends Model {
             // language from URL
             $this->language = $userLanguage;
         }else{
-            $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-            if( in_array($agentLanguage, $projectLanguages) ){
-                // language from browser
-                $this->language = $agentLanguage;
+            $session = Session::getInstance();
+            if( $session->get('lang_culture') ){
+                $this->language = $session->get('lang_culture');
+            }else{
+                $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+                if( in_array($agentLanguage, $projectLanguages) ){
+                    // language from browser
+                    $this->language = $agentLanguage;
+                }
             }
         }
 
@@ -83,11 +88,13 @@ class Language extends Model {
     }
 
     public function initID(){
-        parent::__construct();
+        if( $this->mysql == null ) parent::__construct();
 
+        $table = 'appacman_lang';
+        if( !$this->mysql->tableExists($table) ) $table = 'language';
         $sql = '
-            SELECT id_appacman_lang
-            FROM appacman_lang
+            SELECT id_' . $table . ' AS id
+            FROM ' . $table . '
             WHERE culture = :culture
         ';
         $params = array(
@@ -97,7 +104,7 @@ class Language extends Model {
 
         if( count($language) ){
             $session = Session::getInstance();
-            $session->set('lang_id', $language[0]['id_appacman_lang']);
+            $session->set('lang_id', $language[0]['id']);
             $session->set('lang_culture', $this->language);
         }
     }
@@ -111,6 +118,46 @@ class Language extends Model {
             $this->language = $languageID;
         }
         $this->culture = $this->configuration[ $this->language ];
+    }
+
+    public function getLanguages($culture = null){
+        if( $this->mysql == null ) parent::__construct();
+
+        $table = 'appacman_lang';
+        if( !$this->mysql->tableExists($table) ) $table = 'language';
+
+        $where  = '';
+        $params = array();
+        if( $culture != null ){
+            $where  = 'WHERE l.culture = :culture';
+            $params = array(
+                'culture' => array('value' => $this->language, 'type' => \PDO::PARAM_STR)
+            );
+        }
+
+        $sql = '
+            SELECT l.id_' . $table . ' AS id, l.name, l.icon
+            FROM ' . $table . ' AS l
+            ' . $where . '
+            ORDER BY l.order ASC
+        ';
+        $languages = $this->mysql->query($sql, $params);
+
+        if( count($languages) ){
+            $config = Config::getInstance();
+            $staticDomain = $config->getStaticDomain();
+
+            $session = Session::getInstance();
+            $langID = $session->get('lang_id');
+            foreach($languages as &$language){
+                $language['icon'] = $staticDomain . 'static/img/' . $language['icon'];
+                if( $language['id'] == $langID ){
+                    $language['current'] = true;
+                }
+            }
+            return $languages;
+        }
+        return array();
     }
 
 }
