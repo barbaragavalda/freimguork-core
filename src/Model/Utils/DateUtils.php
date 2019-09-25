@@ -68,10 +68,10 @@ class DateUtils {
      * @param string $date      date to be formatted
      * @return bool|string      date formatted or false
      */
-     public static function format($from, $to, $string){
-     	if( !empty($string) && is_string($string) ){
+    public static function format($from, $to, $date){
+        if( !empty($date) && is_string($date) ){
             try{
-            	$dateTime = \DateTime::createFromFormat($from, $date);
+                $dateTime = \DateTime::createFromFormat($from, $date);
                 return $dateTime->format($to);
             }catch(\Exception $e){
                 return false;
@@ -82,8 +82,8 @@ class DateUtils {
 
     /**
      * time interval between two dates
-     * @param $startDate    \DateTime
-     * @param $endDate      \DateTime
+     * @param \DateTime     $startDate
+     * @param \DateTime     $endDate
      * @return \DateInterval
      */
     public static function getTimeInterval($startDate, $endDate){
@@ -93,9 +93,9 @@ class DateUtils {
 
     /**
      * minutes between two dates
-     * @param $startDate    \DateTime
-     * @param $endDate      \DateTime
-     * @return int
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @return integer
      */
     public static function minutesBetween($startDate, $endDate){
         $interval = self::getTimeInterval($startDate, $endDate);
@@ -177,7 +177,7 @@ class DateUtils {
         }
         return $interval;
     }
-    
+
     /**
      * calculate age of a date
      * @param string $date
@@ -188,6 +188,6 @@ class DateUtils {
         return \DateTime::createFromFormat($format, $date)
             ->diff(new \DateTime())
             ->y;
-	}
+    }
 
 }
