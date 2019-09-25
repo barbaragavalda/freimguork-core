@@ -56,10 +56,12 @@ class Language extends Model {
             if( $session->get('lang_culture') ){
                 $this->language = $session->get('lang_culture');
             }else{
-                $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-                if( in_array($agentLanguage, $projectLanguages) ){
-                    // language from browser
-                    $this->language = $agentLanguage;
+                if( array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER) ){
+                    $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+                    if( in_array($agentLanguage, $projectLanguages) ){
+                        // language from browser
+                        $this->language = $agentLanguage;
+                    }
                 }
             }
         }

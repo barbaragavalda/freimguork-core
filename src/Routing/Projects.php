@@ -84,6 +84,10 @@ class Projects{
     public function getDomains($language){
         //app domain
         $url = str_replace('{lang}', $language, $this->currentProject->getURL());
+        if( empty($url) ){
+            $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
+            $url = $protocol . $_SERVER['HTTP_HOST'];
+        }
         if( !StringUtils::startsWidth($url, 'http') ){
            $url = $this->config->getBaseDomain() . $url;
         }

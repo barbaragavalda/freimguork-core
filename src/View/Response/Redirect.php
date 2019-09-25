@@ -52,7 +52,7 @@ class Redirect extends Response{
                     </head>
                     <body>
                         '.$title.'
-                        <h2>Redirecting to <a href="'.$this->url.'">'.$this->url.'</a></h2>
+                        <h2>Redirecting from '.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].' to <a href="'.$this->url.'">'.$this->url.'</a></h2>
                     </body>
                 </html>
             ';
