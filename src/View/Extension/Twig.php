@@ -10,11 +10,19 @@ class Twig extends AbstractExtension{
     public function getFilters(){
         return [
             new TwigFilter('formatPrice', [$this, 'formatPrice']),
+            new TwigFilter('formatArray', [$this, 'formatArray']),
         ];
     }
 
     public function formatPrice($price, $decimals = 2, $thousandsSep = '.', $decPoint = ','){
         return StringUtils::formatPrice($price, $decimals, $thousandsSep, $decPoint);
+    }
+
+    public function formatArray($string, $array){
+        if( count($array) > 0 ){
+            return vsprintf($string, $array);
+        }
+        return $string;
     }
 
 }
