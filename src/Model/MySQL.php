@@ -202,7 +202,7 @@ class MySQL {
             $fieldDesc = $this->field($table.'_lang', $field);
         }
 
-        if( count($fieldDesc) ){
+        if( $fieldDesc !== false && count($fieldDesc) ){
             //r($fieldDesc);
             $required = $fieldDesc['Null'] == 'YES' ? false : true;
             return array(
@@ -210,7 +210,7 @@ class MySQL {
                 'required' => $required
             );
         }
-        return array();
+        return '';
     }
 
     private function field($table, $field){
@@ -232,6 +232,7 @@ class MySQL {
 
     public function beginTransaction(){
         if( !$this->activeTransaction ){
+        	$this->activeTransaction = true;
             $this->pdo->beginTransaction();
         }
     }

@@ -24,7 +24,7 @@ class Language extends Model {
         'ca' => 'ca_ES',
         'de' => 'de_DE',
         'es' => 'es_ES',
-        'en' => 'en_UK',
+        'en' => 'en_GB',
         'fr' => 'fr_FR',
         'it' => 'it_IT',
         'eu' => 'eu_ES',

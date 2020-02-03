@@ -338,4 +338,46 @@ class StringUtils {
         return substr($string,$ini,$len);
     }
 
+    /**
+     * check is string has URL format
+     * @param string $string    string to be checked
+     * @return bool|string      false or URL with HTTP
+     */
+    public static function validateURL($string){
+        if( !self::startsWidth($string, 'http') ){
+            $string = 'http://' . $string;
+        }
+        $url = parse_url($string);
+        if( !array_key_exists('host', $url) ){
+            return false;
+        }
+
+        $scheme   = isset($url['scheme']) ? $url['scheme'] . '://' : '';
+        $host     = isset($url['host']) ? $url['host'] : '';
+        $port     = isset($url['port']) ? ':' . $url['port'] : '';
+        $user     = isset($url['user']) ? $url['user'] : '';
+        $pass     = isset($url['pass']) ? ':' . $url['pass']  : '';
+        $pass     = ($user || $pass) ? "$pass@" : '';
+        $path     = isset($url['path']) ? $url['path'] : '';
+        $query    = isset($url['query']) ? '?' . $url['query'] : '';
+        $fragment = isset($url['fragment']) ? '#' . $url['fragment'] : '';
+        return "$scheme$user$pass$host$port$path$query$fragment";
+    }
+    
+    /**
+    * Get initials of a sentence
+    * @param string $string
+    * @return string
+    */
+   public static function acronym($string){
+       $words = explode(' ', $string);
+
+       $acronym = '';
+       foreach($words as $w){
+           $acronym .= $w[0];
+       }
+       return mb_strtoupper($acronym);
+   }
+
+
 }

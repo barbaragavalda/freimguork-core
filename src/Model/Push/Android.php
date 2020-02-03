@@ -64,15 +64,16 @@ class Android extends Base {
 
                 for($i=0; $i<count($result['results']); $i++){
                     if( array_key_exists('error', $result['results'][$i]) ){
+                        $token = $registrationIDs[$i];
                         switch ($result['results'][$i]['error']){
                             case 'NotRegistered':
-                                $this->deleteDevice($this->tokens[$i]);
+                                $this->deleteDevice($token);
                                 $this->total -= 1;
                                 break;
                             case 'InvalidParameters':
-                                $this->tokens[$i] = str_replace('"', '', $this->tokens[$i]);
-                                if( $this->tokens[$i] == 'BLACKLISTED' ){
-                                    $this->deleteDevice($this->tokens[$i]);
+                                $token = str_replace('"', '', $token);
+                                if( $token == 'BLACKLISTED' ){
+                                    $this->deleteDevice($token);
                                     $this->total -= 1;
                                 }
                                 break;

@@ -16,6 +16,8 @@ use Core\Utils\Config;
  */
 class URL{
 
+    const REG_PARAM = '[a-zA-Z0-9-_.%]+';
+
     private $userURL = null;
     private $protocol = 'http://';
 
@@ -77,7 +79,9 @@ class URL{
         if( $_SERVER['REQUEST_METHOD'] == 'GET' ){
             $query = $_SERVER['QUERY_STRING'];
             if( !empty($query) ){
+                $userPetition = str_replace('/?'.$query, '', $userPetition);
                 $userPetition = str_replace('?'.$query, '', $userPetition);
+                if( $userPetition == '/' ) $userPetition = '';
                 $params = explode('&', $query);
                 foreach($params as $param){
                     $info = explode('=', $param, 2);
@@ -96,15 +100,27 @@ class URL{
                 $explodeUser = explode('/', $userPetition);
                 for($i=0; $i<count($explodeRouting); $i++){
                     if( StringUtils::startsWidth($explodeRouting[$i], '{') ){
-                        $paramValue = $explodeUser[$i];
-                        $paramName = str_replace('{', '', $explodeRouting[$i]);
-                        $paramName = str_replace('}', '', $paramName);
-                        $this->params[$paramName] = $paramValue;
+                        preg_match('/({' . self::REG_PARAM . '})(.+)?/', $explodeRouting[$i], $matches);
+                        if( count($matches) > 1 ){
+                            if( count($matches) > 2 ){
+                                if( StringUtils::endsWidth($explodeUser[$i], $matches[2]) ){
+                                    $explodeUser[$i] = str_replace($matches[2], '', $explodeUser[$i]);
+                                }else{
+                                    $this->controller = null;
+                                }
+                            }
+
+                            $paramValue = $explodeUser[$i];
+                            $paramName = str_replace('{', '', $matches[1]);
+                            $paramName = str_replace('}', '', $paramName);
+                            $this->params[$paramName] = $paramValue;
+                        }
                     }else{
                         $this->parts[] = $explodeUser[$i];
                     }
                 }
-                break;
+
+                if( $this->controller != null ) break;
             }
         }
     }
@@ -127,7 +143,7 @@ class URL{
                     foreach($explode as $part){
                         if( $regExp != '' ) $regExp .= '(/)';
                         if( StringUtils::startsWidth($part, '{') ){
-                            $regExp .= '([a-zA-Z0-9-_.%]+)';
+                            $regExp .= '(' . self::REG_PARAM . ')';
                         }else{
                             if( $part == '' ){
                                 $regExp .= '$^';

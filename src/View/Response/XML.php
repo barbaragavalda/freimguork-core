@@ -15,7 +15,7 @@ class XML extends HTML {
      */
     public function __construct($file, $projectFolder) {
         parent::__construct($file, $projectFolder);
-        $this->setHeaderType('application/xml');
+        $this->setHeaderType('text/html');
     }
 
 }

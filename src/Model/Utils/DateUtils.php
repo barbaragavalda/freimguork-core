@@ -108,6 +108,32 @@ class DateUtils {
     }
 
     /**
+     * @param $startString
+     * @return string       'today', <day of week> if difference is less than 7 days, dd/mm/yy otherwise
+     */
+    public static function timeAgo($startString){
+        $startDate = \DateTime::createFromFormat(self::FORMAT_DATE_USER, $startString);
+        $now = new \DateTime();
+        $interval = $startDate->diff($now);
+        $interval = self::checkInterval($startDate, $now, $interval);
+
+        if( $interval->d == 0 ){
+            return gettext('hoy');
+        }elseif( $interval->d < 7 ){
+            switch( $startDate->format('N') ){
+                case 1: return gettext('lunes'); break;
+                case 2: return gettext('martes'); break;
+                case 3: return gettext('miércoles'); break;
+                case 4: return gettext('jueves'); break;
+                case 5: return gettext('viernes'); break;
+                case 6: return gettext('sábado'); break;
+                case 7: return gettext('domingo'); break;
+            }
+        }
+        return $startString;
+    }
+
+    /**
      * time between two dates
      * @param \DateTime $startDate
      * @param \DateTime $endDate
@@ -190,4 +216,17 @@ class DateUtils {
             ->y;
     }
 
+    /**
+     * @param $startDate            \DateTime
+     * @param $endDate              \DateTime
+     * @param $variable             string
+     * @return int
+     */
+    public static function timeDifference($startDate, $endDate, $variable = 'y'){
+        $interval = $startDate->diff($endDate);
+        $interval = self::checkInterval($startDate, $endDate, $interval);
+
+        return $interval->$variable;
+    }
+    
 }
