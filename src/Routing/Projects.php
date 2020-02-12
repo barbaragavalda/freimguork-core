@@ -84,14 +84,12 @@ class Projects{
     public function getDomains($language){
         //app domain
         $url = str_replace('{lang}', $language, $this->currentProject->getURL());
+        $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
         if( empty($url) ){
-            $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
             $url = $protocol . $_SERVER['HTTP_HOST'];
         }
         if( !StringUtils::startsWidth($url, 'http') ){
-            $request = $_SERVER['REQUEST_URI'];
-            if( StringUtils::startsWidth($request, '/') ) $request = substr($request, 1);
-            $url = $this->config->getBaseDomain() . $request;
+            $url = $protocol . $url;
         }
         if( !StringUtils::endsWidth($url, '/') ){
             $url .= '/';

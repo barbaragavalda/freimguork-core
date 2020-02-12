@@ -92,6 +92,18 @@ class DateUtils {
     }
 
     /**
+     * seconds in interval
+     * @param \DateInterval     $interval
+     * @return integer
+     */
+    public static function intervalToSeconds($interval){
+        $seconds = $interval->s + ($interval->i * 60) + ($interval->h * 3600);
+        $seconds += ($interval->d * 86400) + ($interval->m * 2592000) + ($interval->y * 31536000);
+
+        return $seconds;
+    }
+
+    /**
      * minutes between two dates
      * @param \DateTime $startDate
      * @param \DateTime $endDate
