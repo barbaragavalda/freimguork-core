@@ -47,4 +47,22 @@ class CSV extends Response{
         }
     }
 
+    /**
+     * generate excel
+     * @param string $fileName
+     * @param array $content
+     */
+    public static function createCSV($fileName, $content){
+        $file = $fileName . '.csv';
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename="' . $file . '";');
+        $f = fopen('php://output', 'w');
+        fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        foreach($content as $line){
+            fputcsv($f, $line, ';');
+        }
+    }
+
+
 }
