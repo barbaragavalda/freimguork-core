@@ -191,7 +191,7 @@ class DateUtils {
         }
     }
 
-    private function addTime($value, $singular, $plural, &$time){
+    private static function addTime($value, $singular, $plural, &$time){
         if( $value == 1 ){
             $time[] = '1 ' . gettext($singular);
         } elseif ( $value > 1 ){

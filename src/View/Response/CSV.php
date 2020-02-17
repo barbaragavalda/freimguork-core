@@ -27,10 +27,10 @@ class CSV extends Response{
         if( array_key_exists('export_without_date', $info) ){
             $file = $this->tableName . '.csv';
         }
-        
+
         $this->setHeaderType('application/csv');
         $this->setHeader('Content-Disposition', 'attachment; filename="' . $file . '";');
-        
+
         $f = fopen('php://output', 'w');
         fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
         
@@ -63,6 +63,5 @@ class CSV extends Response{
             fputcsv($f, $line, ';');
         }
     }
-
 
 }

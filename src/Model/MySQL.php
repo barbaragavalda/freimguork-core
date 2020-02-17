@@ -203,7 +203,6 @@ class MySQL {
         }
 
         if( $fieldDesc !== false && count($fieldDesc) ){
-            //r($fieldDesc);
             $required = $fieldDesc['Null'] == 'YES' ? false : true;
             return array(
                 'type' => $fieldDesc['Type'],
@@ -232,7 +231,6 @@ class MySQL {
 
     public function beginTransaction(){
         if( !$this->activeTransaction ){
-        	$this->activeTransaction = true;
             $this->pdo->beginTransaction();
         }
     }

@@ -61,7 +61,7 @@ abstract class Controller {
         $this->static_domain = $config->getBaseDomain();
         
         $this->assign('domain', $this->domain);
-        $this->assign('static_domain', $this->static_domain);
+        $this->assign('static_domain', $this->static_domain . 'public/static/');
 
         //language
         $this->assign('lang', $config->getLanguage());
