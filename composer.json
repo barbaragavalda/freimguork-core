@@ -1,14 +1,14 @@
 {
     "name": "appaqui/freimguork-core",
-    "description": "Core module for AppAqui projects",
+    "description": "Core module for Freimgüork projects",
     "authors": [
         {
         	"name": "Barbara Gavalda", 
-        	"email": "bgavalda@appaqui.com"
+        	"email": "bgb@optisistem.com"
     	},
     	{
         	"name": "Toni Palanques", 
-        	"email": "tpalanques@appaqui.com"
+        	"email": "tpv@optisistem.com"
     	}
     ],
     "require": {
