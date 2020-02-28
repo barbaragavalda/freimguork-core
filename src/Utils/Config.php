@@ -12,8 +12,7 @@ namespace Core\Utils;
  * @date 25/10/2017
  */
 
-define("APPACMAN", 'vendor/appaqui/freimguork-appacman/src/');
-define("APPACMAN_DIR", DIR_ROOT . APPACMAN);
+define('APPACMAN_DIR', DIR_ROOT . 'vendor/appaqui/freimguork-appacman/src/');
 
 class Config{
 
@@ -57,15 +56,13 @@ class Config{
      */
     private $language = '';
 
+    private $ignore = array('.', '..', '.DS_Store', 'projects.php', 'projects.dev.php', 'projects.prod.php');
+
     /**
      * load project configurations
      */
     private function __construct(){
-        $this->folders = array(
-            DIR_ROOT . 'config/',
-            DIR_ROOT . 'config/' . (( IS_DEV ) ? 'dev/' : 'prod/'),
-            APPACMAN_DIR . 'config/'
-        );
+        $this->initFolders();
 
         // load projects info
         $projectFile = $this->folders[0] . 'projects.php';
@@ -86,6 +83,23 @@ class Config{
                 $this->baseDomain .= ':' . $_SERVER['SERVER_PORT'];
             }
             $this->baseDomain .= '/';
+        }
+    }
+
+    private function initFolders(){
+        $this->folders = array(
+            DIR_ROOT . 'config/',
+            DIR_ROOT . 'config/' . (( IS_DEV ) ? 'dev/' : 'prod/')
+        );
+
+        $ownVendorsPath = DIR_ROOT . 'vendor/appaqui/';
+        $ownVendors = @scandir($ownVendorsPath);
+        if( $ownVendors !== false ){
+            foreach($ownVendors as $vendor){
+                if( is_dir($ownVendorsPath . $vendor) && !in_array($vendor, $this->ignore) ){
+                    $this->folders[] = $ownVendorsPath . $vendor . '/src/config/';
+                }
+            }
         }
     }
 
@@ -183,7 +197,7 @@ class Config{
         $files = @scandir($projectFolder);
         if( $files !== false ){
             foreach($files as $file){
-                if( !is_dir($projectFolder . $file) && pathinfo($file, PATHINFO_EXTENSION) == 'php' && !in_array($file, array('.', '..', '.DS_Store', 'projects.php', 'projects.dev.php', 'projects.prod.php')) ){
+                if( !is_dir($projectFolder . $file) && pathinfo($file, PATHINFO_EXTENSION) == 'php' && !in_array($file, $this->ignore) ){
                     // load config
                     $this->config = array_merge_recursive($this->config, $this->load($projectFolder . $file));
                 }
