@@ -61,6 +61,7 @@ abstract class Controller {
         $this->staticDomain = $config->getBaseDomain();
         
         $this->assign('domain', $this->domain);
+        $this->assign('rootDomain', $this->staticDomain);
 
         $staticPath = 'static/';
         $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);
