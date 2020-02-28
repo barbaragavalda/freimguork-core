@@ -22,9 +22,9 @@ abstract class Controller {
     protected $domain = '';
 
     /**
-     * @var string $static_domain. Base URL without language (if any)
+     * @var string $staticDomain. Base URL without language (if any)
      */
-    protected $static_domain = '';
+    protected $staticDomain = '';
 
     /**
      * @var array $params. Parameters from URL petition
@@ -58,10 +58,14 @@ abstract class Controller {
         //domains
         $config = Config::getInstance();
         $this->domain = $config->getDomain();
-        $this->static_domain = $config->getBaseDomain();
+        $this->staticDomain = $config->getBaseDomain();
         
         $this->assign('domain', $this->domain);
-        $this->assign('static_domain', $this->static_domain . 'public/static/');
+
+        $staticPath = 'static/';
+        $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);
+        if( $explode[count($explode)-1] != 'public') $staticPath = 'public/' . $staticPath;
+        $this->assign('staticDomain', $this->staticDomain . $staticPath);
 
         //language
         $this->assign('lang', $config->getLanguage());
