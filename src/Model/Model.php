@@ -18,7 +18,7 @@ class Model {
     /**
      * @var  \Core\Model\MySQL  Database connection
      */
-    protected $mysql = null;
+    public $mysql = null;
 
     /**
      * @var int  current lang id
