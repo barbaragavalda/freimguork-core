@@ -22,7 +22,12 @@ abstract class Controller {
     protected $domain = '';
 
     /**
-     * @var string $staticDomain. Base URL without language (if any)
+     * @var string $rootDomain. Base URL without language (if any)
+     */
+    protected $rootDomain = '';
+
+    /**
+     * @var string $staticDomain. Base URL to static
      */
     protected $staticDomain = '';
 
@@ -58,15 +63,17 @@ abstract class Controller {
         //domains
         $config = Config::getInstance();
         $this->domain = $config->getDomain();
-        $this->staticDomain = $config->getBaseDomain();
-        
+        $this->rootDomain = $config->getBaseDomain();
+
         $this->assign('domain', $this->domain);
-        $this->assign('rootDomain', $this->staticDomain);
+        $this->assign('rootDomain', $this->rootDomain);
+        $this->assign('host', $_SERVER['SERVER_ADDR']);
 
         $staticPath = 'static/';
         $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);
         if( $explode[count($explode)-1] != 'public') $staticPath = 'public/' . $staticPath;
-        $this->assign('staticDomain', $this->staticDomain . $staticPath);
+        $this->staticDomain = $this->rootDomain . $staticPath;
+        $this->assign('staticDomain', $this->staticDomain);
 
         //language
         $this->assign('lang', $config->getLanguage());
