@@ -2,6 +2,7 @@
 
 namespace Core\Model;
 
+use Core\Model\MySQL\Manager;
 use Core\Utils\Session;
 
 /**
@@ -41,7 +42,7 @@ class Model {
     protected $created = null;
 
     public function __construct(){
-        $this->mysql = MySQL::getInstance();
+        $this->mysql = Manager::getInstance();
 
         $session = Session::getInstance();
         $this->langID = $session->get('lang_id');
