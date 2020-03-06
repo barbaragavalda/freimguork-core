@@ -11,7 +11,7 @@ class Mail {
 
     private $config = array();
 
-    private $fromEmail = '';
+    protected $fromEmail = '';
 
     private $fromName = '';
 
@@ -41,6 +41,7 @@ class Mail {
             if( array_key_exists('protocol', $this->config) ) $this->mail->Mailer = $this->config['protocol'];
             if( array_key_exists('smtp_auth', $this->config) ) $this->mail->SMTPAuth = $this->config['smtp_auth'];
             if( array_key_exists('smtp_secure', $this->config) ) $this->mail->SMTPSecure = $this->config['smtp_secure'];
+            if( array_key_exists('smtp_options', $this->config) ) $this->mail->SMTPOptions = $this->config['smtp_options'];
 
             return $this->mail;
         }
