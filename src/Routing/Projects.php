@@ -51,10 +51,11 @@ class Projects{
      */
     public function getUserLanguage(){
         if( ($position = $this->currentProject->getLangPosition()) > 0 ){
+            $userURL = str_replace($_SERVER['HTTP_HOST'] . '/', '', $this->url->getUserURL());
             return preg_filter(
                 $this->currentProject->getRegularExpression(),
                 '$'.$position,
-                $this->url->getUserURL()
+                $userURL
             );
         }
         return false;
