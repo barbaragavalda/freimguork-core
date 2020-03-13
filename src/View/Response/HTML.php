@@ -31,7 +31,7 @@ class HTML extends Response {
         $this->setHeaderType('text/html');
 
         $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/View/' );
-        $this->addViewFolder( APPACMAN_DIR . 'View/' );
+        if( $projectFolder == 'Appacman' ) $this->addViewFolder( APPACMAN_DIR . 'View/' );
     }
 
     private function addViewFolder($folder){

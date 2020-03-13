@@ -51,7 +51,9 @@ class Projects{
      */
     public function getUserLanguage(){
         if( ($position = $this->currentProject->getLangPosition()) > 0 ){
-            $userURL = str_replace($_SERVER['HTTP_HOST'] . '/', '', $this->url->getUserURL());
+            $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
+            $baseDomain = str_replace($protocol, '', $this->config->getBaseDomain());
+            $userURL = str_replace($baseDomain, '', $this->url->getUserURL());
             return preg_filter(
                 $this->currentProject->getRegularExpression(),
                 '$'.$position,
@@ -89,7 +91,7 @@ class Projects{
         if( empty($url) ){
             $url = $protocol . $_SERVER['HTTP_HOST'];
         }
-        if( !StringUtils::startsWidth($url, 'http') ){
+        if( !StringUtils::startsWidth($protocol, $url) ){
         	$url = $this->config->getBaseDomain() . $url;
         }
         if( !StringUtils::endsWidth($url, '/') ){
