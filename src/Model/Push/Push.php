@@ -19,19 +19,26 @@ class Push extends Model {
      * @var string  deep linking protocol
      */
     protected $urlScheme = '';
-    
+
     /**
-     * @var bool  save oush statistics
+     * @var bool  save push statistics
      */
     private $hasStatistics = false;
+
+    /**
+     * @var bool  save should log push
+     */
+    private $doLog = true;
 
     /**
      * @var string
      */
     private $reportEmail = '';
 
-    public function __construct(){
+    public function __construct($doLog = true){
         parent::__construct();
+
+        $this->doLog = $doLog;
 
         // url scheme
         $config = Config::getInstance();
@@ -79,7 +86,7 @@ class Push extends Model {
             if( IS_DEV ) {
                 echo '<p>Fake push notification for Android: <b>' . $message . '</b></p>';
             }else{
-                $pushAndroid = new Android($message, $android, $urlScheme);
+                $pushAndroid = new Android($message, $android, $urlScheme, $this->doLog);
                 $pushAndroid->send();
                 $pushAndroid->close();
 
@@ -92,7 +99,7 @@ class Push extends Model {
             if( IS_DEV ){
                 echo '<p>Fake push notification for iOS: <b>'.$message.'</b></p>';
             }else{
-                $pushiOS = new iOSPush($message, $ios, $urlScheme);
+                $pushiOS = new iOSPush($message, $ios, $urlScheme, $this->doLog);
                 $pushiOS->send();
                 $pushiOS->close();
 
@@ -105,7 +112,7 @@ class Push extends Model {
     }
     
     private function statistics($message, $emailMessage, $devices){
-        if( $message && $emailMessage ){
+        if( $message && $emailMessage && $this->doLog ){
             $admin = new Admin();
             $email = new Mail();
             $email->send(

@@ -14,7 +14,9 @@ class iOSPush extends iOS {
     private $logIDs = array();
     private $currentToken = 0;
 
-    public function __construct( $message, $tokens, $urlScheme = '' ){
+    public function __construct( $message, $tokens, $urlScheme = '', $doLog = true){
+        $this->doLog = $doLog;
+
         $config = Config::getInstance();
         $pushConfig = $config->get('push');
         $host = $pushConfig['ios_host'];
@@ -85,7 +87,7 @@ class iOSPush extends iOS {
     }
 
     private function log($result, $token){
-        if( $this->hasLog ){
+        if( $this->hasLog && $this->doLog ){
             $sql = '
             SELECT id_user
             FROM appacman_push_device

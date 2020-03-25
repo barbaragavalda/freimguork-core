@@ -6,6 +6,11 @@ use Core\Model\Model;
 
 abstract class Base extends Model {
 
+    /**
+     * @var bool  save should log push
+     */
+    protected $doLog = true;
+
     protected $result = array();
 
     protected $total = 0;

@@ -16,7 +16,9 @@ class Android extends Base {
     private $fields = array();
     private $ch = null;
 
-    public function __construct( $message, $tokens, $urlScheme = ''){
+    public function __construct( $message, $tokens, $urlScheme = '', $doLog = true){
+        $this->doLog = $doLog;
+
         parent::__construct();
 
         $config = Config::getInstance();
@@ -95,7 +97,7 @@ class Android extends Base {
     }
 
     private function log($result, $tokens){
-        if( $this->mysql->tableExists('appacman_log_android') ){
+        if( $this->mysql->tableExists('appacman_log_android') && $this->doLog ){
             $tokens = array_map(function($n){ return '"' . $n . '"'; }, $tokens);
             $tokens = implode(',', $tokens);
             $sql = '

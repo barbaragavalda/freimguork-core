@@ -23,7 +23,7 @@ class Json extends Response {
         // add allow origin header
         $config = Config::getInstance();
         $allowOrigins = $config->get('api', 'allow-origin');
-        if( count($allowOrigins) && array_key_exists('HTTP_ORIGIN', $_SERVER) ){
+        if( is_array($allowOrigins) && count($allowOrigins) && array_key_exists('HTTP_ORIGIN', $_SERVER) ){
             $origin = $_SERVER['HTTP_ORIGIN'];
             if( !StringUtils::endsWidth($origin, '/') ) $origin .= '/';
 
