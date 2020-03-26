@@ -3,13 +3,13 @@
     "description": "Core module for Freimgüork projects",
     "authors": [
         {
-        	"name": "Barbara Gavalda", 
-        	"email": "bgb@optisistem.com"
-    	},
-    	{
-        	"name": "Toni Palanques", 
-        	"email": "tpv@optisistem.com"
-    	}
+            "name": "Barbara Gavalda", 
+            "email": "bgb@optisistem.com"
+        },
+        {
+            "name": "Toni Palanques", 
+            "email": "tpv@optisistem.com"
+        }
     ],
     "require": {
         "php": ">=5.3",
@@ -18,7 +18,8 @@
         "digitalnature/php-ref": "dev-master",
         "phpmailer/phpmailer": "~5.0",
         "simplesoftwareio/simple-qrcode": "~1",
-        "phpunit/phpunit": "^8"
+        "phpunit/phpunit": "^8",
+        "phpoffice/phpspreadsheet": "dev-master"
     },
     "autoload": {
         "psr-4": {
