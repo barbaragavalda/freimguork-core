@@ -125,9 +125,16 @@ class Bootstrap {
         $this->controller->setParts( $this->router->getParts() );
 
         $cacheDef = $this->controller->getCacheDef();
-        $response = $this->controllerCache->getCache($cacheDef);
-        if( $response == null ){
+        $cache = $this->controllerCache->getCache($cacheDef);
+        $response = '';
+        if( $cache == null ){
             $response = $this->render();
+        }else{
+            $response = $cache['response'];
+            $headers = $cache['headers'];
+            foreach($headers as $header){
+                header($header);
+            }
         }
 
         echo $response;
@@ -147,7 +154,10 @@ class Bootstrap {
         }
 
         $response = $this->controller->getResponse();
-        $this->controllerCache->saveCache($response);
+        $this->controllerCache->saveCache(array(
+            'response'  => $response,
+            'headers'   => headers_list()
+        ));
 
         return $response;
     }
