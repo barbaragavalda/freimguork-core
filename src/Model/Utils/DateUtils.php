@@ -81,6 +81,17 @@ class DateUtils {
     }
 
     /**
+     * transform an amount of seconds to H:i:s format
+     * @param integer $seconds
+     * @return string
+     */
+    public static function formatSeconds($seconds){
+        $minutes = floor($seconds / 60 % 60);
+        $secs = floor($seconds % 60);
+        return sprintf('%02d:%02d', $minutes, $secs);
+    }
+
+    /**
      * time interval between two dates
      * @param \DateTime     $startDate
      * @param \DateTime     $endDate
