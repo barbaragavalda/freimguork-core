@@ -90,6 +90,7 @@ class URL{
             }
         }
 
+        if( $userPetition == '/' ) $userPetition = '';
         foreach($routingRegExp as $regExp){
             if( preg_match($regExp['regExp'], $userPetition) === 1 ){
                 //controller found
