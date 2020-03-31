@@ -68,6 +68,7 @@ abstract class Controller {
         $this->assign('domain', $this->domain);
         $this->assign('rootDomain', $this->rootDomain);
         $this->assign('host', $_SERVER['HTTP_HOST']);
+        $this->assign('publicIP', $_SERVER['REMOTE_ADDR']);
 
         $staticPath = 'static/';
         $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);

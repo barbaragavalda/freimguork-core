@@ -94,10 +94,9 @@ class Mail {
     private $footer = true;
     private $signature = true;
 
-    public function sendTwig($to, $subject, $template = 'new_mail.twig', $projectFolder = null){
+    public function sendTwig($subject, $template = 'new_mail.twig', $projectFolder = null){
         $mail = $this->getSender();
 
-        if( isset($to) ) $mail->addAddress($to);
         $mail->Subject = $subject;
 
         $this->data['header'] = $this->header;
@@ -108,7 +107,8 @@ class Mail {
         // We prepare the html for the e-mail
         $response = new \Core\View\Response\Mail('Mail/'.$template, $projectFolder);
         $response->initResponse($this->data);
-
+        
+        $mail->CharSet = 'utf-8';
         $mail->Body = StringUtils::replaceAccents( $response->get() );
         $mail->AltBody = strip_tags($mail->Body);
         $success = $mail->Send();
