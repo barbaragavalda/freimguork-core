@@ -79,7 +79,7 @@ class Language extends Model {
      */
     public function initGettext(){
         putenv('LC_ALL='.$this->culture);
-        $this->setLocale($this->culture);
+        setlocale(LC_ALL, $this->culture);
 
         bindtextdomain(self::DOMAIN, DIR_ROOT . 'locale');
         $appacmanLocale = APPACMAN_DIR . 'locale';
@@ -122,6 +122,10 @@ class Language extends Model {
         $this->culture = $this->configuration[ $this->language ];
     }
 
+    public function setCulture($culture){
+        $this->culture = $culture;
+    }
+
     public function getLanguages($culture = null){
         if( $this->mysql == null ) parent::__construct();
 
@@ -160,10 +164,6 @@ class Language extends Model {
             return $languages;
         }
         return array();
-    }
-    
-    public static function setLocale($language, $constant = LC_ALL){
-        setlocale($constant, $language);
     }
 
 }

@@ -91,7 +91,7 @@ class Projects{
         if( empty($url) ){
             $url = $protocol . $_SERVER['HTTP_HOST'];
         }
-        if( !StringUtils::startsWidth($protocol, $url) ){
+        if( !StringUtils::startsWidth($url, $protocol) ){
         	$url = $this->config->getBaseDomain() . $url;
         }
         if( !StringUtils::endsWidth($url, '/') ){
