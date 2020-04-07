@@ -81,14 +81,15 @@ class DateUtils {
     }
 
     /**
-     * transform an amount of seconds to H:i:s format
+     * transform an amount of seconds to H:i format
      * @param integer $seconds
+     * @param string $format
      * @return string
      */
-    public static function formatSeconds($seconds){
+    public static function formatSeconds($seconds, $format = '%02d:%02d'){
         $minutes = floor($seconds / 60 % 60);
         $secs = floor($seconds % 60);
-        return sprintf('%02d:%02d', $minutes, $secs);
+        return sprintf($format, $minutes, $secs);
     }
 
     /**
@@ -100,6 +101,25 @@ class DateUtils {
     public static function getTimeInterval($startDate, $endDate){
         $interval = $startDate->diff($endDate);
         return self::checkInterval($startDate, $endDate, $interval);
+    }
+
+    /**
+     * return time interval for database
+     * @param \DateTime     $startDate
+     * @param \DateTime     $endDate
+     * @return array
+     */
+    public static function getDbInterval($startDate, $endDate){
+        $interval = self::getTimeInterval($startDate, $endDate);
+
+        $intervalArray = array();
+        if( $interval->y > 0 ) $intervalArray[] = 'INTERVAL' . $interval->y . ' YEAR';
+        if( $interval->m > 0 ) $intervalArray[] = 'INTERVAL ' . $interval->m . ' MONTH';
+        if( $interval->d > 0 ) $intervalArray[] = 'INTERVAL ' . $interval->d . ' DAY';
+        if( $interval->h > 0 ) $intervalArray[] = 'INTERVAL ' . $interval->h . ' HOUR';
+        if( $interval->i > 0 ) $intervalArray[] = 'INTERVAL ' . $interval->i . ' MINUTE';
+        if( $interval->s > 0 ) $intervalArray[] = 'INTERVAL ' . $interval->s . ' SECOND';
+        return $intervalArray;
     }
 
     /**
