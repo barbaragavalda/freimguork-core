@@ -24,13 +24,13 @@ class CacheManager {
         $this->cache = new Disk();
     }
 
-    public function getCache($cache_def) {
-        if( $cache_def === false ){
+    public function getCache($cacheDefinition) {
+        if( $cacheDefinition === false ){
             return null;
         }
 
-        $this->key = $cache_def['key'];
-        $this->ttl = $cache_def['ttl'];
+        $this->key = $cacheDefinition['key'];
+        $this->ttl = $cacheDefinition['ttl'];
         return $this->cache->get($this->key);
     }
 

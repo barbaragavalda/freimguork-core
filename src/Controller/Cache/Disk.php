@@ -47,12 +47,13 @@ class Disk extends Cache {
         $cache = array('ttl' => $expiration, 'content' => $content);
 
         $path = $this->getPath($key);
-        $ok = file_put_contents($path, serialize($cache));
-        if ($ok === false) {
-            return false;
-        } else {
-            return true;
+        if( file_exists($this->folder) ){
+            $ok = file_put_contents($path, serialize($cache));
+            if( $ok !== false ){
+                return true;
+            }
         }
+        return false;
     }
 
     /**

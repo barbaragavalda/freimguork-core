@@ -91,20 +91,20 @@ class Model {
         return $file;
     }
 
-    public function getCacheDef(array $params) {
+    public function getCacheDef($method, array $params) {
         return false;
         // or return array('ttl' => 300, 'key' => $params);
     }
 
     /**
      * Magic method that tries to call the function in the MySQL class instead of this (SQL Manager) class.
-     * @param string $function_name     name of the function.
+     * @param string $method            name of the function.
      * @param array $args               with the parameters passed to the function
      * @return mixed                    return of the called function
      */
-    public function __call($function_name, $args){
-        if( method_exists($this->mysql, $function_name) /*|| method_exists($this, '__call')*/ ){
-            return call_user_func_array(array($this->mysql, $function_name), $args);
+    public function __call($method, $args){
+        if( method_exists($this->mysql, $method) ){
+            return call_user_func_array(array($this->mysql, $method), $args);
         }
     }
 

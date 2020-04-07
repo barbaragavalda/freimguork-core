@@ -209,18 +209,16 @@ abstract class Controller {
 
     /**
      * loads the cache from a model
-     * @param array $params_cache
-     * @param \Core\Model\Model $model
-     * @param string $function
-     * @param array $function_params
+     * @param \Core\Model\Model $model      object
+     * @param string $method                method to be called
+     * @param array $params                 cache params same as function params
      * @return mixed|null
      */
-    protected function loadCache($params_cache, $model, $function, $function_params = array()){
-        $cache_def = $model->getCacheDef($params_cache);
-        $result = $this->modelCache->getCache($cache_def);
-
+    protected function loadCache($model, $method, $params = array()){
+        $cacheDefinition = $model->getCacheDef($method, $params);
+        $result = $this->modelCache->getCache($cacheDefinition);
         if( $result == '' ){
-            $result = call_user_func_array( array($model, $function), $function_params);
+            $result = call_user_func_array( array($model, $method), $params);
             $this->modelCache->saveCache($result);
         }
         return $result;
