@@ -22,6 +22,16 @@ class PDO {
     private $databaseName = '';
 
     /**
+     * @var string $user
+     */
+    private $user = '';
+
+    /**
+     * @var string $password
+     */
+    private $password = '';
+
+    /**
      * @var null. Database connection
      */
     private $pdo = null;
@@ -55,15 +65,15 @@ class PDO {
         if( !empty($dbConfig) && count($dbConfig) ){
             $this->databaseName =  $dbConfig['name'];
 
-            $host       = $dbConfig['host'];
-            $user       = $dbConfig['user'];
-            $password   = $dbConfig['password'];
-            $database   = $this->databaseName;
+            $host           = $dbConfig['host'];
+            $this->user     = $dbConfig['user'];
+            $this->password = $dbConfig['password'];
+            $database       = $this->databaseName;
 
-            if( $host != '' && $user != '' && $database != '' ){
+            if( $host != '' && $this->user != '' && $database != '' ){
                 $dsn = 'mysql:dbname=' . $database . ';host=' . $host;
                 try {
-                    $this->pdo = new \PDO($dsn, $user, $password);
+                    $this->pdo = new \PDO($dsn, $this->user, $this->password);
                     $this->pdo->exec("SET CHARACTER SET utf8");
                     $this->pdo->exec("SET SESSION group_concat_max_len = 10000000");
                     $this->pdo->exec("SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
@@ -248,6 +258,94 @@ class PDO {
         } else {
             throw new Exception("The method <em>" . $function_name . "</em> doesn't exists on PDO. Check <a href='http://es.php.net/manual/en/book.pdo.php' target='_blank'>the manual</a> for more information");
         }
+    }
+
+    /**
+     * Dumps a given database to a given file.
+     * @param string $bd        is the database to dump.
+     * @param string $file      is the file where it'll be dumped to.
+     * @param bool $inserts     if we need to add the table content to the dumped DB.
+     * @return string           with the executed command.
+     */
+    public function dumpDB($bd,$file,$inserts=false){
+        echo 'Generanting file for '.$bd.'...\n';
+
+        if( $inserts )  $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :NOM_FITXER 2>&1';
+        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :NOM_FITXER 2>&1';
+
+        $command = str_replace(':USER',$this->user,$command);
+        $command = str_replace(':PASSWORD',$this->password,$command);
+        $command = str_replace(':BD',$bd,$command);
+        $command = str_replace(':NOM_FITXER',$file,$command);
+
+        echo PHP_EOL.PHP_EOL.$command;
+        return system($command);
+    }
+
+    /**
+     * Imports a database into MySQL given a filename.
+     * @param string $db_name       name to use in the local MySQL for the database
+     * @param string $sqlFile       path where the sql file to import is located.
+     * @param string $sqlTmpFile    path where the temporary sql file must be stored.
+     */
+    public function importDatabase($db_name,$sqlFile,$sqlTmpFile){
+        echo 'Importing '.$sqlFile.' as '.$db_name.' ('.$sqlTmpFile.')...\n';
+        // We remove the database if it exists
+        system('rm '.$sqlTmpFile);
+        $this->query('DROP database '.$db_name);
+        $command = 'cp '.$sqlFile.' '.$sqlTmpFile;
+        system($command);
+
+        // We get the name of the database to import.
+        $db_info = shell_exec('cat '.$sqlTmpFile.' | grep USE');
+        $db_info = explode('`',$db_info);
+        $db_current_name = $db_info[1];
+
+        // We replace the current name with the name we want to use.
+        $command = 'echo "%s/'.$db_current_name.'/'.$db_name.'/g
+					w
+					q
+					" | ex '.$sqlTmpFile;
+        system($command);
+
+        // We import the new database to our mysql server
+        $command = 'mysql -u:USER -p:PASSWORD < '.$sqlTmpFile;
+        $command = str_replace(':USER',$this->user,$command);
+        $command = str_replace(':PASSWORD',$this->password,$command);
+        system($command);
+    }
+
+    /**
+     * Starts MySQL
+     * @return bool     if we were able to start MySQL
+     */
+    public function start(){
+        $answer = shell_exec('sudo /etc/init.d/mysql start 2>&1');
+        if(strcmp(trim($answer),'Starting mysql (via systemctl): mysql.service.')==0) $ok = true;
+        else $ok = false;
+        return $ok;
+    }
+
+    /**
+     * Stops MySQL
+     * @return bool     if we were able to stop MySQL
+     */
+    public function stop(){
+        $answer = shell_exec('sudo /etc/init.d/mysql stop 2>&1');
+        if(strcmp(trim($answer),'Stopping mysql (via systemctl): mysql.service.')==0) $ok = true;
+        else $ok = false;
+        return $ok;
+    }
+
+    /**
+     * Restarts MySQL
+     * @return bool     if we were able to start and stop MySQL
+     */
+    public function restart(){
+        $ok = true;
+        $ok *= $this->stop();
+        $ok *= $this->start();
+        return $ok;
     }
 
 }
