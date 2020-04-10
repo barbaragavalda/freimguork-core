@@ -87,9 +87,9 @@ class DateUtils {
      * @return string
      */
     public static function formatSeconds($seconds, $format = '%02d:%02d'){
+        $hours = floor($seconds / 3600);
         $minutes = floor($seconds / 60 % 60);
-        $secs = floor($seconds % 60);
-        return sprintf($format, $minutes, $secs);
+        return sprintf($format, $hours, $minutes);
     }
 
     /**
