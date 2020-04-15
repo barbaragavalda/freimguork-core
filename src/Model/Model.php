@@ -17,7 +17,7 @@ use Core\Utils\Session;
 class Model {
 
     /**
-     * @var  \Core\Model\MySQL  Database connection
+     * @var  \Core\Model\MySQL\Manager  Database connection
      */
     public $mysql = null;
 

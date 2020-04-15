@@ -62,9 +62,14 @@ class PDO {
             $dbConfig = $config->get('db');
         }
 
-        if( !empty($dbConfig) && count($dbConfig) ){
-            $this->databaseName =  $dbConfig['name'];
-
+        if (!empty($dbConfig) && count($dbConfig)) {
+            if (isset($dbConfig['name'])) {
+                $this->databaseName = $dbConfig['name'];
+            } elseif (isset($dbConfig['databases']) && (sizeof($dbConfig['databases']) > 0)) {
+                $this->databaseName = $dbConfig['databases'][ array_key_first($dbConfig['databases']) ];
+            } else {
+                $this->databaseName = '';
+            }
             $host           = $dbConfig['host'];
             $this->user     = $dbConfig['user'];
             $this->password = $dbConfig['password'];
@@ -80,6 +85,8 @@ class PDO {
                 } catch (\PDOException $e) {
                     throw new Exception("PDO connection error: <em>" . $e->getMessage() . "</em>");
                 }
+            } else {
+                throw new Exception("PDO connection error: <em> no database specifyed</em>");
             }
         }
     }
@@ -270,13 +277,37 @@ class PDO {
     public function dumpDB($bd,$file,$inserts=false){
         echo 'Generanting file for '.$bd.'...\n';
 
-        if( $inserts )  $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :NOM_FITXER 2>&1';
-        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :NOM_FITXER 2>&1';
+        if( $inserts )  $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :FILE 2>&1';
+        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
 
         $command = str_replace(':USER',$this->user,$command);
         $command = str_replace(':PASSWORD',$this->password,$command);
         $command = str_replace(':BD',$bd,$command);
-        $command = str_replace(':NOM_FITXER',$file,$command);
+        $command = str_replace(':FILE',$file,$command);
+
+        echo PHP_EOL.PHP_EOL.$command;
+        return system($command);
+    }
+
+    /**
+     * Dumps given database tables into a given file
+     * @param string $bd database that needs to be dumped
+     * @param array $tables containing the tables that need to be dumped
+     * @param string $file where the information will be stored
+     *
+     * @return bool|string
+     */
+    public function dumpTables($bd,$tables,$file){
+        $tables = implode(" ",$tables);
+        echo 'Generanting file for database'.$bd.': including tables: '.$tables.' ...';
+
+        $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-table --set-charset :BD :TABLES > :FILE 2>&1';
+
+        $command = str_replace(':USER',$this->user,$command);
+        $command = str_replace(':PASSWORD',$this->password,$command);
+        $command = str_replace(':BD',$bd,$command);
+        $command = str_replace(':TABLES',$tables,$command);
+        $command = str_replace(':FILE',$file,$command);
 
         echo PHP_EOL.PHP_EOL.$command;
         return system($command);
