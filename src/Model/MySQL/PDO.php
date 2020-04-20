@@ -277,6 +277,11 @@ class PDO {
     public function dumpDB($bd,$file,$inserts=false){
         echo 'Generanting file for '.$bd.'...\n';
 
+        $command = 'mkdir -p ":FOLDER" && touch ":FILE"';
+        $command = str_replace(':FOLDER',dirname( $file ) ,$command);
+        $command = str_replace(':FILE',$file,$command);
+        system($command);
+
         if( $inserts )  $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :FILE 2>&1';
         else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
 
@@ -314,35 +319,20 @@ class PDO {
     }
 
     /**
-     * Imports a database into MySQL given a filename.
-     * @param string $db_name       name to use in the local MySQL for the database
-     * @param string $sqlFile       path where the sql file to import is located.
-     * @param string $sqlTmpFile    path where the temporary sql file must be stored.
+     * Imports a sql file into an existing database
+     * @param string $db name to use in the local MySQL for the database
+     * @param string $file       path where the sql file to import is located
      */
-    public function importDatabase($db_name,$sqlFile,$sqlTmpFile){
-        echo 'Importing '.$sqlFile.' as '.$db_name.' ('.$sqlTmpFile.')...\n';
-        // We remove the database if it exists
-        system('rm '.$sqlTmpFile);
-        $this->query('DROP database '.$db_name);
-        $command = 'cp '.$sqlFile.' '.$sqlTmpFile;
-        system($command);
-
-        // We get the name of the database to import.
-        $db_info = shell_exec('cat '.$sqlTmpFile.' | grep USE');
-        $db_info = explode('`',$db_info);
-        $db_current_name = $db_info[1];
-
-        // We replace the current name with the name we want to use.
-        $command = 'echo "%s/'.$db_current_name.'/'.$db_name.'/g
-					w
-					q
-					" | ex '.$sqlTmpFile;
-        system($command);
+    public function importSQLFile($db,$file){
+        echo 'Importing '.$file.' into '.$db.'...\n';
 
         // We import the new database to our mysql server
-        $command = 'mysql -u:USER -p:PASSWORD < '.$sqlTmpFile;
+        $command = 'mysql -u:USER -p:PASSWORD :DB < '.$file;
         $command = str_replace(':USER',$this->user,$command);
         $command = str_replace(':PASSWORD',$this->password,$command);
+        $command = str_replace(':DB',$db,$command);
+
+        echo $command;
         system($command);
     }
 
