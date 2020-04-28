@@ -81,15 +81,14 @@ class DateUtils {
     }
 
     /**
-     * transform an amount of seconds to H:i format
+     * transform an amount of seconds to i:s format
      * @param integer $seconds
-     * @param string $format
      * @return string
      */
-    public static function formatSeconds($seconds, $format = '%02d:%02d'){
-        $hours = floor($seconds / 3600);
-        $minutes = floor($seconds / 60 % 60);
-        return sprintf($format, $hours, $minutes);
+    public static function formatSeconds($seconds){
+        $minutes = floor($seconds / 60);
+        $secs = floor($seconds % 60);
+        return sprintf('%02d:%02d', $minutes, $secs);
     }
 
     /**
