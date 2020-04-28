@@ -25,13 +25,16 @@ class HTML extends Response {
      * set the header of the response
      * @param string $file              Name of the twig file
      * @param string $projectFolder     Folder for project
+     * @param int $status       Code (200, ...)
      */
-    public function __construct($file, $projectFolder) {
+    public function __construct($file, $projectFolder, $status) {
         $this->file = $file;
         $this->setHeaderType('text/html');
 
         $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/View/' );
         if( $projectFolder == 'Appacman' ) $this->addViewFolder( APPACMAN_DIR . 'View/' );
+
+        $this->setHeaderStatus($status);
     }
 
     private function addViewFolder($folder){

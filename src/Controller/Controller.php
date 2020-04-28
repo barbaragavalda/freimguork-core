@@ -141,10 +141,11 @@ abstract class Controller {
     /**
      * renders a template file (twig) to html format
      * @param string $file      Name of the template file
+     * @param int $status       Code (200, ...)
      */
-    protected function template($file) {
+    protected function template($file, $status = 200) {
         $this->view->setInfo($this->info);
-        $this->view->template($file);
+        $this->view->template($file, $status);
     }
 
     /**

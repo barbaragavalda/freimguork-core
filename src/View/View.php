@@ -64,10 +64,11 @@ class View{
     /**
      * renders a twig template
      * @param string $file. Template name
+     * @param int $status       Code (200, ...)
      */
-    public function template( $file ) {
+    public function template( $file, $status ) {
         if( !$this->response ) {
-            $this->response = new HTML($file, $this->projectFolder);
+            $this->response = new HTML($file, $this->projectFolder, $status);
             $this->render();
         }
     }
