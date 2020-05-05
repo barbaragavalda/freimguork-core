@@ -7,10 +7,12 @@ use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
 class Twig extends AbstractExtension{
+
     public function getFilters(){
         return [
             new TwigFilter('formatPrice', [$this, 'formatPrice']),
             new TwigFilter('formatArray', [$this, 'formatArray']),
+            new TwigFilter('forJS', [$this, 'forJS']),
         ];
     }
 
@@ -23,6 +25,10 @@ class Twig extends AbstractExtension{
             return vsprintf($string, $array);
         }
         return $string;
+    }
+
+    public function forJS($string){
+        return str_replace('\n', '', trim($string));
     }
 
 }
