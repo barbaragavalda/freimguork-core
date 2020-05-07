@@ -13,7 +13,7 @@ class Mail {
 
     protected $fromEmail = '';
 
-    private $fromName = '';
+    protected $fromName = '';
 
     public function __construct(){
         $config = Config::getInstance();
