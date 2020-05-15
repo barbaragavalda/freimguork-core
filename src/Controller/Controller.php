@@ -205,7 +205,8 @@ abstract class Controller {
      * @return array|bool
      */
     public function getCacheDef() {
-        return array('ttl' => 300, 'key' => array('controller', __CLASS__));
+        //return array('ttl' => 300, 'key' => array('controller', __CLASS__));
+        return false;
     }
 
     /**
