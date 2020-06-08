@@ -29,7 +29,7 @@ class Mail {
             $this->mail->Host = $this->config['host'];
             $this->mail->Port = $this->config['port'];
             $this->mail->From = $this->config['username'];
-            $this->mail->FromName = $this->config['from_name'];
+            $this->mail->FromName = $this->fromName;
             $this->mail->Username = $this->config['username'];
             $this->mail->Password = $this->config['password'];
 
