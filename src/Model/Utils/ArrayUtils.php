@@ -35,4 +35,42 @@ class ArrayUtils {
         return $items;
     }
 
+    /**
+     * Sum two arrays: array(1, 1) + array(2, 4) = array(3, 5)
+     * @param array $a
+     * @param array $b
+     * @return array
+     */
+    public static function sum($a, $b){
+        return array_map(function (...$arrays) {
+            return array_sum($arrays);
+        }, $a, $b);
+    }
+
+    /**
+     * Sum two associative arrays: array('a'=>1, 'b'=>1) + array('a'=>2, 'b'=>4) =array('a'=>3, 'b'=>5)
+     * @param array $a
+     * @param array $b
+     * @return array
+     */
+    public static function sumAssoc($a , $b){
+        $result = array_merge_recursive($a, $b);
+        foreach($result as &$x) {
+            if (is_array($x)) {
+                $x = array_sum($x);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Checks if all keys exist in a given array
+     * @param array $array array to check
+     * @param array $keys with the names of the keys that need to exist
+     * @return bool
+     */
+    public static function allKeysExist( array $array , array $keys ) {
+        return !array_diff_key( array_flip($keys) , $array );
+    }
+
 }

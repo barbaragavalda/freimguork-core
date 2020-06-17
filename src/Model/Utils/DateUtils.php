@@ -83,12 +83,13 @@ class DateUtils {
     /**
      * transform an amount of seconds to i:s format
      * @param integer $seconds
+     * @param string $format
      * @return string
      */
-    public static function formatSeconds($seconds){
+    public static function formatSeconds($seconds, $format = '%02d:%02d'){
         $minutes = floor($seconds / 60);
         $secs = floor($seconds % 60);
-        return sprintf('%02d:%02d', $minutes, $secs);
+        return sprintf($format, $minutes, $secs);
     }
 
     /**
