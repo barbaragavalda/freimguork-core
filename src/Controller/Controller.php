@@ -4,6 +4,7 @@ namespace Core\Controller;
 
 use Core\Utils\Config;
 use Core\Utils\Exception;
+use Core\View\Extension\Twig;
 
 /**
  * Class Controller
@@ -225,4 +226,34 @@ abstract class Controller {
         }
         return $result;
     }
+
+    /**
+     * obtain html content of twig file
+     * @param string $file
+     * @param array $info
+     * @param null $path
+     *
+     * @return string
+     */
+    protected function getHTML($file, $info = array(), $path = null) {
+        if( $path == null ){
+            $path = DIR_ROOT . 'src/' . $this->view->getProjectFolder() . '/View/';
+        }
+
+        $loader = new \Twig_Loader_Filesystem(array($path));
+        $twig = new \Twig_Environment($loader);
+        $twig->addExtension( new \Twig_Extensions_Extension_I18n() );
+        $twig->addExtension( new Twig() );
+        if( array_key_exists('twig_filters', $info) ){
+            foreach($info['twig_filters'] as $filter){
+                $twig->addFilter($filter);
+            }
+            unset($info['twig_filters']);
+        }
+
+        //response
+        $template = $twig->load($file);
+        return $template->render($info);
+    }
+    
 }

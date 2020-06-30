@@ -39,7 +39,11 @@ class View{
     public function __construct($projectFolder){
         $this->projectFolder = $projectFolder;
     }
-
+    
+    public function getProjectFolder(){
+        return $this->projectFolder;
+    }
+    
     /**
      * returns the final result
      */
