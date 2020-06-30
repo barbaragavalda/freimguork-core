@@ -27,10 +27,10 @@ class ArrayUtils {
                     $item['name'] = $name;
                 } else {
                     $item['name'] = $item[$fieldName];
-                    unset($item[$fieldName]);
+                    if( $fieldName != 'name' ) unset($item[$fieldName]);
                 }
             }
-            unset($item[$fieldID]);
+            if( $fieldID != 'name' ) unset($item[$fieldID]);
         }
         return $items;
     }
