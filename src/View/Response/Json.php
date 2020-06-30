@@ -36,6 +36,8 @@ class Json extends Response {
                     break;
                 }
             }
+        }else{
+            $this->setHeader('Access-Control-Allow-Origin', '*');
         }
 
         $this->setHeaderType('application/json');
