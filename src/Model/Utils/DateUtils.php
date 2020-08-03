@@ -141,13 +141,9 @@ class DateUtils {
      * @return integer
      */
     public static function minutesBetween($startDate, $endDate){
-        $interval = self::getTimeInterval($startDate, $endDate);
-
-        $minutes = $interval->d * 24 * 60;
-        $minutes += $interval->h * 60;
-        $minutes += $interval->i;
-
-        return $minutes;
+        $start = strtotime($endDate->format(self::FORMAT_TIMESTAMP_DB));
+        $end = strtotime($startDate->format(self::FORMAT_TIMESTAMP_DB));
+        return round(abs($end - $start) / 60,2);
     }
 
     /**
