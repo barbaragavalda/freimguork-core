@@ -108,6 +108,7 @@ class PDO {
             $this->success = $this->statement->execute();
             return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
         }
+        return array();
     }
 
     public function getState(){
@@ -148,20 +149,22 @@ class PDO {
      * @return bool
      */
     public function tableExists($table){
-        $sql = '
-			SELECT table_name
-			FROM information_schema.tables
-			WHERE table_schema = :bbdd_name
-			AND table_name = :table_name
-		';
-        $params = array(
-            'bbdd_name'     => array('value'=>$this->databaseName,  'type'=>\PDO::PARAM_STR),
-            'table_name'    => array('value'=>$table,               'type'=>\PDO::PARAM_STR),
-        );
-        $result = $this->query($sql, $params);
+        if( $this->pdo != null ) {
+            $sql    = '
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = :bbdd_name
+                AND table_name = :table_name
+            ';
+            $params = array(
+                'bbdd_name'  => array('value' => $this->databaseName, 'type' => \PDO::PARAM_STR),
+                'table_name' => array('value' => $table, 'type' => \PDO::PARAM_STR),
+            );
+            $result = $this->query($sql, $params);
 
-        if( count($result) ){
-            return true;
+            if (count($result)) {
+                return true;
+            }
         }
         return false;
     }
@@ -174,22 +177,24 @@ class PDO {
      * @return bool
      */
     public function fieldExists($table, $field){
-        $sql = '
-			SELECT * 
-			FROM information_schema.columns 
-			WHERE table_schema = :bbdd_name
-			AND table_name = :table_name
-			AND column_name = :field
-		';
-        $params = array(
-            'bbdd_name'     => array('value'=>$this->databaseName, 'type'=>\PDO::PARAM_STR),
-            'table_name'    => array('value'=>$table, 'type'=>\PDO::PARAM_STR),
-            'field'         => array('value'=>$field, 'type'=>\PDO::PARAM_STR),
-        );
-        $result = $this->query($sql, $params);
+        if( $this->pdo != null ) {
+            $sql    = '
+                SELECT * 
+                FROM information_schema.columns 
+                WHERE table_schema = :bbdd_name
+                AND table_name = :table_name
+                AND column_name = :field
+            ';
+            $params = array(
+                'bbdd_name'  => array('value' => $this->databaseName, 'type' => \PDO::PARAM_STR),
+                'table_name' => array('value' => $table, 'type' => \PDO::PARAM_STR),
+                'field'      => array('value' => $field, 'type' => \PDO::PARAM_STR),
+            );
+            $result = $this->query($sql, $params);
 
-        if( count($result) ){
-            return true;
+            if (count($result)) {
+                return true;
+            }
         }
         return false;
     }
