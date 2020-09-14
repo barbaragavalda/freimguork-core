@@ -108,7 +108,6 @@ class PDO {
             $this->success = $this->statement->execute();
             return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
         }
-        return array();
     }
 
     public function getState(){
@@ -149,22 +148,20 @@ class PDO {
      * @return bool
      */
     public function tableExists($table){
-        if( $this->pdo != null ) {
-            $sql    = '
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = :bbdd_name
-                AND table_name = :table_name
-            ';
-            $params = array(
-                'bbdd_name'  => array('value' => $this->databaseName, 'type' => \PDO::PARAM_STR),
-                'table_name' => array('value' => $table, 'type' => \PDO::PARAM_STR),
-            );
-            $result = $this->query($sql, $params);
+        $sql = '
+			SELECT table_name
+			FROM information_schema.tables
+			WHERE table_schema = :bbdd_name
+			AND table_name = :table_name
+		';
+        $params = array(
+            'bbdd_name'     => array('value'=>$this->databaseName,  'type'=>\PDO::PARAM_STR),
+            'table_name'    => array('value'=>$table,               'type'=>\PDO::PARAM_STR),
+        );
+        $result = $this->query($sql, $params);
 
-            if (count($result)) {
-                return true;
-            }
+        if( count($result) ){
+            return true;
         }
         return false;
     }
@@ -177,24 +174,22 @@ class PDO {
      * @return bool
      */
     public function fieldExists($table, $field){
-        if( $this->pdo != null ) {
-            $sql    = '
-                SELECT * 
-                FROM information_schema.columns 
-                WHERE table_schema = :bbdd_name
-                AND table_name = :table_name
-                AND column_name = :field
-            ';
-            $params = array(
-                'bbdd_name'  => array('value' => $this->databaseName, 'type' => \PDO::PARAM_STR),
-                'table_name' => array('value' => $table, 'type' => \PDO::PARAM_STR),
-                'field'      => array('value' => $field, 'type' => \PDO::PARAM_STR),
-            );
-            $result = $this->query($sql, $params);
+        $sql = '
+			SELECT * 
+			FROM information_schema.columns 
+			WHERE table_schema = :bbdd_name
+			AND table_name = :table_name
+			AND column_name = :field
+		';
+        $params = array(
+            'bbdd_name'     => array('value'=>$this->databaseName, 'type'=>\PDO::PARAM_STR),
+            'table_name'    => array('value'=>$table, 'type'=>\PDO::PARAM_STR),
+            'field'         => array('value'=>$field, 'type'=>\PDO::PARAM_STR),
+        );
+        $result = $this->query($sql, $params);
 
-            if (count($result)) {
-                return true;
-            }
+        if( count($result) ){
+            return true;
         }
         return false;
     }
@@ -287,7 +282,7 @@ class PDO {
         $command = str_replace(':FILE',$file,$command);
         system($command);
 
-        if( $inserts )  $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :FILE 2>&1';
+        if( $inserts ) $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :FILE 2>&1';
         else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
 
         $command = str_replace(':USER',$this->user,$command);
@@ -304,14 +299,16 @@ class PDO {
      * @param string $bd database that needs to be dumped
      * @param array $tables containing the tables that need to be dumped
      * @param string $file where the information will be stored
+     * @param bool $inserts     if we need to add the table content to the dumped DB.
      *
      * @return bool|string
      */
-    public function dumpTables($bd,$tables,$file){
+    public function dumpTables($bd,$tables,$file,$inserts=false){
         $tables = implode(" ",$tables);
         echo 'Generanting file for database'.$bd.': including tables: '.$tables.' ...';
 
-        $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-table --set-charset :BD :TABLES > :FILE 2>&1';
+        if( $inserts ) $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-table --set-charset :BD :TABLES > :FILE 2>&1';
+        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --add-drop-table --set-charset :BD :TABLES | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
 
         $command = str_replace(':USER',$this->user,$command);
         $command = str_replace(':PASSWORD',$this->password,$command);
