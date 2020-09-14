@@ -5,7 +5,6 @@ namespace Core\Model\Utils;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Workbook;
 
 class Excel extends Spreadsheet {
 
@@ -104,10 +103,20 @@ class Excel extends Spreadsheet {
 
     /**
      * change cells alignment to right/left
-     * @param string $cellRange
+     * @param string $cellRange to apply alignment
+     * @param string $alignment desired for cell range
      */
     public function align($cellRange, $alignment = 'left'){
         $this->sheet->getStyle($cellRange)->getAlignment()->setHorizontal($alignment);
+    }
+
+    /**
+     * change cells alignment to top/center/bottom
+     * @param string $cellRange to apply alignment
+     * @param string $alignment desired for cell range
+     */
+    public function verticalAlign($cellRange, $alignment = 'top'){
+        $this->sheet->getStyle($cellRange)->getAlignment()->setVertical($alignment);
     }
 
     /**
