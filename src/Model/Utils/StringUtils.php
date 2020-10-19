@@ -28,9 +28,14 @@ class StringUtils {
     /**
      * remove accents and special characters. For example: "Bàrbara Gavaldà" will be "barbara-gavalda"
      * @param string $string
+     * @param boolean $toLower
      * @return string
      */
-    public static function removeSpecialCharacters($string = ''){
+    public static function removeSpecialCharacters($string = '', $toLower = true){
+        $string = trim($string);
+        if( $toLower ){
+            $string = mb_strtolower($string);
+        }
         $string = str_replace(' ', '-', $string);
         $string = self::removeAccents($string);
         return preg_replace('/[^A-Za-z0-9\-_.]/', '', $string);

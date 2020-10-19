@@ -135,6 +135,17 @@ class DateUtils {
     }
 
     /**
+     * seconds between two dates
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @return int
+     */
+    public static function secondsBetween($startDate, $endDate){
+        $interval = self::getTimeInterval($startDate, $endDate);
+        return self::intervalToSeconds($interval);
+    }
+
+    /**
      * minutes between two dates
      * @param \DateTime $startDate
      * @param \DateTime $endDate
