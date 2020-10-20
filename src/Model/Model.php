@@ -64,6 +64,10 @@ class Model {
         return $this->created;
     }
 
+    public function setCreated($created){
+        $this->created = $created;
+    }
+
     protected function getFile($fileID, $suffix = ''){
         $file = new File($fileID);
         return $file->getAbsolutePath($suffix);

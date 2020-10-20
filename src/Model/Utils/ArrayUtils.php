@@ -73,4 +73,10 @@ class ArrayUtils {
         return !array_diff_key( array_flip($keys) , $array );
     }
 
+    public static function arraySpliceAssoc($array, $offset, $length, $extraArray){
+        return array_slice($array, 0, $offset, true) +
+            $extraArray +
+            array_slice($array, $offset + $length, null, true);
+    }
+
 }
