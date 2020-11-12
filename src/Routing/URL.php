@@ -16,7 +16,7 @@ use Core\Utils\Config;
  */
 class URL{
 
-    const REG_PARAM = '[a-zA-Z0-9-_.%]+';
+    const REG_PARAM = '[a-zA-Z0-9-_.%&]+';
 
     private $userURL = null;
     private $protocol = 'http://';
