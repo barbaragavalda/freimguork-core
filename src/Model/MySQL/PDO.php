@@ -282,8 +282,8 @@ class PDO {
         $command = str_replace(':FILE',$file,$command);
         system($command);
 
-        if( $inserts ) $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset :BD > :FILE 2>&1';
-        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
+        if( $inserts ) $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-database --databases --add-drop-database --add-drop-table --set-charset --skip-tz-utc :BD > :FILE 2>&1';
+        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --databases --add-drop-database --add-drop-table --set-charset --skip-tz-utc :BD | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
 
         $command = str_replace(':USER',$this->user,$command);
         $command = str_replace(':PASSWORD',$this->password,$command);
@@ -307,8 +307,8 @@ class PDO {
         $tables = implode(" ",$tables);
         echo 'Generanting file for database'.$bd.': including tables: '.$tables.' ...';
 
-        if( $inserts ) $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-table --set-charset :BD :TABLES > :FILE 2>&1';
-        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --add-drop-table --set-charset :BD :TABLES | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
+        if( $inserts ) $command = 'mysqldump -u:USER -p:PASSWORD --skip-comments --compact --add-drop-table --set-charset --skip-tz-utc :BD :TABLES > :FILE 2>&1';
+        else $command = 'mysqldump -u:USER -p:PASSWORD -d --single-transaction --add-drop-table --set-charset --skip-tz-utc :BD :TABLES | sed "s/ AUTO_INCREMENT=[0-9]*\b/ AUTO_INCREMENT=1/" > :FILE 2>&1';
 
         $command = str_replace(':USER',$this->user,$command);
         $command = str_replace(':PASSWORD',$this->password,$command);
@@ -320,23 +320,31 @@ class PDO {
         return system($command);
     }
 
-    /**
-     * Imports a sql file into an existing database
-     * @param string $db name to use in the local MySQL for the database
-     * @param string $file       path where the sql file to import is located
-     */
-    public function importSQLFile($db,$file){
-        echo 'Importing '.$file.' into '.$db.'...\n';
+    **
+	 * Imports a sql file into an existing database
+	 *
+	 * @param string $db   name to use in the local MySQL for the database
+	 * @param string $file path where the sql file to import is located
+	 *
+	 * @return bool if import was executed correctly
+	 */
+	public function importSQLFile($db, $file)
+	{
+	    echo 'Importing ' . $file . ' into ' . $db . PHP_EOL;
 
-        // We import the new database to our mysql server
-        $command = 'mysql -u:USER -p:PASSWORD :DB < '.$file;
-        $command = str_replace(':USER',$this->user,$command);
-        $command = str_replace(':PASSWORD',$this->password,$command);
-        $command = str_replace(':DB',$db,$command);
+	    // We import the new database to our mysql server
+	    $command = 'mariadb -u:USER -p:PASSWORD :DB < ' . $file . ' 2>&1 ';
+	    $command = str_replace(':USER', $this->user, $command);
+	    $command = str_replace(':PASSWORD', $this->password, $command);
+	    $command = str_replace(':DB', $db, $command);
 
-        echo $command;
-        system($command);
-    }
+	    echo $command;
+	    if (!shell_exec($command)) {
+	        return true;
+	    } else {
+	        return false;
+	    }
+	}
 
     /**
      * Starts MySQL
