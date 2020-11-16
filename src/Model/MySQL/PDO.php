@@ -320,7 +320,7 @@ class PDO {
         return system($command);
     }
 
-    **
+    /**
 	 * Imports a sql file into an existing database
 	 *
 	 * @param string $db   name to use in the local MySQL for the database
