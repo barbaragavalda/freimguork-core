@@ -26,6 +26,15 @@ class StringUtils {
     }
 
     /**
+     * normalize string
+     * @param string $string
+     * @return string
+     */
+    public static function normalize($string){
+        return trim(strtolower(self::removeAccents($string)));
+    }
+
+    /**
      * remove accents and special characters. For example: "Bàrbara Gavaldà" will be "barbara-gavalda"
      * @param string $string
      * @param boolean $toLower
