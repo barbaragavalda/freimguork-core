@@ -39,6 +39,10 @@ abstract class Paginated extends Model {
         return $this->filters;
     }
 
+    public function setFilters($filters){
+        $this->filters = $filters;
+    }
+
     /**
      * load all items without pagination
      * @return array
