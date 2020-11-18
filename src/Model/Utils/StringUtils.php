@@ -224,7 +224,6 @@ class StringUtils {
      * @return string
      */
     public static function formatPrice($value, $decimals = 2, $thousandsSep = '.', $decPoint = ',', $currency = '&euro;'){
-        if( empty($value) ) return '';
         $value = str_replace(',', '.', $value);
         return number_format($value, $decimals, $decPoint, $thousandsSep) . $currency;
     }
