@@ -1,6 +1,6 @@
 {
     "name": "appaqui/freimguork-core",
-    "description": "Core module for Freimg√ºork projects",
+    "description": "Core module for FreimgÅork projects",
     "authors": [
         {
             "name": "Barbara Gavalda", 
@@ -19,7 +19,7 @@
         "phpmailer/phpmailer": "~5.0",
         "simplesoftwareio/simple-qrcode": "~1",
         "phpunit/phpunit": "^8",
-        "phpoffice/phpspreadsheet": "dev-master"
+        "phpoffice/phpspreadsheet": "^1.5"
     },
     "autoload": {
         "psr-4": {
