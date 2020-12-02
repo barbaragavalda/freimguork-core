@@ -27,7 +27,7 @@ class HTML extends Response {
      * @param string $projectFolder     Folder for project
      * @param int $status       Code (200, ...)
      */
-    public function __construct($file, $projectFolder, $status) {
+    public function __construct($file, $projectFolder, $status = 200) {
         $this->file = $file;
         $this->setHeaderType('text/html');
 
