@@ -19,7 +19,7 @@
         "phpmailer/phpmailer": "~5.0",
         "simplesoftwareio/simple-qrcode": "~1",
         "phpunit/phpunit": "^8",
-        "phpoffice/phpspreadsheet": "1.5.0"
+        "phpoffice/phpspreadsheet": "dev-master"
     },
     "autoload": {
         "psr-4": {
