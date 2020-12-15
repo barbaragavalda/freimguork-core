@@ -79,4 +79,24 @@ class ArrayUtils {
             array_slice($array, $offset + $length, null, true);
     }
 
+    /**
+     * move elements in array
+     * @param array $array
+     * @param integer $currentIndex
+     * @param integer $finalIndex
+     */
+    public static function move(&$array, $currentIndex, $finalIndex) {
+        if( $finalIndex < 0 ){
+            $finalIndex = 0;
+        }
+        if( $finalIndex >= count($array) ){
+            $finalIndex = count($array) - 1;
+        }
+
+        if( $currentIndex != $finalIndex ){
+            $out = array_splice($array, $currentIndex, 1);
+            array_splice($array, $finalIndex, 0, $out);
+        }
+    }
+
 }
