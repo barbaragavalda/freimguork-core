@@ -4,7 +4,7 @@ namespace Core\Model;
 
 abstract class Paginated extends Model {
 
-    const VISIBLE_PAGES = 4;
+    private $visiblePages = 4;
 
     private $itemsPerPage = 25;
 
@@ -23,10 +23,11 @@ abstract class Paginated extends Model {
      */
     protected $filters = array();
 
-    public function __construct($page, $itemsPerPage = 25, $autoInit = true){
+    public function __construct($page, $itemsPerPage = 25, $autoInit = true, $visiblePages = 4){
         parent::__construct();
 
         $this->itemsPerPage = $itemsPerPage;
+        $this->visiblePages = $visiblePages;
 
         if( $page && $page > 0 ){
             $this->page = $page - 1;
@@ -85,15 +86,15 @@ abstract class Paginated extends Model {
         }
 
         // set up
-        if ($currentPage <= self::VISIBLE_PAGES) {
+        if ($currentPage <= $this->visiblePages) {
             $firstAdjacentPage = $firstPage;
-            $lastAdjacentPage  = min($firstPage + self::VISIBLE_PAGES, $lastPage);
-        } elseif ($currentPage > $lastPage - self::VISIBLE_PAGES) {
+            $lastAdjacentPage  = min($firstPage + $this->visiblePages, $lastPage);
+        } elseif ($currentPage > $lastPage - $this->visiblePages) {
             $lastAdjacentPage  = $lastPage;
-            $firstAdjacentPage = $lastPage - self::VISIBLE_PAGES;
+            $firstAdjacentPage = $lastPage - $this->visiblePages;
         } else {
-            $firstAdjacentPage = $currentPage - self::VISIBLE_PAGES/2;
-            $lastAdjacentPage  = $currentPage + self::VISIBLE_PAGES/2;
+            $firstAdjacentPage = $currentPage - $this->visiblePages/2;
+            $lastAdjacentPage  = $currentPage + $this->visiblePages/2;
         }
 
         $pagination = array();
