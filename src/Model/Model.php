@@ -95,6 +95,19 @@ class Model {
         return $file;
     }
 
+    /**
+     * create where string
+     * @param array $conditions
+     * @param string $type
+     * @return string
+     */
+    public function getWhere($conditions, $type = ' AND '){
+        if( count($conditions) ){
+            return 'WHERE ' . implode($type, $conditions);
+        }
+        return '';
+    }
+
     public function getCacheDef($method, array $params) {
         return false;
         // or return array('ttl' => 300, 'key' => $params);

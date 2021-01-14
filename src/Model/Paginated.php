@@ -48,7 +48,7 @@ abstract class Paginated extends Model {
      * load all items without pagination
      * @return array
      */
-    abstract protected function initAll();
+    abstract public function initAll();
 
     /**
      * get all items on pagination
