@@ -43,7 +43,12 @@ class File extends Model {
 
         // init directory
         $config = Config::getInstance();
-        $this->absoluteFolder = $config->getBaseDomain() . 'public/upload/';
+        
+        $uploadPath = 'upload/';
+        $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);
+        if( $explode[count($explode)-1] != 'public') $uploadPath = 'public/' . $uploadPath;
+        $this->absoluteFolder = $config->getBaseDomain() . $uploadPath;
+        
         $this->relativeFolder = 'upload/';
 
         //load current image

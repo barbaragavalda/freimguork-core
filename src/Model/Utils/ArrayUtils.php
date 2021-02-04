@@ -99,4 +99,23 @@ class ArrayUtils {
         }
     }
 
+    /**
+     * merge two arrays
+     * @param array $a
+     * @param array $b
+     * @return array
+     */
+    public static function merge($a, $b){
+        $countA = count($a);
+        $countB = count($b);
+        if( $countA && $countB ){
+            return array_merge($a, $b);
+        }
+
+        if( $countA ){
+            return $a;
+        }
+        return $b;
+    }
+
 }
