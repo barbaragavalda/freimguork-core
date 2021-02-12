@@ -120,7 +120,6 @@ class Language extends Model {
             $this->language = $languageID;
         }
         $this->culture = $this->configuration[ $this->language ];
-        $this->initID();
     }
 
     public function setCulture($culture){
