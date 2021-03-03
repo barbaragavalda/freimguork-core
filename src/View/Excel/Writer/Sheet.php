@@ -18,9 +18,10 @@ class Sheet extends XMLGenerator
     {
         $firstCell                   = 'A1';
         $this->xml->dimension['ref'] = $firstCell . ':' . $maxColumn . (count($this->items) + $offset);
-        $this->xml->sheetViews->sheetView['topLeftCell'] = $firstCell;
+
+        $this->xml->sheetViews->sheetView['topLeftCell']           = $firstCell;
         $this->xml->sheetViews->sheetView->selection['activeCell'] = $firstCell;
-        $this->xml->sheetViews->sheetView->selection['sqref'] = $firstCell;
+        $this->xml->sheetViews->sheetView->selection['sqref']      = $firstCell;
 
         $sheetData = '<sheetData>';
         foreach ($this->xml->sheetData->row as $row) {
@@ -41,14 +42,18 @@ class Sheet extends XMLGenerator
                 $fieldName = $field['field'];
                 $value     = $item[ $field['field'] ];
 
-                $extra = '';
-                if (array_key_exists($fieldName, $formats)) {
-                    $extra .= ' s="' . $formats[ $fieldName ]['position'] . '"';
+                $extra  = '';
+                $format = $this->getFormat($formats, $field['type'], $fieldName);
+                if ($format) {
+                    $extra .= ' s="' . $format . '"';
                 }
 
                 $found = true;
                 if (!empty($value)) {
                     switch ($field['type']) {
+                        case 'n':
+                            $found = false;
+                            break;
                         case 'd':
                             $found = false;
                             $value = $item[ $fieldName . '_timestamp' ];
@@ -87,6 +92,16 @@ class Sheet extends XMLGenerator
         }
 
         return '<c r="' . $cell . '"' . $extra . '><v>' . $value . '</v></c>';
+    }
+
+    private function getFormat($formats, $type, $fieldName)
+    {
+        switch ($type) {
+            case 'd':
+                return $formats[ $fieldName ]['position'];
+                break;
+        }
+        return false;
     }
 
 }

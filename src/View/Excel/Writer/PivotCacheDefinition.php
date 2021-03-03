@@ -18,63 +18,65 @@ class PivotCacheDefinition extends XMLGenerator
 
     public function write($fields)
     {
-        $this->xml->attributes()->recordCount   = count($this->items);
-        $this->xml->attributes()->refreshOnLoad = 1;
+        $this->xml['recordCount']   = count($this->items);
+        $this->xml['refreshOnLoad'] = 1;
 
-        $date                                   = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(time());
-        $this->xml->attributes()->refreshedDate = str_replace(',', '.', $date);
+        $date                       = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(time());
+        $this->xml['refreshedDate'] = str_replace(',', '.', $date);
 
         $this->xml->cacheFields['count'] = count($fields);
 
         $i      = 0;
         $fields = array_values($fields);
         foreach ($this->xml->cacheFields->cacheField as $cacheField) {
-            $type  = $fields[ $i ]['type'];
-            $field = $fields[ $i ]['field'];
+            if ($i < count($fields)) {
+                $type  = $fields[ $i ]['type'];
+                $field = $fields[ $i ]['field'];
 
-            if (!in_array($field, array('responsible'))) {
-                $values      = $this->prepare($field);
-                $sharedItems = true;
-                switch ($type) {
-                    case 'd':
-                        $cacheField->sharedItems['containsSemiMixedTypes'] = 0;
-                        $cacheField->sharedItems['containsNonDate']        = 0;
-                        $cacheField->sharedItems['containsDate']           = 1;
-                        $cacheField->sharedItems['containsString']         = 0;
-                        $this->setMinMax($cacheField->sharedItems, $values, 'Date');
-                        break;
-                    case 'n':
-                        $cacheField->sharedItems['containsString']         = 0;
-                        $cacheField->sharedItems['containsSemiMixedTypes'] = 0;
-                        $cacheField->sharedItems['containsNumber']         = 1;
-                        $cacheField->sharedItems['containsInteger']        = 1;
+                if (!in_array($field, array('responsible'))) {
+                    $values      = $this->prepare($field);
+                    $sharedItems = true;
+                    switch ($type) {
+                        case 'd':
+                            $cacheField->sharedItems['containsSemiMixedTypes'] = 0;
+                            $cacheField->sharedItems['containsNonDate']        = 0;
+                            $cacheField->sharedItems['containsDate']           = 1;
+                            $cacheField->sharedItems['containsString']         = 0;
+                            $this->setMinMax($cacheField->sharedItems, $values, 'Date');
+                            break;
+                        case 'n':
+                            $cacheField->sharedItems['containsString']         = 0;
+                            $cacheField->sharedItems['containsSemiMixedTypes'] = 0;
+                            $cacheField->sharedItems['containsNumber']         = 1;
+                            $cacheField->sharedItems['containsInteger']        = 1;
 
-                        $sharedItems = false;
-                        $this->setMinMax($cacheField->sharedItems, $values);
-                        break;
-                    case 's':
-                        unset($cacheField->sharedItems['containsMixedTypes']);
-                        unset($cacheField->sharedItems['containsSemiMixedTypes']);
-                        unset($cacheField->sharedItems['containsString']);
-                        unset($cacheField->sharedItems['containsNumber']);
-                        unset($cacheField->sharedItems['containsDate']);
-                        unset($cacheField->sharedItems['containsInteger']);
-                        unset($cacheField->sharedItems['containsNonDate']);
-                        unset($cacheField->sharedItems['minValue']);
-                        unset($cacheField->sharedItems['maxValue']);
-                        break;
-                }
+                            $sharedItems = false;
+                            $this->setMinMax($cacheField->sharedItems, $values);
+                            break;
+                        case 's':
+                            unset($cacheField->sharedItems['containsMixedTypes']);
+                            unset($cacheField->sharedItems['containsSemiMixedTypes']);
+                            unset($cacheField->sharedItems['containsString']);
+                            unset($cacheField->sharedItems['containsNumber']);
+                            unset($cacheField->sharedItems['containsDate']);
+                            unset($cacheField->sharedItems['containsInteger']);
+                            unset($cacheField->sharedItems['containsNonDate']);
+                            unset($cacheField->sharedItems['minValue']);
+                            unset($cacheField->sharedItems['maxValue']);
+                            break;
+                    }
 
-                if ($sharedItems) {
-                    $cacheField->sharedItems['count'] = count($values);
-                    $cacheField->sharedItems[0]       = $this->addValues($values, $type, $field);
-                } else {
-                    unset($cacheField->sharedItems['count']);
-                    $cacheField->sharedItems[0] = '';
-                }
+                    if ($sharedItems) {
+                        $cacheField->sharedItems['count'] = count($values);
+                        $cacheField->sharedItems[0]       = $this->addValues($values, $type, $field);
+                    } else {
+                        unset($cacheField->sharedItems['count']);
+                        $cacheField->sharedItems[0] = '';
+                    }
 
-                if (count($values)) {
-                    $cacheField->sharedItems['containsBlank'] = 0;
+                    if (count($values)) {
+                        $cacheField->sharedItems['containsBlank'] = 0;
+                    }
                 }
             }
 
@@ -89,6 +91,7 @@ class PivotCacheDefinition extends XMLGenerator
 
         $xml = str_replace('&lt;', '<', $this->xml->asXML());
         $xml = str_replace('&gt;', '>', $xml);
+
         return $xml;
     }
 

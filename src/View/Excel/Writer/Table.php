@@ -15,7 +15,7 @@ class Table extends XMLGenerator
 
     public function write($offset, $maxColumn)
     {
-        $this->xml->attributes()->ref = 'A1:' . $maxColumn . (count($this->items) + $offset);
+        $this->xml['ref']             = 'A1:' . $maxColumn . (count($this->items) + $offset);
         $this->xml->autoFilter['ref'] = 'A1:' . $maxColumn . (count($this->items) + $offset);
 
         return $this->xml->asXML();

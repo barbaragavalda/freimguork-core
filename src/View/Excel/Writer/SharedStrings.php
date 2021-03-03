@@ -65,7 +65,7 @@ class SharedStrings
 
     public function getPosition($string)
     {
-        $position = array_search($string, $this->strings);
+        $position = array_search($string, $this->strings, true);
         if ($position !== false) {
             return $position;
         }

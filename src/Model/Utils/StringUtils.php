@@ -322,6 +322,21 @@ class StringUtils {
         }
         return $sum;
     }
+    
+    /**
+     * validate if string is a MAC address
+     * @param string $string to check
+     *
+     * @return bool true if is a MAC, false if it isn't
+     */
+    public static function validateMAC($string){
+        if (isset($string) && strcmp($string,"") != 0 ){
+            if (preg_match('/^[0-9a-fA-F]{2}(?=([-:;. ]?))(?:\\1[0-9a-fA-F]{2}){5}$/', $string)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * generates an alphanumeric token of the desired length

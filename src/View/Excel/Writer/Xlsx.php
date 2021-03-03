@@ -14,6 +14,7 @@ class Xlsx extends \PhpOffice\PhpSpreadsheet\Writer\Xlsx
     const FILE_PIVOT_CACHE_RECORD     = 'pivotCacheRecord';
     const FILE_PIVOT_TABLE            = 'pivotTable';
     const FILE_SHARED_STRINGS         = 'sharedStrings.xml';
+    const FILE_SLICER_CACHE           = 'slicerCache';
     const FILE_STYLE                  = 'styles.xml';
 
     /**
@@ -155,6 +156,12 @@ class Xlsx extends \PhpOffice\PhpSpreadsheet\Writer\Xlsx
                         $content                  = $this->getContent($fileName);
                         $pivotTable               = new PivotTable($this, $this->items, $content);
                         $this->files[ $fileName ] = $pivotTable->write();
+                    }
+                    if (StringUtils::startsWidth($fileInfo['basename'], self::FILE_SLICER_CACHE)) {
+                        $content                  = $this->getContent($fileName);
+                        $slicer = new SlicerCache($this, $this->items, $content);
+                        $this->files[ $fileName ] = $slicer->write();
+                        r($fileInfo['basename']); exit;
                     }
                     if ($fileInfo['basename'] == 'table' . $sheetExtension) {
                         $content                  = $this->getContent($fileName);
