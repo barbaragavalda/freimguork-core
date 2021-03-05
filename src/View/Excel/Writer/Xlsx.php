@@ -124,7 +124,6 @@ class Xlsx extends \PhpOffice\PhpSpreadsheet\Writer\Xlsx
             $this->initStyles();
 
             $cacheDefinition = null;
-            $cacheDefinitionXML = null;
             for ($i = 0; $i < $this->zip->numFiles; $i++) {
                 $file     = $this->zip->statIndex($i);
                 $fileName = $file['name'];
@@ -136,7 +135,6 @@ class Xlsx extends \PhpOffice\PhpSpreadsheet\Writer\Xlsx
                         $content                  = $this->getContent($fileName);
                         $cacheDefinition          = new PivotCacheDefinition($this, $this->items, $content);
                         $this->files[ $fileName ] = $cacheDefinition->write($this->fields);
-                        $cacheDefinitionXML = new \SimpleXMLElement($this->files[ $fileName ]);
                     }
                 }
             }
@@ -148,21 +146,21 @@ class Xlsx extends \PhpOffice\PhpSpreadsheet\Writer\Xlsx
 
                 $isXML = $fileInfo['extension'] == 'xml';
                 if ($isXML) {
-                    if (StringUtils::startsWidth($fileInfo['basename'], self::FILE_PIVOT_CACHE_RECORD)) {
-                        $content      = $this->getContent($fileName);
-                        $cacheRecords = new PivotCacheRecords($this, $this->items, $content);
-                        $cacheRecords->setDefinition($cacheDefinition);
-                        $this->files[ $fileName ] = $cacheRecords->write($this->fields);
-                    }
-                    if (StringUtils::startsWidth($fileInfo['basename'], self::FILE_PIVOT_TABLE)) {
-                        $content                  = $this->getContent($fileName);
-                        $pivotTable               = new PivotTable($this, $this->items, $content);
-                        $this->files[ $fileName ] = $pivotTable->write();
-                    }
+//                    if (StringUtils::startsWidth($fileInfo['basename'], self::FILE_PIVOT_CACHE_RECORD)) {
+//                        $content      = $this->getContent($fileName);
+//                        $cacheRecords = new PivotCacheRecords($this, $this->items, $content);
+//                        $cacheRecords->setDefinition($cacheDefinition);
+//                        $this->files[ $fileName ] = $cacheRecords->write($this->fields);
+//                    }
+//                    if (StringUtils::startsWidth($fileInfo['basename'], self::FILE_PIVOT_TABLE)) {
+//                        $content                  = $this->getContent($fileName);
+//                        $pivotTable               = new PivotTable($this, $this->items, $content);
+//                        $this->files[ $fileName ] = $pivotTable->write();
+//                    }
                     if (StringUtils::startsWidth($fileInfo['basename'], self::FILE_SLICER_CACHE)) {
                         $content                  = $this->getContent($fileName);
                         $slicer = new SlicerCache($this, $this->items, $content);
-                        $this->files[ $fileName ] = $slicer->write($cacheDefinitionXML);
+                        $this->files[ $fileName ] = $slicer->write();
                     }
                     if ($fileInfo['basename'] == 'table' . $sheetExtension) {
                         $content                  = $this->getContent($fileName);

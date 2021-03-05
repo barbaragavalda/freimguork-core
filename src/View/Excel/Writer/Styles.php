@@ -26,6 +26,10 @@ class Styles extends XMLGenerator
 
     public function write()
     {
+        if( $this->xml->numFmts->asXML() == false ){
+            $this->xml->addChild('numFmts');
+        }
+        
         $maxID = 0;
         foreach ($this->xml->numFmts->numFmt as $numFmt) {
             $id = (int) $numFmt['numFmtId'];
@@ -33,7 +37,6 @@ class Styles extends XMLGenerator
                 $maxID = $id;
             }
         }
-
         foreach ($this->formats as &$format) {
             $maxID++;
 

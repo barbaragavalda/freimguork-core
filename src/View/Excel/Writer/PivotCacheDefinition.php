@@ -18,6 +18,9 @@ class PivotCacheDefinition extends XMLGenerator
 
     public function write($fields)
     {
+        $this->xml['refreshOnLoad'] = 1;
+        return $this->xml->asXML();
+
         $this->xml['recordCount']   = count($this->items);
         $this->xml['refreshOnLoad'] = 1;
 

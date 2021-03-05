@@ -13,30 +13,14 @@ namespace Core\View\Excel\Writer;
 class SlicerCache extends XMLGenerator
 {
 
-    public function write($cacheDefinition)
+    public function write()
     {
-        $sourceName = (string) $this->xml['sourceName'];
-
-        $data = null;
-        foreach ($cacheDefinition->cacheFields->cacheField as $cacheField) {
-            $name = (string) $cacheField['name'];
-            if ($name == $sourceName) {
-                $data = $cacheField->sharedItems;
-                break;
-            }
+        $extLst = $this->xml->extLst;
+        if( $extLst == false ){
+            $extLst = $this->xml->addChild('extLst');
         }
 
-        $items = '<items count="0"></items>';
-        if ($data != null) {
-            $count = (int) $data['count'];
-            $items = '<items count="' . $count . '">';
-            for ($i = 0; $i < $count; $i++) {
-                $items .= '<i x="' . $i . '" s="1"/>';
-            }
-            $items .= '</items>';
-        }
-        $this->replace($this->xml->data->tabular->items, $items);
-
+        $this->replace($extLst, '<extLst><x:ext uri="{470722E0-AACD-4C17-9CDC-17EF765DBC7E}" xmlns:x15="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"><x15:slicerCacheHideItemsWithNoData/></x:ext></extLst>');
         return $this->xml->asXML();
     }
 
