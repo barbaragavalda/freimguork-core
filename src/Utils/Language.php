@@ -54,7 +54,11 @@ class Language extends Model {
         }else{
             $session = Session::getInstance();
             if( $session->get('lang_culture') ){
-                $this->language = $session->get('lang_culture');
+                $sessionLanguage = $session->get('lang_culture');
+                if( in_array($sessionLanguage, $projectLanguages) ){
+                    // language from session
+                    $this->language = $sessionLanguage;
+                }
             }else{
                 if( array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER) ){
                     $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);

@@ -404,7 +404,9 @@ class StringUtils {
 
        $acronym = '';
        foreach($words as $w){
-           $acronym .= $w[0];
+           if( strlen($w) > 0 ){
+               $acronym .= $w[0];
+           }
        }
        return mb_strtoupper($acronym);
    }
