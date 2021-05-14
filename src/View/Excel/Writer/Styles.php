@@ -15,8 +15,9 @@ class Styles extends XMLGenerator
 {
 
     private $formats = array(
-        'date' => array('format' => 'dd/mm/yyyy'),
-        'time' => array('format' => 'h:mm:ss')
+        'date'      => array('format' => 'dd/mm/yyyy'),
+        'time'      => array('format' => 'h:mm:ss'),
+        'timeRange' => array('format' => 'h:mm:ss')
     );
 
     public function getFormats()
@@ -26,10 +27,10 @@ class Styles extends XMLGenerator
 
     public function write()
     {
-        if( $this->xml->numFmts->asXML() == false ){
+        if ($this->xml->numFmts->asXML() == false) {
             $this->xml->addChild('numFmts');
         }
-        
+
         $maxID = 0;
         foreach ($this->xml->numFmts->numFmt as $numFmt) {
             $id = (int) $numFmt['numFmtId'];

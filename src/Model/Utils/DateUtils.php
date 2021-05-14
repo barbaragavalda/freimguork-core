@@ -81,6 +81,23 @@ class DateUtils {
     }
 
     /**
+     * translate database date to localized date
+     * @param string $date      date to be formatted
+     * @param string $from      initial format of $date string
+     * @param string $to        desired final format
+     * @return string
+     */
+    public static function userLocale($date, $from = DateUtils::FORMAT_DATE_DB, $to = '%e %B, %Y'){
+        if( !empty($date) ){
+            $start = \DateTime::createFromFormat($from, $date);
+            $locale = utf8_encode(strftime($to, $start->getTimestamp()));
+
+            return $locale;
+        }
+        return '';
+    }
+
+    /**
      * transform an amount of seconds to i:s format
      * @param integer $seconds
      * @param string $format
