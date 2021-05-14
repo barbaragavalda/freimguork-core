@@ -96,6 +96,37 @@ class Model {
     }
 
     /**
+     * get image slider
+     * @param string $table
+     * @param string $suffix
+     * @param string $where
+     * @param array  $params
+     * @param string $fields
+     * @param string $orderBy
+     * @return array
+     */
+    protected function getImageSlider($table, $suffix = '', $where = '', $params = array(), $fields = 'image', $orderBy = null){
+        if( $orderBy != null ){
+            $orderBy = 'ORDER BY ' . $orderBy . ' ASC';
+        }
+        $sql    = '
+            SELECT ' . $fields . '
+            FROM ' . $table . '
+            ' . $where . '
+            ' . $orderBy . '
+        ';
+        $images = $this->mysql->query($sql, $params);
+
+        if (count($images)) {
+            foreach ($images as &$image) {
+                $image['image'] = $this->getFile($image['image'], $suffix);
+            }
+            return $images;
+        }
+        return array();
+    }
+
+    /**
      * create where string
      * @param array $conditions
      * @param string $type
