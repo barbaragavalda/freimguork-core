@@ -12,11 +12,8 @@ class iOSPush extends iOS {
     private $hasLog = false;
     private $currentTime = '';
     private $logIDs = array();
-    private $currentToken = 0;
 
-    public function __construct( $message, $tokens, $urlScheme = '', $doLog = true){
-        $this->doLog = $doLog;
-
+    public function __construct( $message, $tokens, $urlScheme = '' ){
         $config = Config::getInstance();
         $pushConfig = $config->get('push');
         $host = $pushConfig['ios_host'];
@@ -55,43 +52,65 @@ class iOSPush extends iOS {
     }
 
     public function send(){
-        $apple_expiry = time() + 1; //(60 * 60); //Keep push alive (waiting for delivery) for 1 hour
+		$this->open();
 
-        //foreach($this->tokens as $id => $token){
-        while($this->currentToken < count($this->tokens)){
-            if( $this->apns[$this->currentSocket] === false ){
-                // connetion closed
-            }else{
-                //Enhanced Notification
-                $id = $this->currentToken;
-                $token = $this->tokens[$id];
-                $apnsMessage = pack("C", 1) . pack("N", $id.'_'.$this->currentTime) . pack("N", $apple_expiry) . pack("n", 32) . pack('H*', str_replace(' ', '', $token)) . pack("n", strlen($this->payload)) . $this->payload;
+		for( $i=0; $i<count($this->tokens); $i++ ){
+			$token = $this->tokens[$i];
+			$result = $this->sendHTTP2Push($token);
 
-                //SEND PUSH we assume it is correct by default
-                $result = fwrite($this->apns[$this->currentSocket], $apnsMessage);
+			$logID = $this->log($result, $token);
+			if( $logID ){
+				$this->logIDs[$i] = $logID;
+			}
 
-                $logID = $this->log($result, $token);
-                if( $logID ){
-                    $this->logIDs[$id] = $logID;
+			$this->checkAppleErrorResponse($result, $token, $i);
+		}
+
+		$this->close();
+    }
+
+    function sendHTTP2Push($token) {
+        curl_setopt_array($this->currentSocket, array(
+            CURLOPT_URL => $this->APNS_HOST . '/3/device/' . $token,
+            CURLOPT_PORT => $this->APNS_PORT,
+            CURLOPT_HTTPHEADER => array(
+                'apns-topic:' . $this->appBundle,
+                'User-Agent: ' . $this->appName
+            ),
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $this->payload,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSLVERSION => 393216,
+            CURLOPT_SSLCERT => realpath($this->APNS_CERT),
+            CURLOPT_HEADER => 1
+        ));
+
+        $result = curl_exec($this->currentSocket);
+        $httpcode = curl_getinfo($this->currentSocket, CURLINFO_HTTP_CODE);
+        if( $httpcode == 200 ) {
+            $result = true;
+        }else{
+            preg_match('/(.*){(.*?)}/', $result, $match);
+            if( count($match) ){
+                $error = json_decode($match[0], true);
+                if( array_key_exists('reason', $error) ){
+                    $result = $error['reason'];
                 }
-
-                //We can check if an error has been returned while we are sending
-                $this->currentToken++;
-                $this->checkAppleErrorResponse();
             }
         }
 
-        // But it can also miss errors during last seconds of sending, as there is a delay before error is returned. Workaround is to pause briefly AFTER sending last notification, and then do one more fread() to see if anything else is there.
-        usleep(500000); // Pause for half a second.
-        $this->checkAppleErrorResponse();
+        return $result;
     }
 
     private function log($result, $token){
-        if( $this->hasLog && $this->doLog ){
+        if( $this->hasLog ){
             $sql = '
-            SELECT id_user
-            FROM appacman_push_device
-            WHERE token = :token
+            	SELECT id_user
+            	FROM appacman_push_device
+            	WHERE token = :token
             ';
             $params = array(
                 'token' => array('value' => $token, 'type' => \PDO::PARAM_STR)
@@ -107,8 +126,8 @@ class iOSPush extends iOS {
             $data = str_replace('"', '', $data);
             $data = str_replace('\\\/', '/', $data);
             $sql = '
-            INSERT INTO appacman_log_ios
-            SET token = :token, id_user = :id_user, data = :data, result = :result
+            	INSERT INTO appacman_log_ios
+            	SET token = :token, id_user = :id_user, data = :data, result = :result
             ';
             $params = array(
                 'token'        => array('value' => $token,     'type' => \PDO::PARAM_STR),
@@ -122,52 +141,21 @@ class iOSPush extends iOS {
         return false;
     }
 
-    private function checkAppleErrorResponse() {
-        //byte1=always 8, byte2=StatusCode, bytes3,4,5,6=identifier(rowID). Should return nothing if OK.
-        $apple_error_response = fread($this->apns[$this->currentSocket], 6);
-
-        if( $apple_error_response ){
-            $this->close();
-            $this->open();
-
-            //unpack the error response (first byte 'command" should always be 8)
-            $error_response = unpack('Ccommand/Cstatus_code/Nidentifier', $apple_error_response);
-            $response = '';
-
+    private function checkAppleErrorResponse($response, $token, $i) {
+        if( $response !== true ){
             $hasToDeleteDevice = false;
-            if ($error_response['status_code'] == '0') {
-                $response = 'No errors encountered';
-            } else if ($error_response['status_code'] == '1') {
-                $response = 'Processing error';
-            } else if ($error_response['status_code'] == '2') {
-                $response = 'Missing device token';
-                $hasToDeleteDevice = true;
-            } else if ($error_response['status_code'] == '3') {
-                $response = 'Missing topic';
-            } else if ($error_response['status_code'] == '4') {
-                $response = 'Missing payload';
-            } else if ($error_response['status_code'] == '5') {
-                $response = 'Invalid token size';
-                $hasToDeleteDevice = true;
-            } else if ($error_response['status_code'] == '6') {
-                $response = 'Invalid topic size';
-            } else if ($error_response['status_code'] == '7') {
-                $response = 'Invalid payload size';
-            } else if ($error_response['status_code'] == '8') {
-                $response = 'Invalid token';
-                $hasToDeleteDevice = true;
-            } else if ($error_response['status_code'] == '255') {
-                $response = 'None (unknown)';
-            } else {
-                $response = $error_response['status_code'] . ' - Not listed';
+            switch ($response){
+                case 'BadDeviceToken':
+                case 'DeviceTokenNotForTopic':
+                case 'Unregistered':
+                    $hasToDeleteDevice = true;
+                    break;
             }
-
-            $id = str_replace('_'.$this->currentTime, '', $error_response['identifier']);
 
             // delete device
             $this->ko++;
             if( $hasToDeleteDevice ){
-                $this->deleteDevice($this->tokens[$id]);
+                $this->deleteDevice($token);
             }
 
             // update log
@@ -178,15 +166,11 @@ class iOSPush extends iOS {
                     WHERE id_appacman_log_ios = :id
                 ';
                 $params = array(
-                    'id'        => array('value' => $this->logIDs[$id], 'type' => \PDO::PARAM_INT),
+                    'id'        => array('value' => $this->logIDs[$i], 'type' => \PDO::PARAM_INT),
                     'result'    => array('value' => $response,          'type' => \PDO::PARAM_STR),
                 );
                 $this->mysql->query($sql, $params);
             }
-
-            // start again
-            $this->currentToken = $id + 1;
-            $this->send();
         }
     }
 
