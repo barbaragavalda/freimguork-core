@@ -13,6 +13,7 @@ class Twig extends AbstractExtension{
             new TwigFilter('formatPrice', [$this, 'formatPrice']),
             new TwigFilter('formatArray', [$this, 'formatArray']),
             new TwigFilter('forJS', [$this, 'forJS']),
+            new TwigFilter('customTrans', [$this, 'customTrans']),
         ];
     }
 
@@ -29,6 +30,15 @@ class Twig extends AbstractExtension{
 
     public function forJS($string){
         return str_replace('\n', '', trim($string));
+    }
+
+    public function customTrans($string, $lang){
+        $class = '\Web\Model\Util\Lang';
+        if( class_exists($class) ){
+            $lang = new $class($lang);
+            return $lang->get($string);
+        }
+        return $string;
     }
 
 }
