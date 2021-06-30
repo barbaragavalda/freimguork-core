@@ -71,22 +71,28 @@ class URL{
      */
     public function loadParams(){
         $config = Config::getInstance();
-        $domain = $config->getDomain();
         $userURL = $this->getFullUserURL();
+        
+        $domain = $config->getDomain();
+        if( StringUtils::endsWidth($domain, '/') ){
+            $domain = substr($domain, 0, -1);;
+        }
+        
         $userPetition = str_replace($domain, '', $userURL);
+        if( StringUtils::startsWidth($userPetition, '/') ){
+            $userPetition = substr($userPetition, 1);
+        }
         $routingRegExp = $this->prepareRouting();
-
-        if( $_SERVER['REQUEST_METHOD'] == 'GET' ){
-            $query = $_SERVER['QUERY_STRING'];
-            if( !empty($query) ){
-                $userPetition = str_replace('/?'.$query, '', $userPetition);
-                $userPetition = str_replace('?'.$query, '', $userPetition);
-                if( $userPetition == '/' ) $userPetition = '';
-                $params = explode('&', $query);
-                foreach($params as $param){
-                    $info = explode('=', $param, 2);
-                    $this->params[$info[0]] = $info[1];
-                }
+        
+        $query = $_SERVER['QUERY_STRING'];
+        if( !empty($query) ){
+            $userPetition = str_replace('/?'.$query, '', $userPetition);
+            $userPetition = str_replace('?'.$query, '', $userPetition);
+            if( $userPetition == '/' ) $userPetition = '';
+            $params = explode('&', $query);
+            foreach($params as $param){
+                $info = explode('=', $param, 2);
+                $this->params[$info[0]] = $info[1];
             }
         }
 

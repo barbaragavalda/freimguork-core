@@ -52,21 +52,27 @@ class iOSPush extends iOS {
     }
 
     public function send(){
-		$this->open();
+        $this->open();
 
-		for( $i=0; $i<count($this->tokens); $i++ ){
-			$token = $this->tokens[$i];
-			$result = $this->sendHTTP2Push($token);
+        $this->tokens = array_chunk($this->tokens, 50);
+        $j = 0;
+        foreach ($this->tokens as $tokens){
+            for( $i=0; $i<count($tokens); $i++ ){
+                $token = $tokens[$i];
+                $result = $this->sendHTTP2Push($token);
 
-			$logID = $this->log($result, $token);
-			if( $logID ){
-				$this->logIDs[$i] = $logID;
-			}
+                $logID = $this->log($result, $token);
+                if( $logID ){
+                    $this->logIDs[$j] = $logID;
+                }
 
-			$this->checkAppleErrorResponse($result, $token, $i);
-		}
+                $this->checkAppleErrorResponse($result, $token, $j);
+                $j++;
+            }
+            usleep(1000000); // Pause a second.
+        }
 
-		$this->close();
+        $this->close();
     }
 
     function sendHTTP2Push($token) {
@@ -89,15 +95,14 @@ class iOSPush extends iOS {
         ));
 
         $result = curl_exec($this->currentSocket);
-        $httpcode = curl_getinfo($this->currentSocket, CURLINFO_HTTP_CODE);
-        if( $httpcode == 200 ) {
-            $result = true;
-        }else{
+        $httpCode = curl_getinfo($this->currentSocket, CURLINFO_HTTP_CODE);
+        if( $httpCode != 200 ) {
+            $result .= ' ' . $httpCode;
             preg_match('/(.*){(.*?)}/', $result, $match);
             if( count($match) ){
                 $error = json_decode($match[0], true);
                 if( array_key_exists('reason', $error) ){
-                    $result = $error['reason'];
+                    $result .= ' ' . $error['reason'];
                 }
             }
         }
@@ -141,7 +146,7 @@ class iOSPush extends iOS {
         return false;
     }
 
-    private function checkAppleErrorResponse($response, $token, $i) {
+    private function checkAppleErrorResponse($response, $token, $j) {
         if( $response !== true ){
             $hasToDeleteDevice = false;
             switch ($response){
@@ -166,7 +171,7 @@ class iOSPush extends iOS {
                     WHERE id_appacman_log_ios = :id
                 ';
                 $params = array(
-                    'id'        => array('value' => $this->logIDs[$i], 'type' => \PDO::PARAM_INT),
+                    'id'        => array('value' => $this->logIDs[$j], 'type' => \PDO::PARAM_INT),
                     'result'    => array('value' => $response,          'type' => \PDO::PARAM_STR),
                 );
                 $this->mysql->query($sql, $params);
