@@ -78,7 +78,9 @@ abstract class Controller {
         $this->assign('staticDomain', $this->staticDomain);
 
         //language
-        $this->assign('lang', $config->getLanguage());
+        $culture = $config->getLanguage();
+        $this->assign('lang', $culture);
+        $this->assign('langLocale', Language::getLocale($culture));
 
         //cache
         $this->modelCache = new CacheManager();

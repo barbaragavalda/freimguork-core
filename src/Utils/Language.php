@@ -20,7 +20,7 @@ class Language extends Model {
     private $language = null;
     private $culture = null;
 
-    private $configuration = array(
+    const CONFIGURATION = array(
         'ca' => 'ca_ES',
         'de' => 'de_DE',
         'es' => 'es_ES',
@@ -123,7 +123,7 @@ class Language extends Model {
         if( $languageID !== null ){
             $this->language = $languageID;
         }
-        $this->culture = $this->configuration[ $this->language ];
+        $this->culture = self::CONFIGURATION[ $this->language ];
     }
 
     public function setCulture($culture){
@@ -168,6 +168,10 @@ class Language extends Model {
             return $languages;
         }
         return array();
+    }
+
+    public static function getLocale($culture){
+        return Language::CONFIGURATION[$culture];
     }
 
 }
