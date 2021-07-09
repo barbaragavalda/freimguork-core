@@ -39,8 +39,9 @@ class Json extends Response {
         }else{
             $this->setHeader('Access-Control-Allow-Origin', '*');
         }
-        $this->setHeader('Connection', 'close');
 
+        $this->setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        $this->setHeader('Connection', 'close');
         $this->setHeaderType('application/json');
     }
 
