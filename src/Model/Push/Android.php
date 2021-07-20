@@ -4,83 +4,85 @@ namespace Core\Model\Push;
 
 use Core\Utils\Config;
 
-class Android extends Base {
+class Android extends Base
+{
 
     const URL = 'https://fcm.googleapis.com/fcm/send';
 
-    private $API_KEY = null;
+    private $API_KEY  = null;
     private $APP_NAME = null;
 
-    private $tokens = array();
+    private $tokens  = array();
     private $headers = array();
-    private $fields = array();
-    private $ch = null;
+    private $fields  = array();
+    private $ch      = null;
 
-    public function __construct( $message, $tokens, $urlScheme = '', $doLog = true){
+    public function __construct($message, $tokens, $urlScheme = '', $image = '', $doLog = true)
+    {
         $this->doLog = $doLog;
 
         parent::__construct();
 
-        $config = Config::getInstance();
-        $pushConfig = $config->get('push');
-        $this->tokens = $tokens;
-        $this->total = count($this->tokens);
-        $this->API_KEY = $pushConfig['android_key'];
+        $config         = Config::getInstance();
+        $pushConfig     = $config->get('push');
+        $this->tokens   = $tokens;
+        $this->total    = count($this->tokens);
+        $this->API_KEY  = $pushConfig['android_key'];
         $this->APP_NAME = $pushConfig['android_app_name'];
 
         $this->headers = array(
             'Authorization: key=' . $this->API_KEY,
             'Content-Type: application/json'
         );
-        $this->fields = array(
-            'data'              => array( 'title' => $this->APP_NAME, 'message' => $message )
+        $this->fields  = array(
+            'data' => array('title' => $this->APP_NAME, 'message' => $message)
         );
-        if( $urlScheme ){
+        if ($urlScheme) {
             $this->fields['data']['link'] = $urlScheme;
         }
     }
 
-    public function send(){
+    public function send()
+    {
         $this->tokens = array_chunk($this->tokens, 300);
 
-        foreach($this->tokens as $registrationIDs){
+        foreach ($this->tokens as $registrationIDs) {
             // set tokens
             $this->fields['registration_ids'] = $registrationIDs;
 
             // Open connection
             $this->ch = curl_init();
-            curl_setopt( $this->ch, CURLOPT_URL, self::URL);
-            curl_setopt( $this->ch, CURLOPT_POST, true );
-            curl_setopt( $this->ch, CURLOPT_HTTPHEADER, $this->headers);
-            curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, true );
-            curl_setopt( $this->ch, CURLOPT_POSTFIELDS, json_encode( $this->fields ) );
+            curl_setopt($this->ch, CURLOPT_URL, self::URL);
+            curl_setopt($this->ch, CURLOPT_POST, true);
+            curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->headers);
+            curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($this->fields));
 
             // Execute post
             $result = curl_exec($this->ch);
             $result = json_decode($result, true);
-            if( $result == null || $result == 'null' ){
+            if ($result == null || $result == 'null') {
                 $this->error = curl_error($this->ch);
                 $this->log(array('curl_error' => $this->error));
-            }else{
+            } else {
                 $this->ok += $result['success'];
 
-                for($i=0; $i<count($result['results']); $i++){
-                    if( array_key_exists('error', $result['results'][$i]) ){
-                        $token = $registrationIDs[$i];
-                        switch ($result['results'][$i]['error']){
+                for ($i = 0; $i < count($result['results']); $i++) {
+                    if (array_key_exists('error', $result['results'][ $i ])) {
+                        $token = $registrationIDs[ $i ];
+                        switch ($result['results'][ $i ]['error']) {
                             case 'NotRegistered':
                                 $this->deleteDevice($token);
                                 $this->total -= 1;
                                 break;
                             case 'InvalidParameters':
                                 $token = str_replace('"', '', $token);
-                                if( $token == 'BLACKLISTED' ){
+                                if ($token == 'BLACKLISTED') {
                                     $this->deleteDevice($token);
                                     $this->total -= 1;
                                 }
                                 break;
                         }
-
                     }
                 }
 
@@ -92,34 +94,41 @@ class Android extends Base {
         }
     }
 
-    public function close(){
+    public function close()
+    {
         // nothing
     }
 
-    private function log($result, $tokens){
-        if( $this->mysql->tableExists('appacman_log_android') && $this->doLog ){
-            $tokens = array_map(function($n){ return '"' . $n . '"'; }, $tokens);
+    private function log($result, $tokens)
+    {
+        if ($this->mysql->tableExists('appacman_log_android') && $this->doLog) {
+            $tokens = array_map(
+                function ($n) {
+                    return '"' . $n . '"';
+                },
+                $tokens
+            );
             $tokens = implode(',', $tokens);
-            $sql = '
+            $sql    = '
                 SELECT GROUP_CONCAT(id_user) AS users
                 FROM appacman_push_device
-                WHERE token IN('.$tokens.')
+                WHERE token IN(' . $tokens . ')
             ';
-            $users = $this->mysql->query($sql);
+            $users  = $this->mysql->query($sql);
 
-            $data = json_encode($this->fields['data'], JSON_UNESCAPED_SLASHES);
+            $data   = json_encode($this->fields['data'], JSON_UNESCAPED_SLASHES);
             $result = json_encode($result, JSON_UNESCAPED_SLASHES);
-            $sql = '
+            $sql    = '
                 INSERT INTO appacman_log_android
                 SET tokens = :tokens, data = :data, result = :result
             ';
             $params = array(
-                'tokens'    => array('value' => $tokens,	'type' => \PDO::PARAM_STR),
-                'data'      => array('value' => $data,     	'type' => \PDO::PARAM_STR),
-                'result'    => array('value' => $result,	'type' => \PDO::PARAM_STR),
+                'tokens' => array('value' => $tokens, 'type' => \PDO::PARAM_STR),
+                'data'   => array('value' => $data, 'type' => \PDO::PARAM_STR),
+                'result' => array('value' => $result, 'type' => \PDO::PARAM_STR),
             );
-            if( count($users) ){
-                $sql .= ', users = :users';
+            if (count($users)) {
+                $sql             .= ', users = :users';
                 $params['users'] = array('value' => $users[0]['users'], 'type' => \PDO::PARAM_STR);
             }
 
@@ -127,7 +136,8 @@ class Android extends Base {
         }
     }
 
-    public function addQuotes($element){
+    public function addQuotes($element)
+    {
         return '"' . $element . '"';
     }
 

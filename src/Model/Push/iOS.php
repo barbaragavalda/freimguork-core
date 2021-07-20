@@ -10,8 +10,9 @@ abstract class iOS extends Base {
     protected $APNS_HOST = null;
     protected $APNS_CERT = null;
     protected $APNS_PASSWORD = null;
+    protected $APNS_TEAM = null;
+    protected $APNS_KEY = null;
 
-    protected $appName = '';
     protected $appBundle = '';
 
     protected $apns = false;
@@ -26,9 +27,10 @@ abstract class iOS extends Base {
         $this->APNS_HOST = $host;
         $this->APNS_CERT = $pushConfig['ios_cert'];
         $this->APNS_PASSWORD = $pushConfig['ios_password'];
+        $this->APNS_TEAM = $pushConfig['ios_team'];
+        $this->APNS_KEY = $pushConfig['ios_key'];
 
         $webserviceConfig = $config->get('webservice');
-        $this->appName = $webserviceConfig['app_name'];
         $this->appBundle = $webserviceConfig['ios_bundle'];
     }
 

@@ -3,10 +3,13 @@
 namespace Core\Model\Push;
 
 use Core\Utils\Config;
+use Firebase\JWT\JWT;
 
 class iOSPush extends iOS {
 
     private $payload = null;
+    private $jwtTime = null;
+    private $jwt = null;
     private $tokens = null;
 
     private $hasLog = false;
@@ -51,46 +54,65 @@ class iOSPush extends iOS {
         $this->payload = json_encode($this->payload);
     }
 
-    public function send(){
-        $this->open();
-
-        $this->tokens = array_chunk($this->tokens, 50);
-        $j = 0;
-        foreach ($this->tokens as $tokens){
-            for( $i=0; $i<count($tokens); $i++ ){
-                $token = $tokens[$i];
-                $result = $this->sendHTTP2Push($token);
-
-                $logID = $this->log($result, $token);
-                if( $logID ){
-                    $this->logIDs[$j] = $logID;
-                }
-
-                $this->checkAppleErrorResponse($result, $token, $j);
-                $j++;
+    private function prepareJWT(){
+        $renovate = false;
+        if( $this->jwtTime == null ){
+            $this->jwtTime = time();
+            $renovate = true;
+        }else{
+            $minutes = (time() - $this->jwtTime) / 60;
+            if( $minutes > 50 ){
+                $this->jwtTime = time();
+                $renovate = true;
             }
-            usleep(1000000); // Pause a second.
         }
 
+        if( $renovate ){
+            $payload = array(
+                'iss' => $this->APNS_TEAM,
+                'iat' => $this->jwtTime
+            );
+            $key = openssl_pkey_get_private('file://' . $this->APNS_CERT);
+            $this->jwt = JWT::encode($payload, $key, 'ES256', $this->APNS_KEY);
+        }
+    }
+
+    public function send(){
+        $this->open();
+        for( $i=0; $i<count($this->tokens); $i++ ){
+
+            $token = $this->tokens[$i];
+            $result = $this->sendHTTP2Push($token);
+
+            $logID = $this->log($result, $token);
+            if( $logID ){
+                $this->logIDs[$i] = $logID;
+            }
+
+            $this->checkAppleErrorResponse($result, $token, $i);
+        }
         $this->close();
     }
 
+    function base64($data) {
+        return rtrim(strtr(base64_encode(json_encode($data)), '+/', '-_'), '=');
+    }
+
     function sendHTTP2Push($token) {
+        $this->prepareJWT();
+
         curl_setopt_array($this->currentSocket, array(
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
             CURLOPT_URL => $this->APNS_HOST . '/3/device/' . $token,
             CURLOPT_PORT => $this->APNS_PORT,
             CURLOPT_HTTPHEADER => array(
-                'apns-topic:' . $this->appBundle,
-                'User-Agent: ' . $this->appName
+                'apns-topic: ' . $this->appBundle,
+                'Authorization: Bearer ' . $this->jwt
             ),
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $this->payload,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 30,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSLVERSION => 393216,
-            CURLOPT_SSLCERT => realpath($this->APNS_CERT),
             CURLOPT_HEADER => 1
         ));
 
@@ -107,7 +129,7 @@ class iOSPush extends iOS {
             }
         }
 
-        return $result;
+        return '1: '.$result;
     }
 
     private function log($result, $token){
