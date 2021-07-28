@@ -4,6 +4,7 @@ namespace Core\Model\Push;
 
 use Appacman\Model\Push\Statistic;
 use Appacman\Model\Utils\Admin;
+use Core\Model\File;
 use Core\Model\Model;
 use Core\Model\Utils\Mail;
 use Core\Utils\Config;
@@ -35,7 +36,7 @@ class Push extends Model {
      */
     private $reportEmail = '';
 
-    public function __construct($doLog = true){
+    public function __construct($doLog = false){
         parent::__construct();
 
         $this->doLog = $doLog;
@@ -54,10 +55,11 @@ class Push extends Model {
      * send push notification
      * @param $platforms
      * @param $message
-     * @param string $deepLink
+     * @param array $notification
      * @param int $pushID
      */
-    public function send($platforms, $message, $deepLink = '', $pushID = null){
+    public function send($platforms, $message, $notification, $pushID = null){
+        $deepLink = $notification['deeplink'];
         if( $pushID && $this->hasStatistics ){
             $this->id = $pushID;
             if( $deepLink && strpos($deepLink, '?') !== false ){
@@ -67,9 +69,16 @@ class Push extends Model {
             }
             $deepLink .= 'push_id=' . $this->id;
         }
-        
+
         $urlScheme = '';
         if( $deepLink != '' ) $urlScheme = $this->urlScheme . $deepLink;
+
+        $image = '';
+        $imageID = array_key_exists('image', $notification) ? $notification['image'] : '';
+        if($imageID){
+            $file = new File($imageID);
+            $image = $file->getAbsolutePath();
+        }
 
         $android = $ios = array();
         foreach($platforms as $platform){
@@ -86,7 +95,7 @@ class Push extends Model {
             if( IS_DEV ) {
                 echo '<p>Fake push notification for Android: <b>' . $message . '</b></p>';
             }else{
-                $pushAndroid = new Android($message, $android, $urlScheme, $this->doLog);
+                $pushAndroid = new Android($message, $android, $urlScheme, $image, $this->doLog);
                 $pushAndroid->send();
                 $pushAndroid->close();
 
@@ -99,7 +108,7 @@ class Push extends Model {
             if( IS_DEV ){
                 echo '<p>Fake push notification for iOS: <b>'.$message.'</b></p>';
             }else{
-                $pushiOS = new iOSPush($message, $ios, $urlScheme, $this->doLog);
+                $pushiOS = new iOSPush($message, $ios, $urlScheme, $image, $this->doLog);
                 $pushiOS->send();
                 $pushiOS->close();
 
