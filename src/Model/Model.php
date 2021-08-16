@@ -2,19 +2,19 @@
 
 namespace Core\Model;
 
+use Core\Model\Encryptor\TwoWay;
 use Core\Model\MySQL\Manager;
 use Core\Utils\Session;
 
 /**
  * Class Model
- *
  * MySQL connection
- *
  * @package Core\Utils
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 26/10/2017
+ * @author  Bàrbara Gavaldà <bgavalda@appaqui.com>
+ * @date    26/10/2017
  */
-class Model {
+class Model
+{
 
     /**
      * @var  \Core\Model\MySQL\Manager  Database connection
@@ -41,54 +41,63 @@ class Model {
      */
     protected $created = null;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->mysql = Manager::getInstance();
 
-        $session = Session::getInstance();
+        $session      = Session::getInstance();
         $this->langID = $session->get('lang_id');
     }
 
-    public function getID(){
+    public function getID()
+    {
         return $this->id;
     }
 
-    public function setID($id){
+    public function setID($id)
+    {
         $this->id = $id;
     }
 
-    protected function setKey(){
+    protected function setKey()
+    {
         $this->key = $this->id . '_' . $this->created . '_';
     }
 
-    public function getCreated(){
+    public function getCreated()
+    {
         return $this->created;
     }
 
-    public function setCreated($created){
+    public function setCreated($created)
+    {
         $this->created = $created;
     }
 
-    protected function getFile($fileID, $suffix = ''){
+    protected function getFile($fileID, $suffix = '')
+    {
         $file = new File($fileID);
         return $file->getAbsolutePath($suffix);
     }
 
-    protected function getFBImage($fileID, $suffix = ''){
+    protected function getFBImage($fileID, $suffix = '')
+    {
         $file = new File($fileID);
         $size = $file->getSize($suffix);
-        if( $size !== false ){
+        if ($size !== false) {
             return array(
-                'image' => $file->getAbsolutePath($suffix),
-                'width' => $size['width'],
+                'image'  => $file->getAbsolutePath($suffix),
+                'width'  => $size['width'],
                 'height' => $size['height']
             );
         }
         return null;
     }
 
-    protected function uploadFile($postFile){
+    protected function uploadFile($postFile)
+    {
         $file = null;
-        if( !empty($postFile) ){
+        if (!empty($postFile)) {
             $file = new File();
             $file->save($postFile);
         }
@@ -97,16 +106,25 @@ class Model {
 
     /**
      * get image slider
+     *
      * @param string $table
      * @param string $suffix
      * @param string $where
      * @param array  $params
      * @param string $fields
      * @param string $orderBy
+     *
      * @return array
      */
-    protected function getImageSlider($table, $suffix = '', $where = '', $params = array(), $fields = 'image', $orderBy = null){
-        if( $orderBy != null ){
+    protected function getImageSlider(
+        $table,
+        $suffix = '',
+        $where = '',
+        $params = array(),
+        $fields = 'image',
+        $orderBy = null
+    ) {
+        if ($orderBy != null) {
             $orderBy = 'ORDER BY ' . $orderBy . ' ASC';
         }
         $sql    = '
@@ -128,30 +146,58 @@ class Model {
 
     /**
      * create where string
-     * @param array $conditions
+     *
+     * @param array  $conditions
      * @param string $type
+     *
      * @return string
      */
-    public function getWhere($conditions, $type = ' AND '){
-        if( count($conditions) ){
+    public function getWhere($conditions, $type = ' AND ')
+    {
+        if (count($conditions)) {
             return 'WHERE ' . implode($type, $conditions);
         }
         return '';
     }
 
-    public function getCacheDef($method, array $params) {
+    /**
+     * add fields to query
+     *
+     * @param array  $fields array('<name>' => true | false)
+     * @param string $sql
+     * @param array  $params
+     */
+    protected function addFields($fields, &$sql, &$params)
+    {
+        foreach ($fields as $field => $encrypted) {
+            if (!empty($this->$field)) {
+                $sql   .= ', `' . $field . '` = :' . $field . '';
+                $value = $this->$field;
+                if ($encrypted) {
+                    $value = TwoWay::encrypt($this->$field, $this->key . $field);
+                }
+                $params[ $field ] = array('value' => $value, 'type' => \PDO::PARAM_STR);
+            }
+        }
+    }
+
+    public function getCacheDef($method, array $params)
+    {
         return false;
         // or return array('ttl' => 300, 'key' => $params);
     }
 
     /**
      * Magic method that tries to call the function in the MySQL class instead of this (SQL Manager) class.
-     * @param string $method            name of the function.
-     * @param array $args               with the parameters passed to the function
+     *
+     * @param string $method name of the function.
+     * @param array  $args   with the parameters passed to the function
+     *
      * @return mixed                    return of the called function
      */
-    public function __call($method, $args){
-        if( method_exists($this->mysql, $method) ){
+    public function __call($method, $args)
+    {
+        if (method_exists($this->mysql, $method)) {
             return call_user_func_array(array($this->mysql, $method), $args);
         }
     }

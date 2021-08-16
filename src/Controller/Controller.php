@@ -4,6 +4,7 @@ namespace Core\Controller;
 
 use Core\Utils\Config;
 use Core\Utils\Exception;
+use Core\Utils\Language;
 use Core\View\Extension\Twig;
 
 /**
