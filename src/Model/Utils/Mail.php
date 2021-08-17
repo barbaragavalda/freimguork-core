@@ -81,9 +81,9 @@ class Mail {
                 }
             }
 
-            $mail->send();
+            $result = $mail->send();
             $this->mail = null;
-            return true;
+            return $result;
         } catch (Exception $e) {
             return false;
         }
