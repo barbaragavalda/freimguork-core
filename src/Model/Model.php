@@ -166,15 +166,19 @@ class Model
      * @param array  $fields array('<name>' => true | false)
      * @param string $sql
      * @param array  $params
+     * @param boolean  $isPost
      */
-    protected function addFields($fields, &$sql, &$params)
+    protected function addFields($fields, &$sql, &$params, $isPost = false)
     {
         foreach ($fields as $field => $encrypted) {
-            if (!empty($this->$field)) {
+            $value = $this->$field;
+            if( $isPost && isset($_POST[$field]) ){
+                $value = $_POST[$field];
+            }
+            if (!empty($value)) {
                 $sql   .= ', `' . $field . '` = :' . $field . '';
-                $value = $this->$field;
                 if ($encrypted) {
-                    $value = TwoWay::encrypt($this->$field, $this->key . $field);
+                    $value = TwoWay::encrypt($value, $this->key . $field);
                 }
                 $params[ $field ] = array('value' => $value, 'type' => \PDO::PARAM_STR);
             }
