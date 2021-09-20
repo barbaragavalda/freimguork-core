@@ -36,27 +36,35 @@ class File extends Model {
     /**
      * @var string $fileName. Name of file
      */
-	private $fileName = '';
+    private $fileName = '';
 
-	public function __construct( $id = 0 ){
+    public function __construct( $id = 0 ){
         parent::__construct();
 
         // init directory
         $config = Config::getInstance();
-        
-        $uploadPath = 'upload/';
-        $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);
-        if( $explode[count($explode)-1] != 'public') $uploadPath = 'public/' . $uploadPath;
-        $this->absoluteFolder = $config->getBaseDomain() . $uploadPath;
-        
+
+        $configDomains = $config->get('domains', 'upload');
+        if( count($configDomains) ){
+            $domains = $configDomains;
+            $folder = $domains[array_rand($domains)];
+            $url = parse_url($config->getBaseDomain() . 'public/upload/');
+            $host = $url['host'];
+            if( str_starts_with($host, 'pre.') ){
+                $host = str_replace('pre.', '', $host);
+            }
+            $this->absoluteFolder = $url['scheme'] .'://' . $folder .'.'.$host.$url['path'];
+        }else{
+            $this->absoluteFolder = $config->getBaseDomain() . 'public/upload/';
+        }
         $this->relativeFolder = 'upload/';
 
         //load current image
-		$this->id = $id;
-		if( $this->id ) $this->load();
-	}
+        $this->id = $id;
+        if( $this->id ) $this->load();
+    }
 
-	public function getID(){
+    public function getID(){
         return $this->id;
     }
 
@@ -81,33 +89,33 @@ class File extends Model {
         return $fileName;
     }
 
-	/**
-	 * load
-	 */
-	private function load(){
-		$this->initFolder();
+    /**
+     * load
+     */
+    private function load(){
+        $this->initFolder();
 
-		$fileName = $this->getFileName();
-		if( $fileName != "" ){
-			$this->fileName = $fileName;
-		}
-	}
+        $fileName = $this->getFileName();
+        if( $fileName != "" ){
+            $this->fileName = $fileName;
+        }
+    }
 
-	/**
-	 * we calculate to which subfolder the file is based on its id
+    /**
+     * we calculate to which subfolder the file is based on its id
      * every 20 files go to a different folder
-	 */
-	private function initFolder(){
-		$this->folderID = ceil( $this->id / 20 );
-	}
+     */
+    private function initFolder(){
+        $this->folderID = ceil( $this->id / 20 );
+    }
 
-	/**
-	 * get the file name from the database
+    /**
+     * get the file name from the database
      * @return string
-	 */
-	private function getFileName(){
-		if( $this->id != '' ){
-			$sql = '
+     */
+    private function getFileName(){
+        if( $this->id != '' ){
+            $sql = '
 				SELECT file_name
 				FROM appacman_file
 				WHERE id_appacman_file = :id_appacman_file
@@ -116,10 +124,10 @@ class File extends Model {
                 'id_appacman_file' => array('value'=>$this->id, 'type'=>\PDO::PARAM_INT)
             );
             $img = $this->mysql->query($sql, $params);
-			if( count($img) )  return $img[0]['file_name'];
-		}
-		return '';
-	}
+            if( count($img) )  return $img[0]['file_name'];
+        }
+        return '';
+    }
 
     /**
      * delete image form database (1,2) and disc (3)
@@ -157,7 +165,7 @@ class File extends Model {
             return true;
         }
         return false;
-	}
+    }
 
     public function deleteFromFileTable(){
         $sql = '
@@ -170,7 +178,7 @@ class File extends Model {
         $this->mysql->query($sql, $params);
     }
 
-	public function deleteFromDisk(){
+    public function deleteFromDisk(){
         $filePath = $this->getRelativePath();
         if( file_exists($filePath) && !is_dir($filePath) ) unlink($filePath);
 
@@ -186,7 +194,7 @@ class File extends Model {
                 }
             }
         }
-	}
+    }
 
     /**
      * save
@@ -194,18 +202,18 @@ class File extends Model {
      * @param array $file
      * @return false|int
      */
-	public function save($file){
-		if( $file['error'] == 0 ){
+    public function save($file){
+        if( $file['error'] == 0 ){
             $this->prepareSave($file['name']);
             $path = $this->getRelativePath();
 
-			if( move_uploaded_file($file['tmp_name'], $path) ){
+            if( move_uploaded_file($file['tmp_name'], $path) ){
                 $this->checkImageOrientation($path);
                 return $this->saveToDatabase();
-			}
-		}
-		return false;
-	}
+            }
+        }
+        return false;
+    }
 
     /**
      * copy file to uploads
@@ -213,7 +221,7 @@ class File extends Model {
      * @param string $origin
      * @return false|int
      */
-	public function copy($fileName, $origin){
+    public function copy($fileName, $origin){
         $this->prepareSave($fileName);
         $path = $this->getRelativePath();
 
@@ -224,7 +232,7 @@ class File extends Model {
         return false;
     }
 
-	public function saveQr($text, $qrName, $size = 1000){
+    public function saveQr($text, $qrName, $size = 1000){
         $this->prepareSave($qrName);
         $path = $this->getRelativePath();
 
@@ -233,17 +241,17 @@ class File extends Model {
         $qr->size($size);
         $qr->generate($text, $path);
         return $this->saveToDatabase();
-	}
+    }
 
     public function prepareSave($fileName, $withID = true){
         $this->id = $this->mysql->getMaxId('appacman_file');
-        
+
         $this->fileName = '';
         if ($withID) {
             $this->fileName = $this->id . '_';
         }
         $this->fileName .= StringUtils::removeSpecialCharacters($fileName);
-        
+
         // prepare path
         $this->initFolder();
         $this->createFolder($this->relativeFolder);
@@ -268,15 +276,15 @@ class File extends Model {
         return false;
     }
 
-	/**
-	 * createFolder
-	 * @param string $folder
-	 */
-	private function createFolder( $folder ){
-		if( !(file_exists($folder) && is_dir($folder)) ){
-			mkdir($folder, 0777);
-		}
-	}
+    /**
+     * createFolder
+     * @param string $folder
+     */
+    private function createFolder( $folder ){
+        if( !(file_exists($folder) && is_dir($folder)) ){
+            mkdir($folder, 0777);
+        }
+    }
 
     /**
      * rotates the image if needed (only jpg images)
@@ -395,10 +403,10 @@ class File extends Model {
      * getImageExtension
      * @return int
      */
-	private function getImageExtension(){
+    private function getImageExtension(){
         $path = $this->getAbsolutePath();
         return pathinfo($path, PATHINFO_EXTENSION);
-	}
+    }
 
     /**
      * createEmptyImage
@@ -406,23 +414,23 @@ class File extends Model {
      * @param string $image
      * @return resource
      */
-	private function createEmptyImage( $image ){
-		$image_type = $this->getImageExtension();
-		$src = null;
-		switch ($image_type){
-			case 'jpg':
+    private function createEmptyImage( $image ){
+        $image_type = $this->getImageExtension();
+        $src = null;
+        switch ($image_type){
+            case 'jpg':
             case 'jpeg':
-			    $src = imagecreatefromjpeg($image);
+                $src = imagecreatefromjpeg($image);
                 break;
             case 'gif':
                 $src = imagecreatefromgif($image);
                 break;
-			case 'png':
-			    $src = imagecreatefrompng($image);
+            case 'png':
+                $src = imagecreatefrompng($image);
                 break;
-			default: $src = null;  break;
-		}
-		return $src;
-	}
+            default: $src = null;  break;
+        }
+        return $src;
+    }
 
 }
