@@ -45,7 +45,7 @@ class File extends Model {
         $config = Config::getInstance();
 
         $configDomains = $config->get('domains', 'upload');
-        if( is_array() && count($configDomains) ){
+        if( is_array($configDomains) && count($configDomains) ){
             $domains = $configDomains;
             $folder = $domains[array_rand($domains)];
             $url = parse_url($config->getBaseDomain() . 'public/upload/');
