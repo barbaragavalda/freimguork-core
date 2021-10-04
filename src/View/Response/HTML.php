@@ -4,6 +4,10 @@ namespace Core\View\Response;
 
 use Core\Utils\Config;
 use Core\View\Extension\Twig;
+use jblond\TwigTrans\Translation;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 
 /**
  * Class HTMLResponse
@@ -60,10 +64,21 @@ class HTML extends Response {
             );
         }
 
-        $loader = new \Twig_Loader_Filesystem($this->twigFolders);
-        $twig = new \Twig_Environment($loader, $twigConfig);
-        $twig->addExtension( new \Twig_Extensions_Extension_I18n() );
+        $loader = new FilesystemLoader($this->twigFolders);
+        $twig = new Environment($loader, $twigConfig);
         $twig->addExtension( new Twig() );
+
+        // translations
+        $twig->addExtension( new Translation() );
+        $filter = new TwigFilter(
+            'trans',
+            function ($context, $string) {
+                return Translation::transGetText($string, $context);
+            },
+            ['needs_context' => true]
+        );
+        $twig->addFilter($filter);
+
         if( array_key_exists('twig_filters', $info) ){
             foreach($info['twig_filters'] as $filter){
                 $twig->addFilter($filter);
