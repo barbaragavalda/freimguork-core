@@ -34,6 +34,35 @@ class Language extends Model {
         return $this->language;
     }
 
+    public function getCulture($languageID = null){
+        if( $languageID == null ){
+            return $this->culture;
+        }
+
+        if( $this->mysql == null ) parent::__construct();
+        $sql = '
+            SELECT culture
+            FROM appacman_lang
+            WHERE id_appacman_lang = :id
+        ';
+        $params = array(
+            'id' => array('value' => $languageID, 'type' => \PDO::PARAM_INT)
+        );
+        $language = $this->mysql->query($sql, $params);
+        if( count($language)){
+            return $language[0]['culture'];
+        }
+        return 'es';
+    }
+
+    public function setCulture($culture){
+        $this->culture = $culture;
+    }
+
+    public static function getLocale($culture){
+        return Language::CONFIGURATION[$culture];
+    }
+
     public function __construct($userLanguage = null, $currentProject = null){
         if( $currentProject != null ){
             $this->initLanguage($userLanguage, $currentProject);
@@ -62,6 +91,7 @@ class Language extends Model {
             }else{
                 if( array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER) ){
                     $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+                    $agentLanguage = $this->equivalents($agentLanguage);
                     if( in_array($agentLanguage, $projectLanguages) ){
                         // language from browser
                         $this->language = $agentLanguage;
@@ -76,6 +106,16 @@ class Language extends Model {
         }
 
         $this->initCulture();
+    }
+
+    private function equivalents($language){
+        switch ($language){
+            case 'ca':
+            case 'eu':
+            case 'gl':
+                return 'es';
+                break;
+        }
     }
 
     /**
@@ -126,10 +166,6 @@ class Language extends Model {
         $this->culture = self::CONFIGURATION[ $this->language ];
     }
 
-    public function setCulture($culture){
-        $this->culture = $culture;
-    }
-
     public function getLanguages($culture = null){
         if( $this->mysql == null ) parent::__construct();
 
@@ -168,10 +204,6 @@ class Language extends Model {
             return $languages;
         }
         return array();
-    }
-
-    public static function getLocale($culture){
-        return Language::CONFIGURATION[$culture];
     }
 
 }
