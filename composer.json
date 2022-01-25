@@ -19,7 +19,8 @@
         "phpmailer/phpmailer": "~5.0",
         "simplesoftwareio/simple-qrcode": "~1",
         "phpunit/phpunit": "^8",
-        "phpoffice/phpspreadsheet": "^1.5"
+        "phpoffice/phpspreadsheet": "^1.5",
+        "firebase/php-jwt": "dev-master"
     },
     "autoload": {
         "psr-4": {
