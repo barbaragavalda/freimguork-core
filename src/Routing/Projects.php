@@ -54,14 +54,14 @@ class Projects{
             $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
             $baseDomain = str_replace($protocol, '', $this->config->getBaseDomain());
             $userURL = str_replace($baseDomain, '', $this->url->getUserURL());
-            if( StringUtils::startsWidth($userURL, '?') ){
-                $userURL = '';
-            }
-            return preg_filter(
+            $language = preg_filter(
                 $this->currentProject->getRegularExpression(),
                 '$'.$position,
                 $userURL
             );
+            if( in_array($language, $this->currentProject->getLanguages()) ){
+                return $language;
+            }
         }
         return false;
     }

@@ -2,10 +2,21 @@
 
 namespace Core\Controller;
 
-class RedirectLang extends Controller {
+use Core\Utils\Config;
 
-    public function build(){
-        $this->redirect($this->domain);
+class RedirectLang extends Controller
+{
+
+    public function build()
+    {
+        $config = Config::getInstance();
+        $oldLang = $config->get('old_lang');
+        
+        $domain = $this->domain;
+        if( !empty($oldLang) ){
+            $domain = $this->rootDomain . $oldLang;
+        }
+        $this->redirect($domain . $_SERVER['REQUEST_URI']);
     }
 
 }

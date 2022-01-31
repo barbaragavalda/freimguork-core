@@ -44,11 +44,13 @@ class CSV extends Response
             $destination .= $file;
         }
         $f = fopen($destination, 'w');
-        fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         // titles
-        array_unshift($info['csv']['titles'], '');
-        fputcsv($f, $info['csv']['titles'], ';');
+        if( count($info['csv']['titles']) > 0 ){
+            fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
+            array_unshift($info['csv']['titles'], '');
+            fputcsv($f, $info['csv']['titles'], ';');
+        }
 
         // list
         foreach ($info['csv']['list'] as $item) {
