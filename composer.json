@@ -20,7 +20,8 @@
         "simplesoftwareio/simple-qrcode": "~1",
         "phpunit/phpunit": "^8",
         "phpoffice/phpspreadsheet": "^1.5",
-        "firebase/php-jwt": "dev-master"
+        "paragonie/sodium_compat": "^1.17",
+        "firebase/php-jwt": "^6.0"
     },
     "autoload": {
         "psr-4": {
