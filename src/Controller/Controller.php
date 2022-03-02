@@ -6,6 +6,9 @@ use Core\Utils\Config;
 use Core\Utils\Exception;
 use Core\Utils\Language;
 use Core\View\Extension\Twig;
+use jblond\TwigTrans\Translation;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 /**
  * Class Controller
@@ -243,9 +246,9 @@ abstract class Controller {
             $path = DIR_ROOT . 'src/' . $this->view->getProjectFolder() . '/View/';
         }
 
-        $loader = new \Twig_Loader_Filesystem(array($path));
-        $twig = new \Twig_Environment($loader);
-        $twig->addExtension( new \Twig_Extensions_Extension_I18n() );
+        $loader = new FilesystemLoader(array($path));
+        $twig = new Environment($loader);
+        $twig->addExtension( new Translation() );
         $twig->addExtension( new Twig() );
         if( array_key_exists('twig_filters', $info) ){
             foreach($info['twig_filters'] as $filter){

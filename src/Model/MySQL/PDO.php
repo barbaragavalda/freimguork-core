@@ -122,7 +122,7 @@ class PDO {
     public function getMaxId( $table ){
         $sql = '
     		SELECT MAX(id_'.$table.') +1 AS id
-    		FROM '.$table.'
+    		FROM `'.$table.'`
     	';
         $result = $this->query($sql);
         if( count($result) ){
@@ -130,7 +130,7 @@ class PDO {
             if( $id == '' ) $id = 1;
             return $id;
         }
-        return false;
+        return 1;
     }
 
     /**
