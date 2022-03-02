@@ -99,7 +99,9 @@ class Model
         $file = null;
         if (!empty($postFile)) {
             $file = new File();
-            $file->save($postFile);
+            if( !$file->save($postFile) ){
+                return null;
+            }
         }
         return $file;
     }
