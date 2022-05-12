@@ -261,5 +261,54 @@ abstract class Controller {
         $template = $twig->load($file);
         return $template->render($info);
     }
+
+    protected function getCanonicalURL($pagination = array(), $pageKey = 'p'){
+        $page = 1;
+        $parameters = array();
+        $query = $_SERVER['QUERY_STRING'];
+        if( !empty($query) ){
+            parse_str($query, $parameters);
+            if( array_key_exists($pageKey, $parameters) ){
+                $page = (int)$parameters[$pageKey];
+                unset($parameters[$pageKey]);
+                $query = http_build_query($parameters);
+            }
+        }
+
+        // final URL without page
+        $return = array();
+        $url = $this->getBaseURL();
+        $canonical = $url;
+        if( !empty($query) ){
+            $canonical .= '?' . $query;
+        }
+        $return['canonical'] = $canonical;
+
+        // prev and next URL
+        $current = $page;
+        $lastPage = $page;
+        if( count($pagination) ){
+            $current = $pagination['current'];
+            $lastPage = $pagination['pages'][ count($pagination['pages']) - 1 ];
+        }
+        if( ($page > 0 && $page != $lastPage) || $current < $lastPage ){
+            $parameters['p'] = $page + 1;
+            $return['next'] = $canonical . '?' . http_build_query($parameters);
+        }
+        if( $page > 1 ){
+            $parameters['p'] = $page - 1;
+            $return['prev'] = $canonical . '?' . http_build_query($parameters);
+        }
+
+        return $return;
+    }
+
+    private function getBaseURL(){
+        $canonical = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+        if( !empty($_SERVER['REDIRECT_URL']) ){
+            $canonical .= $_SERVER['REDIRECT_URL'];
+        }
+        return $canonical;
+    }
     
 }
