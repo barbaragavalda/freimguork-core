@@ -293,11 +293,11 @@ abstract class Controller {
         }
         if( ($page > 0 && $page != $lastPage) || $current < $lastPage ){
             $parameters['p'] = $page + 1;
-            $return['next'] = $canonical . '?' . http_build_query($parameters);
+            $return['next'] = $url . '?' . http_build_query($parameters);
         }
         if( $page > 1 ){
             $parameters['p'] = $page - 1;
-            $return['prev'] = $canonical . '?' . http_build_query($parameters);
+            $return['prev'] = $url . '?' . http_build_query($parameters);
         }
 
         return $return;
