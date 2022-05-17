@@ -6,7 +6,7 @@ abstract class Paginated extends Model {
 
     private $visiblePages = 4;
 
-    private $itemsPerPage = 25;
+    protected $itemsPerPage = 25;
 
     /**
      * @var int     current page

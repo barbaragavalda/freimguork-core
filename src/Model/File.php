@@ -332,13 +332,13 @@ class File extends Model {
             switch($this->getImageExtension()){
                 case 'jpg':
                 case 'jpeg':
-                    $error = imagejpeg($emptyImage, $destinationPath, 100);
+                    $error = imagejpeg($emptyImage, $destinationPath);
                     break;
                 case 'gif':
                     $error = imagegif($emptyImage, $destinationPath);
                     break;
                 case 'png':
-                    $error = imagepng($emptyImage, $destinationPath, 0);
+                    $error = imagepng($emptyImage, $destinationPath);
                     break;
                 default:
                     $error = true;
@@ -375,14 +375,8 @@ class File extends Model {
             $width = $max_width;
         }
 
-        $newImage = imagecreatetruecolor($width,$height);
-        if(  $this->getImageExtension() == 'png' ){
-            imagealphablending( $newImage, false );
-            imagesavealpha( $newImage, true );
-        }
         $source = $this->createEmptyImage( $image );
-        imagecopyresampled($newImage, $source, 0, 0, 0, 0, $width, $height, $orig_width, $orig_height);
-        return $newImage;
+        return imagescale($source, $width, $height);
     }
 
     public function getSize($suffix = ''){
