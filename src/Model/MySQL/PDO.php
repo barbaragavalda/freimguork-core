@@ -54,9 +54,10 @@ class PDO {
     /**
      * PDO constructor
      * @param array $dbConfig
+     * @param boolean $throwError   throw error or just ignore it
      * @throws Exception
      */
-    public function __construct($dbConfig) {
+    public function __construct($dbConfig, $throwError) {
         if( $dbConfig == null ){
             $config = Config::getInstance();
             $dbConfig = $config->get('db');
@@ -83,10 +84,14 @@ class PDO {
                     $this->pdo->exec("SET SESSION group_concat_max_len = 10000000");
                     $this->pdo->exec("SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
                 } catch (\PDOException $e) {
-                    throw new Exception("PDO connection error: <em>" . $e->getMessage() . "</em>");
+                    if( $throwError ){
+                        throw new Exception("PDO connection error: <em>" . $e->getMessage() . "</em>");
+                    }
                 }
             } else {
-                throw new Exception("PDO connection error: <em> no database specifyed</em>");
+                if( $throwError ) {
+                    throw new Exception("PDO connection error: <em> no database specifyed</em>");
+                }
             }
         }
     }

@@ -20,13 +20,14 @@ class Manager {
 
     /**
      * initializes the instance (if needed) based on the singleton pattern
-     * @param string $name      connection name
-     * @param array $dbConfig   database connection properties
+     * @param string $name          connection name
+     * @param array $dbConfig       database connection properties
+     * @param boolean $throwError   throw error or just ignore it
      * @return \Core\Model\MySQL\PDO
      */
-    public static function getInstance($name = 'default', $dbConfig = null){
+    public static function getInstance($name = 'default', $dbConfig = null, $throwError = true){
         if( !array_key_exists($name, self::$instance) ){
-            self::$instance[$name] = new PDO($dbConfig);
+            self::$instance[$name] = new PDO($dbConfig, $throwError);
         }
         return self::$instance[$name];
     }
