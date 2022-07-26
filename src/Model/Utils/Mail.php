@@ -15,9 +15,13 @@ class Mail {
 
     protected $fromName = '';
 
-    public function __construct(){
-        $config = Config::getInstance();
-        $this->config = $config->get('mail');
+    public function __construct($configMail = null){
+        if($configMail == null ){
+            $config = Config::getInstance();
+            $this->config = $config->get('mail');
+        }else{
+            $this->config = $configMail;
+        }
 
         $this->fromEmail = $this->config['username'];
         if( array_key_exists('from_name', $this->config) ) $this->fromName = $this->config['from_name'];

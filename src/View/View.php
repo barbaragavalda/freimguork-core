@@ -90,10 +90,11 @@ class View{
     /**
      * renders a xml with twig template
      * @param string $file. Template name
+     * @param string $path. Save to path
      */
-    public function xml( $file ){
+    public function xml( $file, $path = null ){
         if( !$this->response ) {
-            $this->response = new XML($file, $this->projectFolder);
+            $this->response = new XML($file, $this->projectFolder, $path);
             $this->render();
         }
     }

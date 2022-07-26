@@ -21,13 +21,39 @@ class SessionLog {
 
     public function logOut($userID){
         $sql = '
-            DELETE FROM appacman_user_session
+            SELECT *
+            FROM appacman_user_session
             WHERE id_appacman_user = :id
         ';
         $params = array(
-            'id' => array('value' => $userID, 'type' => \PDO::PARAM_INT)
+            'id'        => array('value' => $userID, 'type' => \PDO::PARAM_INT)
         );
-        $this->mysql->query($sql, $params);
+        $sessions = $this->mysql->query($sql, $params);
+
+        if( count($sessions) ){
+            $currentID = $this->getID();
+            session_commit();
+            foreach($sessions as $session){
+                session_id($session['session']);
+                session_start();
+                session_destroy();
+                session_commit();
+            }
+
+            session_id($currentID);
+            session_start();
+            session_commit();
+
+
+            $sql = '
+                DELETE FROM appacman_user_session
+                WHERE id_appacman_user = :id
+            ';
+            $params = array(
+                'id' => array('value' => $userID, 'type' => \PDO::PARAM_INT)
+            );
+            $this->mysql->query($sql, $params);
+        }
     }
 
     public function saveID($userID){
@@ -58,7 +84,7 @@ class SessionLog {
         }
     }
 
-    public function sessionExists($userID){
+    private function sessionExists($userID){
         $sql = '
             SELECT *
             FROM appacman_user_session
