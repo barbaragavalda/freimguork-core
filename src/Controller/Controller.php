@@ -9,6 +9,7 @@ use Core\View\Extension\Twig;
 use jblond\TwigTrans\Translation;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 
 /**
  * Class Controller
@@ -248,7 +249,17 @@ abstract class Controller {
 
         $loader = new FilesystemLoader(array($path));
         $twig = new Environment($loader);
+
         $twig->addExtension( new Translation() );
+        $filter = new TwigFilter(
+            'trans',
+            function ($context, $string) {
+                return Translation::transGetText($string, $context);
+            },
+            ['needs_context' => true]
+        );
+        $twig->addFilter($filter);
+
         $twig->addExtension( new Twig() );
         if( array_key_exists('twig_filters', $info) ){
             foreach($info['twig_filters'] as $filter){
