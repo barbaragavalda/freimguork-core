@@ -21,17 +21,23 @@ class Session{
     private static $instance;
 
     /**
+     * @var string $path. The path that the cookie is available to
+     */
+    private $path = '/';
+
+    /**
      * @var string $domain. The domain that the cookie is available to
      */
     private $domain = '';
 
     /**
      * load session
-     * @param string $id
+     * @param string $domain
      */
-    private function __construct($id = null){
-        if( $id != null ){
-            $this->domain = $id;
+    private function __construct($domain = null){
+        if( $domain != null ){
+            $this->path = '/';
+            $this->domain = $domain;
         }
     }
 
@@ -53,11 +59,10 @@ class Session{
      * @return mixed|null
      */
     public function get($key){
-        if( isset($_SESSION[$key]) ){
-            return json_decode($_SESSION[$key], true);
-        }else{
-            return null;
+        if( isset($_COOKIE[$key]) ){
+            return json_decode($_COOKIE[$key], true);
         }
+        return null;
     }
 
     /**
@@ -74,8 +79,9 @@ class Session{
      * @param string $key
      */
     public function delete($key){
-        if( isset($_SESSION[$key]) ){
-            unset($_SESSION[$key]);
+        if( isset($_COOKIE[$key]) ){
+            unset($_COOKIE[$key]);
+            setcookie($key, '', time() - 3600, '/');
         }
     }
 
@@ -83,7 +89,7 @@ class Session{
      * delete all cookies
      */
     public function clear(){
-        foreach( $_SESSION as $key => $value ){
+        foreach( $_COOKIE as $key => $value ){
             $this->delete($key);
         }
     }
@@ -95,7 +101,8 @@ class Session{
      */
     private function save($key, $value){
         $value = json_encode($value);
-        $_SESSION[$key] = $value;
+        $_COOKIE[$key] = $value;
+        setcookie($key, $value, time() + self::DURATION, $this->path, $this->domain);
     }
 
 }

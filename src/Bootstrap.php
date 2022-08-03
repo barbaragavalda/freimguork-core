@@ -100,7 +100,7 @@ class Bootstrap {
 
         if( ($hasCustomLanguage && $userLang) || !$hasCustomLanguage ){
             //session first initialization with ID
-            Session::getInstance($config->getDomain());
+            Session::getInstance($config->getBaseDomain());
 
             $language->initID();
 
