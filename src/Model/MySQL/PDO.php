@@ -261,12 +261,16 @@ class PDO {
     }
 
     public function commit(){
-        $this->pdo->commit();
+        if( $this->activeTransaction ){
+            $this->pdo->commit();
+        }
         $this->activeTransaction = false;
     }
 
     public function rollBack(){
-        $this->pdo->rollBack();
+        if( $this->activeTransaction ) {
+            $this->pdo->rollBack();
+        }
         $this->activeTransaction = false;
     }
 
