@@ -73,7 +73,7 @@ abstract class Paginated extends Model {
 
     /**
      * create pagination structure
-     * @return array|void   pagination
+     * @return array   pagination
      */
     public function paginate(){
         $currentPage = $this->page + 1;
@@ -82,7 +82,7 @@ abstract class Paginated extends Model {
         $lastPage  = ceil($itemCount / $this->itemsPerPage);
         if( $lastPage == 1 || $this->page > $lastPage  ){
             // no pagination
-            return;
+            return array();
         }
 
         // set up
