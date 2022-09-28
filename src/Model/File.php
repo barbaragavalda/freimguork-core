@@ -250,7 +250,7 @@ class File extends Model {
         if ($withID) {
             $this->fileName = $this->id . '_';
         }
-        $this->fileName .= StringUtils::removeSpecialCharacters($fileName);
+        $this->fileName .= StringUtils::removeSpecialCharacters($fileName, false);
 
         // prepare path
         $this->initFolder();
