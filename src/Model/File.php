@@ -200,17 +200,49 @@ class File extends Model {
      * save
      * saves image on disk and database
      * @param array $file
+     * @param integer $fieldID
      * @return false|int
      */
-    public function save($file){
+    public function save($file, $fieldID = null){
         if( $file['error'] == 0 ){
             $this->prepareSave($file['name']);
             $path = $this->getRelativePath();
 
             if( move_uploaded_file($file['tmp_name'], $path) ){
                 $this->checkImageOrientation($path);
-                return $this->saveToDatabase();
+                $id = $this->saveToDatabase();
+                if( $id ){
+                    if( $fieldID != null ){
+                        $resize = $this->getResize($fieldID);
+                        if( $resize ){
+                            $this->resize($resize);
+                        }
+                    }
+                    return $id;
+                }
             }
+        }
+        return false;
+    }
+
+    /**
+     * Resize description of han image
+     * @param integer $fieldID
+     * @return false|array
+     */
+    private function getResize($fieldID){
+        $sql = '
+            SELECT afr.width, afr.height, afr.suffix
+            FROM appacman_file_resize AS afr
+            WHERE afr.id_appacman_field = :field_id
+        ';
+        $params = array(
+            'field_id' => array('value' => $fieldID, 'type' => \PDO::PARAM_INT)
+        );
+        $resize = $this->mysql->query($sql, $params);
+
+        if( count($resize) ){
+            return $resize;
         }
         return false;
     }
@@ -250,7 +282,7 @@ class File extends Model {
         if ($withID) {
             $this->fileName = $this->id . '_';
         }
-        $this->fileName .= StringUtils::removeSpecialCharacters($fileName, false);
+        $this->fileName .= StringUtils::removeSpecialCharacters($fileName);
 
         // prepare path
         $this->initFolder();

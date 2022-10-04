@@ -94,12 +94,12 @@ class Model
         return null;
     }
 
-    protected function uploadFile($postFile)
+    protected function uploadFile($postFile, $fieldID = null)
     {
         $file = null;
         if (!empty($postFile)) {
             $file = new File();
-            if( !$file->save($postFile) ){
+            if( !$file->save($postFile, $fieldID) ){
                 return null;
             }
         }
