@@ -187,6 +187,25 @@ class Model
         }
     }
 
+    protected function getGet($key){
+        return $this->getFormField($key, $_GET);
+    }
+
+    protected function getPost($key){
+        return $this->getFormField($key, $_POST);
+    }
+
+    protected function getFileForm($key){
+        return $this->getFormField($key, $_FILES);
+    }
+
+    private function getFormField($key, $array){
+        if( isset($array[$key]) ){
+            return $array[$key];
+        }
+        return '';
+    }
+
     public function getCacheDef($method, array $params)
     {
         return false;
