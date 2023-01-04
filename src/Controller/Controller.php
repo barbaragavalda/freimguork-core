@@ -300,7 +300,9 @@ abstract class Controller {
         $lastPage = $page;
         if( count($pagination) ){
             $current = $pagination['current'];
-            $lastPage = $pagination['pages'][ count($pagination['pages']) - 1 ];
+            if( count($pagination['pages']) ){
+                $lastPage = $pagination['pages'][ count($pagination['pages']) - 1 ];
+            }
         }
         if( ($page > 0 && $page != $lastPage) || $current < $lastPage ){
             $parameters['p'] = $page + 1;
