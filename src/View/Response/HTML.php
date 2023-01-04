@@ -34,6 +34,7 @@ class HTML extends Response {
     public function __construct($file, $projectFolder, $status = 200) {
         $this->file = $file;
         $this->setHeaderType('text/html');
+        $this->setHeader('Accept-Encoding', 'gzip, compress, br');
 
         $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/View/' );
         if( $projectFolder == 'Appacman' ) $this->addViewFolder( APPACMAN_DIR . 'View/' );

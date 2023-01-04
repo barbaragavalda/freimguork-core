@@ -2,6 +2,7 @@
 
 namespace Core\Model;
 
+use Core\Model\Utils\ImageUtils;
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
 use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
@@ -291,6 +292,13 @@ class File extends Model {
     }
 
     public function saveToDatabase(){
+        $folder = $this->relativeFolder . $this->folderID . '/';
+        $converter = new ImageUtils();
+        $fileName = $converter->generateWebpImage($folder, $this->fileName);
+        if( $fileName ){
+            unlink($folder . $this->fileName);
+            $this->fileName = $fileName;
+        }
         $sql = '
             INSERT INTO appacman_file
             SET id_appacman_file = :id, file_name = :file_name
@@ -325,7 +333,7 @@ class File extends Model {
      */
     function checkImageOrientation($path){
         $ext = $this->getImageExtension();
-        if( $ext == 'jpg' || $ext == 'jpeg' ){
+        if( $ext == ImageUtils::IMG_JPG || $ext == ImageUtils::IMG_JPEG ){
             $image = imagecreatefromjpeg($path);
             $exif = @exif_read_data($path);
             if (empty($exif['Orientation'])) {
@@ -362,15 +370,18 @@ class File extends Model {
 
             $error = false;
             switch($this->getImageExtension()){
-                case 'jpg':
-                case 'jpeg':
+                case ImageUtils::IMG_JPG:
+                case ImageUtils::IMG_JPEG:
                     $error = imagejpeg($emptyImage, $destinationPath);
                     break;
-                case 'gif':
+                case ImageUtils::IMG_GIF:
                     $error = imagegif($emptyImage, $destinationPath);
                     break;
-                case 'png':
+                case ImageUtils::IMG_PNG:
                     $error = imagepng($emptyImage, $destinationPath);
+                    break;
+                case ImageUtils::IMG_WEBP:
+                    $error = imagewebp($emptyImage, $destinationPath);
                     break;
                 default:
                     $error = true;
@@ -444,15 +455,18 @@ class File extends Model {
         $image_type = $this->getImageExtension();
         $src = null;
         switch ($image_type){
-            case 'jpg':
-            case 'jpeg':
+            case ImageUtils::IMG_JPG:
+            case ImageUtils::IMG_JPEG:
                 $src = imagecreatefromjpeg($image);
                 break;
-            case 'gif':
+            case ImageUtils::IMG_GIF:
                 $src = imagecreatefromgif($image);
                 break;
-            case 'png':
+            case ImageUtils::IMG_PNG:
                 $src = imagecreatefrompng($image);
+                break;
+            case ImageUtils::IMG_WEBP:
+                $src = imagecreatefromwebp($image);
                 break;
             default: $src = null;  break;
         }

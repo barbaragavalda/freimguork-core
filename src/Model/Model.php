@@ -77,7 +77,11 @@ class Model
     protected function getFile($fileID, $suffix = '')
     {
         $file = new File($fileID);
-        return $file->getAbsolutePath($suffix);
+        $path = $file->getAbsolutePath($suffix);
+        if( $path == null && $suffix != ''){
+            $path = $file->getAbsolutePath();
+        }
+        return $path;
     }
 
     protected function getFBImage($fileID, $suffix = '')
