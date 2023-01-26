@@ -16,7 +16,10 @@ class RedirectLang extends Controller
         if( !empty($oldLang) ){
             $domain = $this->rootDomain . $oldLang;
         }
-        $this->redirect($domain . $_SERVER['REQUEST_URI']);
+
+        $uri = $_SERVER['REQUEST_URI'];
+        if( $uri == '/' ) $uri = '';
+        $this->redirect($domain . $uri);
     }
 
 }
