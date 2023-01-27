@@ -237,18 +237,20 @@ class PDO {
     }
 
     private function field($table, $field){
-        $sql = '
-			SHOW COLUMNS
-			FROM '.$table.'
-			WHERE Field = :field
-		';
-        $params = array(
-            'field' => array('value'=>$field, 'type'=>\PDO::PARAM_STR)
-        );
-        $field = $this->query($sql, $params);
+    	if( $this->tableExists($table)){
+       		$sql = '
+				SHOW COLUMNS
+				FROM '.$table.'
+				WHERE Field = :field
+			';
+        	$params = array(
+            	'field' => array('value'=>$field, 'type'=>\PDO::PARAM_STR)
+        	);
+        	$field = $this->query($sql, $params);
 
-        if( count($field) ){
-            return $field[0];
+        	if( count($field) ){
+            	return $field[0];
+        	}
         }
         return false;
     }
