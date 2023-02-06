@@ -102,7 +102,7 @@ class Session{
     private function save($key, $value){
         $value = json_encode($value);
         $_COOKIE[$key] = $value;
-        setcookie($key, $value, time() + self::DURATION, $this->path, $this->domain);
+        setcookie($key, $value, time() + self::DURATION, $this->path);
     }
 
 }
