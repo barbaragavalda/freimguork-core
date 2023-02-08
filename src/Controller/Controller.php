@@ -177,7 +177,6 @@ abstract class Controller {
      * makes a redirection
      * @param string $url       URL to be redirect
      * @param int $status       Code (301, 302)
-     * @throws exception
      */
     protected function redirect($url, $status = 301){
         $this->view->setInfo($this->info);
