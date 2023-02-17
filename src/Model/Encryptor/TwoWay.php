@@ -56,8 +56,11 @@ class TwoWay {
      * @return string|bool          decrypted string or false
      */
     public static function decrypt($encrypted, $key){
+        if(empty($encrypted)){
+            return false;
+        }
+        
         $key = self::initKey($key);
-
         $iv_strlen = 2  * self::iv_bytes();
         if( preg_match("/^(.{" . $iv_strlen . "})(.+)$/", $encrypted, $regs) ){
             list(, $iv, $crypted_string) = $regs;

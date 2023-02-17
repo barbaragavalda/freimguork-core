@@ -112,6 +112,10 @@ class StringUtils {
      * @return string
      */
     public static function truncateHtml($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true) {
+        if( !$text ){
+            return '';
+        }
+        
         $open_tags = array();
         if ($considerHtml) {
             // if the plain text is shorter than the maximum length, return the whole text

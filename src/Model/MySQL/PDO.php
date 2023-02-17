@@ -82,7 +82,7 @@ class PDO {
                     $this->pdo = new \PDO($dsn, $this->user, $this->password);
                     $this->pdo->exec("SET CHARACTER SET utf8");
                     $this->pdo->exec("SET SESSION group_concat_max_len = 10000000");
-                    $this->pdo->exec("SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+                    $this->pdo->exec("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
                 } catch (\PDOException $e) {
                     if( $throwError ){
                         throw new Exception("PDO connection error: <em>" . $e->getMessage() . "</em>");
@@ -118,6 +118,11 @@ class PDO {
 
     public function getState(){
         return $this->success;
+    }
+
+    public function lastInsertId()
+    {
+        return $this->pdo->lastInsertId();
     }
 
     /**
