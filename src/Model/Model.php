@@ -78,7 +78,7 @@ class Model
     {
         $file = new File($fileID);
         $path = $file->getAbsolutePath($suffix);
-        if( $path == null && $suffix != ''){
+        if ($path == null && $suffix != '') {
             $path = $file->getAbsolutePath();
         }
         return $path;
@@ -103,7 +103,7 @@ class Model
         $file = null;
         if (!empty($postFile)) {
             $file = new File();
-            if( !$file->save($postFile, $fieldID) ){
+            if (!$file->save($postFile, $fieldID)) {
                 return null;
             }
         }
@@ -169,45 +169,55 @@ class Model
     /**
      * add fields to query
      *
-     * @param array  $fields array('<name>' => true | false)
-     * @param string $sql
-     * @param array  $params
-     * @param boolean  $isPost
+     * @param array   $fields array('<name>' => true | false)
+     * @param string  $sql
+     * @param array   $params
+     * @param boolean $isPost
      */
     protected function addFields($fields, &$sql, &$params, $isPost = false)
     {
         foreach ($fields as $field => $encrypted) {
             $value = $this->$field;
-            if( $isPost && isset($_POST[$field]) ){
-                $value = $_POST[$field];
+            if ($isPost) {
+                if (isset($_POST[ $field ])) {
+                    $value = $_POST[ $field ];
+                } else {
+                    $value = '';
+                }
             }
-            if (!empty($value)) {
-                $sql   .= ', `' . $field . '` = :' . $field . '';
+            if (empty($value)) {
+                $value = '';
+            } else {
                 if ($encrypted) {
                     $value = TwoWay::encrypt($value, $this->key . $field);
                 }
-                $params[ $field ] = array('value' => $value, 'type' => \PDO::PARAM_STR);
             }
+            $sql              .= ', `' . $field . '` = :' . $field . '';
+            $params[ $field ] = array('value' => $value, 'type' => \PDO::PARAM_STR);
         }
     }
 
-    protected function getGet($key){
-        return $this->getFormField($key, $_GET);
+    protected function getGet($key, $default = '')
+    {
+        return $this->getFormField($key, $_GET, $default);
     }
 
-    protected function getPost($key){
-        return $this->getFormField($key, $_POST);
+    protected function getPost($key, $default = '')
+    {
+        return $this->getFormField($key, $_POST, $default);
     }
 
-    protected function getFileForm($key){
-        return $this->getFormField($key, $_FILES);
+    protected function getFileForm($key)
+    {
+        return $this->getFormField($key, $_FILES, array());
     }
 
-    private function getFormField($key, $array){
-        if( isset($array[$key]) ){
-            return $array[$key];
+    private function getFormField($key, $array, $default)
+    {
+        if (isset($array[ $key ])) {
+            return $array[ $key ];
         }
-        return '';
+        return $default;
     }
 
     public function getCacheDef($method, array $params)
