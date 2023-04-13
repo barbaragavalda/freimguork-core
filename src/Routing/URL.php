@@ -28,7 +28,14 @@ class URL{
 
     public function __construct(){
         if( array_key_exists('HTTP_HOST', $_SERVER) && array_key_exists('REQUEST_URI', $_SERVER) ){
-            $this->userURL = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            $requestUri = $_SERVER['REQUEST_URI'];
+            if(str_starts_with($requestUri, 'http')){
+                $this->userURL = $requestUri;
+                $this->userURL = str_replace('http://', '', $this->userURL);
+                $this->userURL = str_replace('https://', '', $this->userURL);
+            }else{
+                $this->userURL = $_SERVER['HTTP_HOST'] . $requestUri;
+            }
         }
         if( substr($this->userURL, -1) != '/' ) $this->userURL .= '/';
 

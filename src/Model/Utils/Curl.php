@@ -38,6 +38,9 @@ class Curl
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        if (IS_DEV) {
+            curl_setopt($curl, CURLOPT_PROXY, $_SERVER['SERVER_ADDR'] . ':' . $_SERVER['SERVER_PORT']);
+        }
 
         if ($method == self::POST) {
             curl_setopt($curl, CURLOPT_POST, 1);
