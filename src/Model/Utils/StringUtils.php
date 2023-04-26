@@ -40,14 +40,18 @@ class StringUtils {
      * @param boolean $toLower
      * @return string
      */
-    public static function removeSpecialCharacters($string = '', $toLower = true){
+    public static function removeSpecialCharacters($string = '', $toLower = true, $withPoint = true){
         $string = trim($string);
         if( $toLower ){
             $string = mb_strtolower($string);
         }
         $string = str_replace(' ', '-', $string);
         $string = self::removeAccents($string);
-        return preg_replace('/[^A-Za-z0-9\-_.]/', '', $string);
+        $pattern = '/[^A-Za-z0-9\-_]/';
+        if( $withPoint ){
+            $pattern = '/[^A-Za-z0-9\-_.]/';
+        }
+        return preg_replace($pattern, '', $string);
     }
 
     /**
