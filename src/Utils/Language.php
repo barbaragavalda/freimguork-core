@@ -91,7 +91,7 @@ class Language extends Model {
             }else{
                 if( array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER) ){
                     $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-                    $agentLanguage = $this->equivalents($agentLanguage);
+                    $agentLanguage = $this->equivalents($agentLanguage, $projectLanguages[0]);
                     if( in_array($agentLanguage, $projectLanguages) ){
                         // language from browser
                         $this->language = $agentLanguage;
@@ -108,7 +108,10 @@ class Language extends Model {
         $this->initCulture();
     }
 
-    private function equivalents($language){
+    private function equivalents($language, $preferred){
+        if ($language == $preferred) {
+            return $language;
+        }
         switch ($language){
             case 'ca':
             case 'eu':
