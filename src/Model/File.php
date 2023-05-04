@@ -479,7 +479,7 @@ class File extends Model
         }
 
         $source = $this->createEmptyImage($image);
-        return imagescale($source, $width, $height);
+        return imagescale($source, intval($width), intval($height));
     }
 
     public function getSize($suffix = '')
