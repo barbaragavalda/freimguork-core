@@ -37,10 +37,16 @@ class File extends Model
      * @var string $fileName . Name of file
      */
     private $fileName = '';
+    /**
+     * @var string $fileName . Name of file
+     */
+    private $defaultExtension = '';
 
-    public function __construct($id = 0)
+    public function __construct($id = 0, $defaultExtension = 'jpg')
     {
         parent::__construct();
+
+        $this->defaultExtension = $defaultExtension;
 
         // init directory
         $config = Config::getInstance();
@@ -90,6 +96,10 @@ class File extends Model
     {
         $fileBasename  = pathinfo($this->fileName, PATHINFO_FILENAME);
         $fileExtension = strtolower(pathinfo($this->fileName, PATHINFO_EXTENSION));
+        if (empty($fileExtension)) {
+            $fileExtension = $this->defaultExtension;
+            $this->fileName .= '.' . $fileExtension;
+        }
 
         $fileName = $fileBasename . '.' . $fileExtension;
         if ($suffix != '') {
@@ -424,23 +434,27 @@ class File extends Model
             $emptyImage      = $this->resizedImage($originPath, $dimension['width'], $dimension['height']);
 
             $error = false;
-            switch ($this->getImageExtension()) {
-                case ImageUtils::IMG_JPG:
-                case ImageUtils::IMG_JPEG:
-                    $error = imagejpeg($emptyImage, $destinationPath);
-                    break;
-                case ImageUtils::IMG_GIF:
-                    $error = imagegif($emptyImage, $destinationPath);
-                    break;
-                case ImageUtils::IMG_PNG:
-                    $error = imagepng($emptyImage, $destinationPath);
-                    break;
-                case ImageUtils::IMG_WEBP:
-                    $error = imagewebp($emptyImage, $destinationPath);
-                    break;
-                default:
-                    $error = true;
-                    break;
+            if($emptyImage) {
+                switch ($this->getImageExtension()) {
+                    case ImageUtils::IMG_JPG:
+                    case ImageUtils::IMG_JPEG:
+                        $error = imagejpeg($emptyImage, $destinationPath);
+                        break;
+                    case ImageUtils::IMG_GIF:
+                        $error = imagegif($emptyImage, $destinationPath);
+                        break;
+                    case ImageUtils::IMG_PNG:
+                        $error = imagepng($emptyImage, $destinationPath);
+                        break;
+                    case ImageUtils::IMG_WEBP:
+                        $error = imagewebp($emptyImage, $destinationPath);
+                        break;
+                    default:
+                        $error = true;
+                        break;
+                }
+            }else{
+                $error = true;
             }
 
             if (!$error) {
@@ -479,7 +493,10 @@ class File extends Model
         }
 
         $source = $this->createEmptyImage($image);
-        return imagescale($source, intval($width), intval($height));
+        if($source){
+            return imagescale($source, intval($width), intval($height));
+        }
+        return false;
     }
 
     public function getSize($suffix = '')
@@ -518,6 +535,7 @@ class File extends Model
     private function createEmptyImage($image)
     {
         $image_type = $this->getImageExtension();
+
         $src        = null;
         switch ($image_type) {
             case ImageUtils::IMG_JPG:
