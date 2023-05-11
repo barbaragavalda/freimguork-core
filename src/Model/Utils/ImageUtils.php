@@ -21,7 +21,7 @@ class ImageUtils
      *
      * @return false|string Returns path to generated webp image, otherwise returns false.
      */
-    function generateWebpImage($folder, $file, $compression_quality = 60)
+    function generateWebpImage($folder, $file, $compression_quality = 100)
     {
         $previousPath = $folder . $file;
 
@@ -61,15 +61,17 @@ class ImageUtils
             }
 
             // Save the image
-            $result = imagewebp($image, $newPath, $compression_quality);
-            if (false === $result) {
-                return false;
+            if ($image) {
+                $result = imagewebp($image, $newPath, $compression_quality);
+                if (false === $result) {
+                    return false;
+                }
+
+                // Free up memory
+                imagedestroy($image);
+
+                return $newFile;
             }
-
-            // Free up memory
-            imagedestroy($image);
-
-            return $newFile;
         }
 
         return false;

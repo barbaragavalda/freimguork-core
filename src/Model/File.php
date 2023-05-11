@@ -5,6 +5,7 @@ namespace Core\Model;
 use Core\Model\Utils\ImageUtils;
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
+use Core\Utils\Exception;
 use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
 
 /**
@@ -97,7 +98,7 @@ class File extends Model
         $fileBasename  = pathinfo($this->fileName, PATHINFO_FILENAME);
         $fileExtension = strtolower(pathinfo($this->fileName, PATHINFO_EXTENSION));
         if (empty($fileExtension)) {
-            $fileExtension = $this->defaultExtension;
+            $fileExtension  = $this->defaultExtension;
             $this->fileName .= '.' . $fileExtension;
         }
 
@@ -311,7 +312,8 @@ class File extends Model
     public function download($url, $fileName)
     {
         $this->prepareSave($fileName);
-        $path = $this->getRelativePath();
+        $this->defaultExtension = $this->getImageExtension($url . $fileName);
+        $path                   = $this->getRelativePath();
 
         if (copy($url . $fileName, $path)) {
             $this->checkImageOrientation($path);
@@ -395,28 +397,31 @@ class File extends Model
      */
     function checkImageOrientation($path)
     {
-        $ext = $this->getImageExtension();
-        if ($ext == ImageUtils::IMG_JPG || $ext == ImageUtils::IMG_JPEG) {
-            $image = imagecreatefromjpeg($path);
-            $exif  = @exif_read_data($path);
-            if (empty($exif['Orientation'])) {
-                return false;
-            }
+        $ext = $this->getImageExtension($this->getRelativePath());
+        if ($ext == ImageUtils::IMG_JPG) {
+            try {
+                $image = imagecreatefromjpeg($path);
+                $exif  = @exif_read_data($path);
+                if (empty($exif['Orientation'])) {
+                    return false;
+                }
 
-            switch ($exif['Orientation']) {
-                case 3:
-                    $image = imagerotate($image, 180, 0);
-                    break;
-                case 6:
-                    $image = imagerotate($image, -90, 0);
-                    break;
-                case 8:
-                    $image = imagerotate($image, 90, 0);
-                    break;
+                switch ($exif['Orientation']) {
+                    case 3:
+                        $image = imagerotate($image, 180, 0);
+                        break;
+                    case 6:
+                        $image = imagerotate($image, -90, 0);
+                        break;
+                    case 8:
+                        $image = imagerotate($image, 90, 0);
+                        break;
+                }
+                imagejpeg($image, $path);
+                return true;
+            } catch (Exception $e) {
+                // nothing
             }
-            imagejpeg($image, $path);
-
-            return true;
         }
         return false;
     }
@@ -434,10 +439,9 @@ class File extends Model
             $emptyImage      = $this->resizedImage($originPath, $dimension['width'], $dimension['height']);
 
             $error = false;
-            if($emptyImage) {
-                switch ($this->getImageExtension()) {
+            if ($emptyImage) {
+                switch ($this->getImageExtension($originPath)) {
                     case ImageUtils::IMG_JPG:
-                    case ImageUtils::IMG_JPEG:
                         $error = imagejpeg($emptyImage, $destinationPath);
                         break;
                     case ImageUtils::IMG_GIF:
@@ -453,7 +457,7 @@ class File extends Model
                         $error = true;
                         break;
                 }
-            }else{
+            } else {
                 $error = true;
             }
 
@@ -493,7 +497,7 @@ class File extends Model
         }
 
         $source = $this->createEmptyImage($image);
-        if($source){
+        if ($source) {
             return imagescale($source, intval($width), intval($height));
         }
         return false;
@@ -518,10 +522,20 @@ class File extends Model
      * getImageExtension
      * @return int
      */
-    private function getImageExtension()
+    private function getImageExtension($path)
     {
-        $path = $this->getAbsolutePath();
-        return pathinfo($path, PATHINFO_EXTENSION);
+        $extension = exif_imagetype($path);
+        switch ($extension) {
+            case IMAGETYPE_JPEG:
+                return ImageUtils::IMG_JPG;
+            case IMAGETYPE_PNG:
+                return ImageUtils::IMG_PNG;
+            case IMAGETYPE_GIF:
+                return ImageUtils::IMG_GIF;
+            case IMAGETYPE_WEBP:
+                return ImageUtils::IMG_WEBP;
+        }
+        return false;
     }
 
     /**
@@ -534,12 +548,11 @@ class File extends Model
      */
     private function createEmptyImage($image)
     {
-        $image_type = $this->getImageExtension();
+        $image_type = $this->getImageExtension($this->getRelativePath());
 
-        $src        = null;
+        $src = null;
         switch ($image_type) {
             case ImageUtils::IMG_JPG:
-            case ImageUtils::IMG_JPEG:
                 $src = imagecreatefromjpeg($image);
                 break;
             case ImageUtils::IMG_GIF:
