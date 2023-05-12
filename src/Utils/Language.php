@@ -16,7 +16,9 @@ use Core\Model\Model;
 class Language extends Model {
 
     const DOMAIN = 'messenges';
+    const DOMAIN_APPACMAN = 'messenges_appacman';
 
+    private $app = '';
     private $language = null;
     private $culture = null;
 
@@ -65,6 +67,7 @@ class Language extends Model {
 
     public function __construct($userLanguage = null, $currentProject = null){
         if( $currentProject != null ){
+            $this->app = $currentProject->getApp();
             $this->initLanguage($userLanguage, $currentProject);
             $this->initGettext();
         }
@@ -128,12 +131,16 @@ class Language extends Model {
         putenv('LC_ALL='.$this->culture);
         setlocale(LC_ALL, $this->culture);
 
-        bindtextdomain(self::DOMAIN, DIR_ROOT . 'locale');
-        $appacmanLocale = APPACMAN_DIR . 'locale';
-        if( is_dir($appacmanLocale) ) bindtextdomain('messenges_appacman', $appacmanLocale);
+        $domain = self::DOMAIN;
+        $domainDirectory = DIR_ROOT . 'locale';
+        if( $this->app == 'Appacman' ) {
+            $domain = self::DOMAIN_APPACMAN;
+            $domainDirectory = APPACMAN_DIR . 'locale';
+        }
 
-        bind_textdomain_codeset(self::DOMAIN, 'UTF-8');
-        textdomain(self::DOMAIN);
+        bindtextdomain($domain, $domainDirectory);
+        bind_textdomain_codeset($domain, 'UTF-8');
+        textdomain($domain);
     }
 
     public function initID(){
