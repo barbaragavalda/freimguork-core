@@ -19,6 +19,8 @@ use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
 class File extends Model
 {
 
+    const MAX_SIZE = 9000000;
+
     /**
      * @var int $folderID . Folder number where the file is
      */
@@ -315,11 +317,49 @@ class File extends Model
         $this->defaultExtension = $this->getImageExtension($url . $fileName);
         $path                   = $this->getRelativePath();
 
-        if (copy($url . $fileName, $path)) {
+        $data  = get_headers($url . $fileName, true);
+        $size  = isset($data['Content-Length']) ? (int) $data['Content-Length'] : 0;
+        $error = false;
+        if ($size > self::MAX_SIZE) {
+            $percent = floor(100 * self::MAX_SIZE / $size) / 100;
+            $error   = !$this->downloadResized($url . $fileName, $path, $percent);
+        } else {
+            $error = !copy($url . $fileName, $path);
+        }
+        if (!$error) {
             $this->checkImageOrientation($path);
             return $this->saveToDatabase();
         }
         return false;
+    }
+
+    private function downloadResized($fileName, $path, $percent = 0.75)
+    {
+        list($width, $height) = getimagesize($fileName);
+        $newWidth  = intval($width * $percent);
+        $newHeight = intval($height * $percent);
+
+        if($newWidth > 2000){
+            $percent = (2000 * 100 / $width) / 100;
+            $newWidth  = intval($width * $percent);
+            $newHeight = intval($height * $percent);
+        }
+
+        $image      = imagecreatetruecolor($newWidth, $newHeight);
+        $emptyImage = $this->createEmptyImage($fileName, $fileName);
+        imagecopyresampled($image, $emptyImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        switch ($this->getImageExtension($fileName)) {
+            case ImageUtils::IMG_JPG:
+                return imagejpeg($emptyImage, $path);
+            case ImageUtils::IMG_GIF:
+                return imagegif($emptyImage, $path);
+            case ImageUtils::IMG_PNG:
+                return imagepng($emptyImage, $path);
+            case ImageUtils::IMG_WEBP:
+                return imagewebp($emptyImage, $path);
+            default:
+                return false;
+        }
     }
 
     public function saveQr($text, $qrName, $size = 1000)
@@ -478,27 +518,29 @@ class File extends Model
      */
     private function resizedImage($image, $max_width, $max_height)
     {
-        $size        = $this->getSize();
-        $orig_width  = $size['width'];
-        $orig_height = $size['height'];
-        $width       = $orig_width;
-        $height      = $orig_height;
+        $size = $this->getSize();
+        if ($size) {
+            $orig_width  = $size['width'];
+            $orig_height = $size['height'];
+            $width       = $orig_width;
+            $height      = $orig_height;
 
-        # height
-        if ($height > $max_height) {
-            $width  = ($max_height / $height) * $width;
-            $height = $max_height;
-        }
+            # height
+            if ($height > $max_height) {
+                $width  = ($max_height / $height) * $width;
+                $height = $max_height;
+            }
 
-        # width
-        if ($width > $max_width) {
-            $height = ($max_width / $width) * $height;
-            $width  = $max_width;
-        }
+            # width
+            if ($width > $max_width) {
+                $height = ($max_width / $width) * $height;
+                $width  = $max_width;
+            }
 
-        $source = $this->createEmptyImage($image);
-        if ($source) {
-            return imagescale($source, intval($width), intval($height));
+            $source = $this->createEmptyImage($image);
+            if ($source) {
+                return imagescale($source, intval($width), intval($height));
+            }
         }
         return false;
     }
@@ -546,9 +588,12 @@ class File extends Model
      *
      * @return resource
      */
-    private function createEmptyImage($image)
+    private function createEmptyImage($image, $path = null)
     {
-        $image_type = $this->getImageExtension($this->getRelativePath());
+        if ($path == null) {
+            $path = $this->getRelativePath();
+        }
+        $image_type = $this->getImageExtension($path);
 
         $src = null;
         switch ($image_type) {
