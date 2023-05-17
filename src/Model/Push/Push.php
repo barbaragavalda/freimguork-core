@@ -94,14 +94,16 @@ class Push extends Model
 
         $android = $ios = array();
         foreach ($platforms as $platform) {
-            $tokens = explode(',', $platform['tokens']);
-            switch ($platform['name']) {
-                case 'android':
-                    $android = $tokens;
-                    break;
-                case 'ios':
-                    $ios = $tokens;
-                    break;
+            if($platform['tokens']){
+                $tokens = explode(',', $platform['tokens']);
+                switch ($platform['name']) {
+                    case 'android':
+                        $android = $tokens;
+                        break;
+                    case 'ios':
+                        $ios = $tokens;
+                        break;
+                }
             }
         }
 
