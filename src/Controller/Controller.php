@@ -172,9 +172,9 @@ abstract class Controller {
      * renders a template file (twig) to xml format
      * @param string $file      Name of the template file
      */
-    protected function xml($file){
+    protected function xml($file, $path = null){
         $this->view->setInfo($this->info);
-        $this->view->xml($file);
+        $this->view->xml($file, $path);
     }
 
     /**
