@@ -21,7 +21,8 @@
         "phpunit/phpunit": "^8",
         "phpoffice/phpspreadsheet": "^1.5",
         "paragonie/sodium_compat": "^1.17",
-        "firebase/php-jwt": "^6.0"
+        "firebase/php-jwt": "^6.0",
+        "google/apiclient": "^2.12.1"
     },
     "autoload": {
         "psr-4": {
