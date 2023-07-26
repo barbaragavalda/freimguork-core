@@ -261,7 +261,7 @@ class DateUtils {
      * @param \DateInterval $interval
      * @return \DateInterval
      */
-    private static function checkInterval($startDate, $endDate, $interval){
+    public static function checkInterval($startDate, $endDate, $interval){
         if( !date('I', $startDate->getTimestamp()) && date('I', $endDate->getTimestamp()) ){
             $interval->h--;
         }
