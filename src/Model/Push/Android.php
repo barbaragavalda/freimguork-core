@@ -3,19 +3,16 @@
 namespace Core\Model\Push;
 
 use Core\Utils\Config;
+use Google\Client;
 
 class Android extends Base
 {
 
-    const URL = 'https://fcm.googleapis.com/fcm/send';
+    private $API_URL = null;
 
-    private $API_KEY  = null;
-    private $APP_NAME = null;
-
-    private $tokens  = array();
-    private $headers = array();
-    private $fields  = array();
-    private $ch      = null;
+    private $tokens     = array();
+    private $message    = array();
+    private $httpClient = null;
 
     public function __construct($message, $tokens, $urlScheme = '', $image = '', $doLog = true)
     {
@@ -23,74 +20,56 @@ class Android extends Base
 
         parent::__construct();
 
-        $config         = Config::getInstance();
-        $pushConfig     = $config->get('push');
-        $this->tokens   = $tokens;
-        $this->total    = count($this->tokens);
-        $this->API_KEY  = $pushConfig['android_key'];
-        $this->APP_NAME = $pushConfig['android_app_name'];
+        $config     = Config::getInstance();
+        $pushConfig = $config->get('push');
 
-        $this->headers = array(
-            'Authorization: key=' . $this->API_KEY,
-            'Content-Type: application/json'
-        );
-        $this->fields  = array(
-            'data' => array('title' => $this->APP_NAME, 'message' => $message)
-        );
+        $this->API_URL = sprintf($pushConfig['android_host'], $pushConfig['android_project']);
+
+        $this->tokens = $tokens;
+        $this->total  = count($this->tokens);
+
+        $client = new Client();
+        $client->setDeveloperKey($pushConfig['android_key']);
+        $client->setAuthConfig($pushConfig['android_cert']);
+        $client->addScope($pushConfig['android_scope']);
+        $this->httpClient = $client->authorize();
+
+        $this->message = [
+            'message' => [
+                'notification' => [
+                    'body'  => $message,
+                    'title' => $pushConfig['android_app_name']
+                ]
+            ]
+        ];
+
         if ($urlScheme) {
-            $this->fields['data']['link'] = $urlScheme;
+            $this->message['message']['data']['link'] = $urlScheme;
         }
     }
 
     public function send()
     {
         $this->tokens = array_chunk($this->tokens, 300);
+        echo '<pre>' . print_r($this->tokens, true) . '</pre>';
 
-        foreach ($this->tokens as $registrationIDs) {
-            // set tokens
-            $this->fields['registration_ids'] = $registrationIDs;
+        foreach ($this->tokens as $tokens) {
+            foreach ($tokens as $token) {
+                $this->message['message']['token'] = $token;
 
-            // Open connection
-            $this->ch = curl_init();
-            curl_setopt($this->ch, CURLOPT_URL, self::URL);
-            curl_setopt($this->ch, CURLOPT_POST, true);
-            curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->headers);
-            curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($this->fields));
-
-            // Execute post
-            $result = curl_exec($this->ch);
-            $result = json_decode($result, true);
-            if ($result == null || $result == 'null') {
-                $this->error = curl_error($this->ch);
-                $this->log(array('curl_error' => $this->error));
-            } else {
-                $this->ok += $result['success'];
-
-                for ($i = 0; $i < count($result['results']); $i++) {
-                    if (array_key_exists('error', $result['results'][ $i ])) {
-                        $token = $registrationIDs[ $i ];
-                        switch ($result['results'][ $i ]['error']) {
-                            case 'NotRegistered':
-                                $this->deleteDevice($token);
-                                $this->total -= 1;
-                                break;
-                            case 'InvalidParameters':
-                                $token = str_replace('"', '', $token);
-                                if ($token == 'BLACKLISTED') {
-                                    $this->deleteDevice($token);
-                                    $this->total -= 1;
-                                }
-                                break;
-                        }
+                $response = $this->httpClient->post($this->API_URL, ['json' => $this->message]);
+                echo '<pre>' . print_r($response, true) . '</pre>';
+                if ($response->getStatusCode() == 200) {
+                    $this->ok += $result['success'];
+                } else {
+                    if (in_array($response->getStatusCode(), array(400, 404))) {
+                        $this->deleteDevice($token);
                     }
+
+                    $this->error = $response->getReasonPhrase();
+                    $this->log($this->error, array($token));
                 }
-
-                $this->log($result, $registrationIDs);
             }
-
-            //close socket
-            curl_close($this->ch);
         }
     }
 
