@@ -51,16 +51,14 @@ class Android extends Base
     public function send()
     {
         $this->tokens = array_chunk($this->tokens, 300);
-        echo '<pre>' . print_r($this->tokens, true) . '</pre>';
 
         foreach ($this->tokens as $tokens) {
             foreach ($tokens as $token) {
                 $this->message['message']['token'] = $token;
 
                 $response = $this->httpClient->post($this->API_URL, ['json' => $this->message]);
-                echo '<pre>' . print_r($response, true) . '</pre>';
                 if ($response->getStatusCode() == 200) {
-                    $this->ok += $result['success'];
+                    $this->ok += 1;
                 } else {
                     if (in_array($response->getStatusCode(), array(400, 404))) {
                         $this->deleteDevice($token);
