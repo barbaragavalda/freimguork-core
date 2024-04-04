@@ -84,7 +84,7 @@ class SessionLog {
         }
     }
 
-    private function sessionExists($userID){
+    public function sessionExists($userID){
         $sql = '
             SELECT *
             FROM appacman_user_session

@@ -293,6 +293,9 @@ abstract class Controller {
         $return = array();
         $url = $this->getBaseURL();
         $canonical = $url;
+        if(!str_ends_with($canonical, '/')){
+            $canonical .= '/';
+        }
         if( !empty($query) ){
             $canonical .= '?' . $query;
         }

@@ -3,6 +3,10 @@
 namespace Core\View\Response;
 
 use Core\Routing\Projects;
+use jblond\TwigTrans\Translation;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 
 /**
  * Class MailResponse
@@ -52,9 +56,17 @@ class Mail extends Response {
      * @param array $info
      */
     public function initResponse($info = null){
-        $loader = new \Twig_Loader_Filesystem($this->directory);
-        $twig = new \Twig_Environment($loader, array());
-		$twig->addExtension(new \Twig_Extensions_Extension_I18n());
+        $loader = new FilesystemLoader($this->directory);
+        $twig = new Environment($loader, array());
+		$twig->addExtension(new Translation());
+        $filter = new TwigFilter(
+            'trans',
+            function ($context, $string) {
+                return Translation::transGetText($string, $context);
+            },
+            ['needs_context' => true]
+        );
+        $twig->addFilter($filter);
         $template = $twig->load($this->file);
         $this->response = $template->render($info);
     }

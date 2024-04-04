@@ -233,8 +233,12 @@ class StringUtils {
      */
     public static function formatPrice($value, $decimals = 2, $thousandsSep = '.', $decPoint = ',', $currency = '&euro;'){
         if($value){
-        	$value = str_replace(',', '.', $value);
-        	return number_format($value, $decimals, $decPoint, $thousandsSep) . $currency;
+        	if(is_numeric($value)){
+        		$value = str_replace(',', '.', $value);
+        		return number_format($value, $decimals, $decPoint, $thousandsSep) . $currency;
+        	}else{
+        		return $value;
+        	}
         }
         return '';
     }

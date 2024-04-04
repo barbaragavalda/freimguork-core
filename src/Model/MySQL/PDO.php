@@ -83,7 +83,7 @@ class PDO {
                     $this->pdo->exec("SET CHARACTER SET utf8mb4");
                     $this->pdo->exec("SET SESSION group_concat_max_len = 10000000");
 //                    $this->pdo->exec(
-//                        "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
+//                        "SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
 //                    );
                 } catch (\PDOException $e) {
                     if( $throwError ){
