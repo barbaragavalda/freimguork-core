@@ -52,6 +52,8 @@ abstract class Controller {
      */
     private $view = array();
 
+    private $headers = array();
+
     /**
      * @var array $info. Content of the variables that the view needs
      */
@@ -127,6 +129,10 @@ abstract class Controller {
         $this->view = $view;
     }
 
+    public function setHeaders($headers){
+        $this->headers = $headers;
+    }
+
     /***
      * saves info that the view needs
      * @param string $var_name
@@ -157,7 +163,7 @@ abstract class Controller {
      */
     protected function template($file, $status = 200) {
         $this->view->setInfo($this->info);
-        $this->view->template($file, $status);
+        $this->view->template($file, $status, $this->headers);
     }
 
     /**

@@ -67,12 +67,13 @@ class View{
 
     /**
      * renders a twig template
-     * @param string $file. Template name
+     * @param string $file.     Template name
      * @param int $status       Code (200, ...)
+     * @param array $headers    Extra headers
      */
-    public function template( $file, $status ) {
+    public function template( $file, $status, $headers = array() ) {
         if( !$this->response ) {
-            $this->response = new HTML($file, $this->projectFolder, $status);
+            $this->response = new HTML($file, $this->projectFolder, $status, $headers);
             $this->render();
         }
     }

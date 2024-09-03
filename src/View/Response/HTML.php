@@ -29,12 +29,16 @@ class HTML extends Response {
      * set the header of the response
      * @param string $file              Name of the twig file
      * @param string $projectFolder     Folder for project
-     * @param int $status       Code (200, ...)
+     * @param int $status               Code (200, ...)
+     * @param array $headers            Extra headers
      */
-    public function __construct($file, $projectFolder, $status = 200) {
+    public function __construct($file, $projectFolder, $status = 200, $headers = array()) {
         $this->file = $file;
         $this->setHeaderType('text/html');
         $this->setHeader('Accept-Encoding', 'gzip, compress, br');
+        foreach ($headers as $key => $value){
+            $this->setHeader($key, $value);
+        }
 
         $this->addViewFolder( DIR_ROOT . 'src/' . $projectFolder . '/View/' );
         if( $projectFolder == 'Appacman' ) $this->addViewFolder( APPACMAN_DIR . 'View/' );
