@@ -16,4 +16,26 @@ class NumberUtils {
         return null;
     }
 
+    public static function formatMBytes($bytes, $precision = 2): float
+    {
+        return self::formatBytes($bytes, $precision, 'MB');
+    }
+
+    public static function formatBytes($bytes, $precision = 2, $unit = null): float
+    {
+        $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+        $bytes = max($bytes, 0);
+        $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+
+        $finalUnit = min($pow, count($units) - 1);
+        if ($unit != null) {
+            $finalUnit = array_search($unit, $units);
+        }
+        $pow = $finalUnit;
+
+        $bytes /= pow(1024, $pow);
+        return round($bytes, $precision);
+    }
+
 }
