@@ -112,14 +112,12 @@ class PDO {
                     $this->statement->bindParam(':' . $key, $param['value'], $param['type']);
                 }
             }
-            if(IS_DEV){
-                try {
-                    $this->success = $this->statement->execute();
-                }catch (\PDOException $e) {
-                    r($sql, $params, $e->getMessage());
-                }
-            }else{
+            try {
                 $this->success = $this->statement->execute();
+            }catch (\PDOException $e) {
+            	if(IS_DEV){
+                	r($sql, $params, $e->getMessage());
+                }
             }
             return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
         }
