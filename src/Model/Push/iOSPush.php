@@ -143,9 +143,11 @@ class iOSPush extends iOS
                     $result .= ' ' . $error['reason'];
                 }
             }
+        }else{
+            $this->ok += 1;
         }
 
-        return $result;
+        return $httpCode;
     }
 
     private function log($result, $token)
@@ -187,7 +189,7 @@ class iOSPush extends iOS
 
     private function checkAppleErrorResponse($response, $token, $j)
     {
-        if ($response !== true) {
+        if ($httpCode != 200) {
             $hasToDeleteDevice = false;
             switch ($response) {
                 case 'BadDeviceToken':
@@ -198,7 +200,6 @@ class iOSPush extends iOS
             }
 
             // delete device
-            $this->ko++;
             if ($hasToDeleteDevice) {
                 $this->deleteDevice($token);
             }
