@@ -339,8 +339,8 @@ class File extends Model
         $newWidth  = intval($width * $percent);
         $newHeight = intval($height * $percent);
 
-        if($newWidth > 2000){
-            $percent = (2000 * 100 / $width) / 100;
+        if ($newWidth > 2000) {
+            $percent   = (2000 * 100 / $width) / 100;
             $newWidth  = intval($width * $percent);
             $newHeight = intval($height * $percent);
         }
@@ -393,9 +393,10 @@ class File extends Model
     public function saveToDatabase()
     {
         $folder    = $this->relativeFolder . $this->folderID . '/';
+        $extension = $this->getImageExtension($folder . $this->fileName);
         $converter = new ImageUtils();
         $fileName  = $converter->generateWebpImage($folder, $this->fileName);
-        if ($fileName) {
+        if ($extension != ImageUtils::IMG_WEBP && $fileName) {
             unlink($folder . $this->fileName);
             $this->fileName = $fileName;
         }
