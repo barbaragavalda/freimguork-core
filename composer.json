@@ -16,7 +16,7 @@
         "twig/twig": "^3.0",
         "jblond/twig-trans": "^1.0",
         "digitalnature/php-ref": "dev-master",
-        "phpmailer/phpmailer": "~5.0",
+        "phpmailer/phpmailer": "^7.0.0",
         "simplesoftwareio/simple-qrcode": "~1",
         "phpunit/phpunit": "^8",
         "phpoffice/phpspreadsheet": "^1.5",
