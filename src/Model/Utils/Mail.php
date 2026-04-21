@@ -4,6 +4,7 @@ namespace Core\Model\Utils;
 
 use Core\Utils\Config;
 use Core\Utils\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
 class Mail {
 
@@ -29,7 +30,7 @@ class Mail {
 
     private function getSender(){
         if( $this->mail == null ){
-            $this->mail = new \PHPMailer\PHPMailer\PHPMailer();
+            $this->mail = new PHPMailer();
             $this->mail->Host = $this->config['host'];
             $this->mail->Port = $this->config['port'];
             $this->mail->From = $this->config['username'];
