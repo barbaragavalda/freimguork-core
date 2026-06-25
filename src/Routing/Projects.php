@@ -8,58 +8,48 @@ use Core\Utils\Exception;
 
 /**
  * Class Projects
- *
  * Load all projects and determines the current one depending on projects.<env>.php configuration
- *
- * @package Core\Routing
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 25/10/2017
  */
-class Projects{
+class Projects
+{
 
-    const LANG_PATTERN = '{lang}';
-    const LANG_PATTERN_REG_EXPRESSION = '/(\w*{lang}\w*)/';
-    const LANG_CODE_REG_EXPRESSION = '[a-z]{2}';
+    const string LANG_PATTERN                = '{lang}';
+    const string LANG_PATTERN_REG_EXPRESSION = '/(\w*{lang}\w*)/';
+    const string LANG_CODE_REG_EXPRESSION    = '[a-z]{2}';
 
-    /**
-     * @var \Core\Utils\Config $config. load some configs
-     */
-    private $config = array();
+    private Config $config;
 
-    /**
-     * @var \Core\Routing\Project $controller. Name of the controller that correspond to the URL
-     */
-    private $currentProject = array();
+    private ?Project $currentProject;
 
-    /**
-     * @var \Core\Routing\URL $url. object that parses the URL
-     */
-    private $url = null;
+    private ?URL $url;
 
     /**
      * asks the controller name
+     * @throws \Core\Utils\Exception
      */
-    public function __construct(){
+    public function __construct()
+    {
         $this->config = Config::getInstance();
-        $this->url = new URL();
+        $this->url    = new URL();
         $this->searchProject();
-	}
+    }
 
     /**
      * language set on URL (if any)
      * @return bool|string
      */
-    public function getUserLanguage(){
-        if( ($position = $this->currentProject->getLangPosition()) > 0 ){
-            $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
+    public function getUserLanguage(): bool|string
+    {
+        if (($position = $this->currentProject->getLangPosition()) > 0) {
+            $protocol   = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
             $baseDomain = str_replace($protocol, '', $this->config->getBaseDomain());
-            $userURL = str_replace($baseDomain, '', $this->url->getUserURL());
-            $language = preg_filter(
+            $userURL    = str_replace($baseDomain, '', $this->url->getUserURL());
+            $language   = preg_filter(
                 $this->currentProject->getRegularExpression(),
-                '$'.$position,
+                '$' . $position,
                 $userURL
             );
-            if( in_array($language, $this->currentProject->getLanguages()) ){
+            if (in_array($language, $this->currentProject->getLanguages())) {
                 return $language;
             }
         }
@@ -70,127 +60,140 @@ class Projects{
      * user can specify language on url?
      * @return bool
      */
-    public function hasCustomLanguage(){
-        return strpos($this->currentProject->getURL(), '{lang}') !== false;
+    public function hasCustomLanguage(): bool
+    {
+        return str_contains($this->currentProject->getURL(), '{lang}');
     }
 
-    /**
-     * current project
-     * @return \Core\Routing\Project
-     */
-    public function getProject(){
+    public function getProject(): Project
+    {
         return $this->currentProject;
     }
 
     /**
      * base URL
+     *
      * @param string $language
+     *
      * @return array
      */
-    public function getDomains($language){
+    public function getDomains(string $language): array
+    {
         //app domain
-        $url = str_replace('{lang}', $language, $this->currentProject->getURL());
+        $url      = str_replace('{lang}', $language, $this->currentProject->getURL());
         $protocol = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://';
-        if( empty($url) ){
+        if (empty($url)) {
             $url = $protocol . $_SERVER['HTTP_HOST'];
         }
-        if( !StringUtils::startsWidth($url, $protocol) ){
-        	$url = $this->config->getBaseDomain() . $url;
+        if (!StringUtils::startsWidth($url, $protocol)) {
+            $url = $this->config->getBaseDomain() . $url;
         }
-        if( !StringUtils::endsWidth($url, '/') ){
+        if (!StringUtils::endsWidth($url, '/')) {
             $url .= '/';
         }
 
         return array(
-            'app'       => $url,
-            'static'    => $this->config->getBaseDomain()
+            'app'    => $url,
+            'static' => $this->config->getBaseDomain()
         );
     }
 
     /**
      * search for the current project
+     * @throws \Core\Utils\Exception
      */
-	private function searchProject(){
-        try{
-            $projects = $this->config->getProjects();
+    private function searchProject(): void
+    {
+        $projects = $this->config->getProjects();
 
-            $currentURL = $this->url->getUserURL();
-            $defaultProject = new Project();
-            foreach($projects as $domain => $project){
-                if( array_key_exists('isDefault', $project) && $project['isDefault'] ){
-                    $domainRegExpInfo = $this->getRegularExpression($domain, $project);
-                    $domainRegExp = $domainRegExpInfo['regExp'];
+        $currentURL     = $this->url->getUserURL();
+        $defaultProject = new Project();
+        foreach ($projects as $domain => $project) {
+            if (array_key_exists('isDefault', $project) && $project['isDefault']) {
+                $domainRegExpInfo = $this->getRegularExpression($domain, $project);
+                $domainRegExp     = $domainRegExpInfo['regExp'];
 
-                    $defaultProject->setURL($domain);
-                    $defaultProject->setRegularExpression($domainRegExp);
-                    $defaultProject->setInfo($project);
-                }
+                $defaultProject->setURL($domain);
+                $defaultProject->setRegularExpression($domainRegExp);
+                $defaultProject->setInfo($project);
             }
+        }
 
-            foreach($projects as $domain => $project){
-                $domainRegExpInfo = $this->getRegularExpression($domain, $project, $defaultProject);
-                $domainRegExp = $domainRegExpInfo['regExp'];
-                $found = false;
+        foreach ($projects as $domain => $project) {
+            $domainRegExpInfo = $this->getRegularExpression($domain, $project, $defaultProject);
+            $domainRegExp     = $domainRegExpInfo['regExp'];
+            $found            = false;
 
-                if( preg_match($domainRegExp, $currentURL) ){
-                    $found = true;
-                }else if( StringUtils::endsWidth($domain, self::LANG_PATTERN) || StringUtils::endsWidth($domain, self::LANG_PATTERN.'/') ){
+            if (preg_match($domainRegExp, $currentURL)) {
+                $found = true;
+            } else {
+                if (StringUtils::endsWidth($domain, self::LANG_PATTERN)
+                    || StringUtils::endsWidth(
+                        $domain,
+                        self::LANG_PATTERN . '/'
+                    )) {
 
                     //if not found, try if the user didn't enter the language
-                    $domainRegExp = str_replace(self::LANG_PATTERN .'/', '', $domain);
-                    $domainRegExp = str_replace(self::LANG_PATTERN, '', $domainRegExp);
-                    $domainRegExp = str_replace('/', '\/', $domainRegExp);
+                    $domainRegExp = str_replace(self::LANG_PATTERN . '/', '', $domain)
+                            |> (fn($x) => str_replace(self::LANG_PATTERN, '', $x))
+                            |> (fn($x) => str_replace('/', '\/', $x));
 
-                    $domainRegExpLangSlash = '/' . $domainRegExp . '(' . self::LANG_CODE_REG_EXPRESSION . '\/)/';
+                    $domainRegExpLangSlash = '/' . $domainRegExp . '(' . self::LANG_CODE_REG_EXPRESSION . '/)/';
 
-                    if( preg_match($domainRegExpLangSlash, $currentURL) ){
+                    if (preg_match($domainRegExpLangSlash, $currentURL)) {
                         $found = true;
                     }
                 }
-
-                if( $found ){
-                    $this->currentProject = new Project();
-                    $this->currentProject->setURL($domain);
-                    $this->currentProject->setRegularExpression($domainRegExp);
-                    $this->currentProject->setLangPosition($domainRegExpInfo['langPosition']);
-                    $this->currentProject->setInfo($project);
-                    break;
-                }
             }
 
-            if( $this->currentProject == null ){
-                $this->currentProject = $defaultProject;
+            if ($found) {
+                $this->currentProject = new Project();
+                $this->currentProject->setURL($domain);
+                $this->currentProject->setRegularExpression($domainRegExp);
+                $this->currentProject->setLangPosition($domainRegExpInfo['langPosition']);
+                $this->currentProject->setInfo($project);
+                break;
             }
+        }
 
-            if( $this->currentProject->isEmpty() ){
-                throw new Exception("No project matches the current configuration");
-            }
-        } catch (Exception $e) {
-            throw $e;
+        if ($this->currentProject == null) {
+            $this->currentProject = $defaultProject;
+        }
+
+        if ($this->currentProject->isEmpty()) {
+            throw new Exception("No project matches the current configuration");
         }
     }
 
     /**
-     * regular expresion for the URL
-     * @param string $domain                            current domain
-     * @param array $project                            current project
-     * @param \Core\Routing\Project $defaultProject     by reference, default project if no project found
+     * Regular expresión for the URL
+     *
+     * @param string                $domain         current domain
+     * @param array                 $project        current project
+     * @param ?Project $defaultProject by reference, default project if no project found
+     *
      * @return array                                    regular expression for the domain and language position
      */
-    private function getRegularExpression($domain, $project, &$defaultProject = null){
+    private function getRegularExpression(string $domain, array $project, ?Project $defaultProject = null): array
+    {
         $domainRegExp = '(' . $domain . ')';
         $langPosition = 0;
 
-        if( ($pos = strpos($domain, self::LANG_PATTERN)) !== false ){
+        if (($pos = strpos($domain, self::LANG_PATTERN)) !== false) {
             //has language
-            $explode = preg_split(self::LANG_PATTERN_REG_EXPRESSION, $domain, 0, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $explode      = preg_split(
+                self::LANG_PATTERN_REG_EXPRESSION,
+                $domain,
+                0,
+                PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+            );
             $domainRegExp = '';
-            $i = 1;
-            foreach($explode as $part){
-                if( $part == self::LANG_PATTERN ){
+            $i            = 1;
+            foreach ($explode as $part) {
+                if ($part == self::LANG_PATTERN) {
                     $domainRegExp .= '(' . self::LANG_CODE_REG_EXPRESSION . ')';
                     $langPosition = $i;
-                }else{
+                } else {
                     $domainRegExp .= '(' . $part . ')';
                 }
                 $i++;
@@ -198,8 +201,8 @@ class Projects{
         }
 
         $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(.*)/';
-        if( $defaultProject != null ){
-            if( $pos == 0 && $defaultProject->isEmpty() ){
+        if ($defaultProject != null) {
+            if ($pos == 0 && $defaultProject->isEmpty()) {
                 $defaultProject->setURL($domain);
                 $defaultProject->setRegularExpression($domainRegExp);
                 $defaultProject->setInfo($project);
@@ -207,7 +210,7 @@ class Projects{
         }
 
         return array(
-            'regExp' => $domainRegExp,
+            'regExp'       => $domainRegExp,
             'langPosition' => $langPosition
         );
     }

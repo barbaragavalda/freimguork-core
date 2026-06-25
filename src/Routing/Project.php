@@ -2,68 +2,71 @@
 
 namespace Core\Routing;
 
-/**
- * Class Project
- *
- * Project structure
- *
- * @package Core\Routing
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 25/10/2017
- */
-class Project{
+class Project
+{
 
-    private $url = null;
-    private $regularExpression = '';
-    private $langPosition = 0;
+    private ?string $url               = null;
+    private string  $regularExpression = '';
+    private int     $langPosition      = 0;
 
-    private $app = '';
-    private $folders = array();
-    private $languages = array();
+    private string $app       = '';
+    private array  $folders   = array();
+    private array  $languages = array();
 
-    public function isEmpty(){
+    public function isEmpty(): bool
+    {
         return $this->url === null;
     }
 
-    public function getURL(){
+    public function getURL(): string
+    {
         return $this->url;
     }
 
-    public function getRegularExpression(){
+    public function getRegularExpression(): string
+    {
         return $this->regularExpression;
     }
 
-    public function getLangPosition(){
+    public function getLangPosition(): int
+    {
         return $this->langPosition;
     }
 
-    public function getApp(){
+    public function getApp(): string
+    {
         return $this->app;
     }
 
-    public function getFolders(){
+    public function getFolders(): array
+    {
         return $this->folders;
     }
 
-    public function getLanguages(){
+    public function getLanguages(): array
+    {
         return $this->languages;
     }
 
-    public function setURL($url){
+    public function setURL(string $url): void
+    {
         $this->url = $url;
     }
 
-    public function setRegularExpression($regularExpression){
+    public function setRegularExpression(string $regularExpression): void
+    {
         $this->regularExpression = $regularExpression;
     }
 
-    public function setLangPosition($position){
+    public function setLangPosition(int $position): void
+    {
         $this->langPosition = $position;
     }
 
-    public function setInfo($info){
-        $this->app = $info['app'];
-        $this->folders = $info['folders'];
+    public function setInfo(array $info): void
+    {
+        $this->app       = $info['app'];
+        $this->folders   = $info['folders'];
         $this->languages = $info['languages'];
     }
 

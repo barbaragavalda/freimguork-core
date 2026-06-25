@@ -7,10 +7,9 @@ use Core\Controller\Cache\Disk;
 class CacheManager
 {
 
-    private Disk $cache;
-
-    private string $key;
-    private int    $ttl;
+    private Disk   $cache;
+    private string $key = '';
+    private int    $ttl = 0;
 
     public function __construct()
     {

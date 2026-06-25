@@ -3,9 +3,10 @@
 namespace Core;
 
 include DIR_ROOT . 'vendor/appaqui/freimguork-core/src/Utils/NonExistingFunctions.php';
-require( DIR_ROOT . 'vendor/appaqui/freimguork-core/src/Utils/PDF/fpdf.php' );
+require(DIR_ROOT . 'vendor/appaqui/freimguork-core/src/Utils/PDF/fpdf.php');
 
 use Core\Controller\CacheManager;
+use Core\Controller\Controller;
 use Core\Routing\Projects;
 use Core\Routing\RedirectRouter;
 use Core\Routing\Router;
@@ -18,40 +19,26 @@ use Core\View\View;
 
 /**
  * Class Bootstrap
- *
  * Main class of the framework.
- *
- * @package Core
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 25/10/2017
  */
-class Bootstrap {
+class Bootstrap
+{
 
-    /**
-     * @var Router $router. Class that makes the relation between URL and the routing config file
-     */
-    private $router = null;
+    private ?Router $router;
 
-    /**
-     * @var object $controller. Controller to be executed
-     */
-    private $controller = null;
+    private ?Controller $controller;
 
-    /**
-     * @var string $projectFolder. Folder for project App
-     */
-    private $projectFolder = null;
+    private string $projectFolder;
 
-    /**
-     * @var \Core\Controller\CacheManager $controllerCache.
-     */
-    private $controllerCache = null;
+    private ?CacheManager $controllerCache;
 
     /**
      * Bootstrap constructor.
-     * @param boolean $isDev    indicates if the environment is development or production
+     *
+     * @param boolean $isDev indicates if the environment is development or production
      */
-    public function __construct($isDev){
+    public function __construct(bool $isDev)
+    {
         define('IS_DEV', $isDev);
         date_default_timezone_set('Europe/Madrid');
     }
@@ -60,7 +47,8 @@ class Bootstrap {
      * petition dispatcher
      * asks for the controller to be used and executes it
      */
-    public function run(){
+    public function run(): void
+    {
         try {
             $this->router();
             $this->execute();
@@ -73,18 +61,15 @@ class Bootstrap {
      * search for the controller to be used
      * depending on the routing and project configuration
      */
-    private function router(){
-        try {
-            $projects = new Projects();
-        } catch (Exception $e) {
-            throw $e;
-        }
+    private function router(): void
+    {
+        $projects = new Projects();
 
-        $userLang = $projects->getUserLanguage();
+        $userLang          = $projects->getUserLanguage();
         $hasCustomLanguage = $projects->hasCustomLanguage();
-        $project = $projects->getProject();
-        $projectFolders = $project->getFolders();
-        $language = new Language($userLang, $project);
+        $project           = $projects->getProject();
+        $projectFolders    = $project->getFolders();
+        $language          = new Language($userLang, $project);
 
         //load project configs
         $config = Config::getInstance();
@@ -95,10 +80,10 @@ class Bootstrap {
 
         //language
         $currentLanguage = $language->getLanguage();
-        $config->setDomains( $projects->getDomains($currentLanguage) );
-        $config->setLanguage( $currentLanguage );
+        $config->setDomains($projects->getDomains($currentLanguage));
+        $config->setLanguage($currentLanguage);
 
-        if( ($hasCustomLanguage && $userLang) || !$hasCustomLanguage ){
+        if (($hasCustomLanguage && $userLang) || !$hasCustomLanguage) {
             //session first initialization with ID
             Session::getInstance($config->getBaseDomain());
 
@@ -106,9 +91,9 @@ class Bootstrap {
 
             //routing
             $this->projectFolder = $project->getApp();
-            $this->router = new Router( $this->projectFolder );
-            $this->router->doRouting( $config->get('routing') );
-        }else{
+            $this->router        = new Router($this->projectFolder);
+            $this->router->doRouting($config->get('routing'));
+        } else {
             $this->router = new RedirectRouter();
         }
     }
@@ -118,21 +103,21 @@ class Bootstrap {
      * load its cache (if any)
      * and prints its result
      */
-    private function execute(){
-        $controllerName = $this->router->getController();
+    private function execute(): void
+    {
+        $controllerName   = $this->router->getController();
         $this->controller = new $controllerName();
-        $this->controller->setParams( $this->router->getParams() );
-        $this->controller->setParts( $this->router->getParts() );
+        $this->controller->setParams($this->router->getParams());
+        $this->controller->setParts($this->router->getParts());
 
         $cacheDef = $this->controller->getCacheDef();
-        $cache = $this->controllerCache->getCache($cacheDef);
-        $response = '';
-        if( $cache == null ){
+        $cache    = $this->controllerCache->getCache($cacheDef);
+        if ($cache == null) {
             $response = $this->render();
-        }else{
+        } else {
             $response = $cache['response'];
-            $headers = $cache['headers'];
-            foreach($headers as $header){
+            $headers  = $cache['headers'];
+            foreach ($headers as $header) {
                 header($header);
             }
         }
@@ -142,10 +127,11 @@ class Bootstrap {
 
     /**
      * if there is no cache, executes the controller and gets its result
-     * @return $result    final response of the petition
+     * @return string $result    final response of the petition
      */
-    private function render(){
-        $this->controller->setView( new View( $this->projectFolder ) );
+    private function render(): string
+    {
+        $this->controller->setView(new View($this->projectFolder));
 
         try {
             $this->controller->build();
@@ -155,8 +141,8 @@ class Bootstrap {
 
         $response = $this->controller->getResponse();
         $this->controllerCache->saveCache(array(
-            'response'  => $response,
-            'headers'   => headers_list()
+            'response' => $response,
+            'headers'  => headers_list()
         ));
 
         return $response;

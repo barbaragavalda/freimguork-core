@@ -1,27 +1,26 @@
-<?php 
+<?php
 
 namespace Core\Routing;
 
 /**
  * Class Router
- *
  * Empty router because web is going to redirect to language URL
- *
- * @package Core\Routing
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 25/10/2017
  */
-class RedirectRouter extends Router {
+class RedirectRouter extends Router
+{
 
-    public function getController(){
+    public function getController(): string
+    {
         return 'Core\\Controller\\RedirectLang';
     }
 
-    public function getParams(){
+    public function getParams(): array
+    {
         return array();
     }
 
-    public function getParts(){
+    public function getParts(): array
+    {
         return array();
     }
 

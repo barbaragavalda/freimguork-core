@@ -38,26 +38,14 @@ abstract class Controller
     /**
      * @var array $params . Parameters from URL petition
      */
-    protected array $params = array() {
-        set {
-            $this->params = $value;
-        }
-    }
+    protected array $params = array();
 
     /**
      * @var array $parts . Parts of URL petition
      */
-    protected array $parts = array() {
-        set {
-            $this->parts = $value;
-        }
-    }
+    protected array $parts = array();
 
-    private ?View $view {
-        set {
-            $this->view = $value;
-        }
-    }
+    protected View $view;
 
     private array $headers = array();
 
@@ -112,6 +100,21 @@ abstract class Controller
     /*------------------------------------------
      * VIEW FUNCTIONS
      -------------------------------------------*/
+    public function setParams(array $params): void
+    {
+        $this->params = $params;
+    }
+
+    public function setParts(array $parts): void
+    {
+        $this->parts = $parts;
+    }
+
+    public function setView(View $view): void
+    {
+        $this->view = $view;
+    }
+
     public function setHeaders($headers): void
     {
         $this->headers = $headers;
