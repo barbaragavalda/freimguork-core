@@ -1,102 +1,78 @@
-<?php 
+<?php
 
 namespace Core\Utils;
 
-/**
- * Class Language
- *
- * Load project configuration
- *
- * @package Core\Utils
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 25/10/2017
- */
-
 define('APPACMAN_DIR', DIR_ROOT . 'vendor/appaqui/freimguork-appacman/src/');
 
-class Config{
+class Config
+{
 
     /**
-     * @var \Core\Utils\Config $instance.  Instance of the singleton
+     * @var ?Config $instance .  Instance of the singleton
      */
-    private static $instance;
+    private static ?Config $instance = null;
+
+    private array $projects;
 
     /**
-     * @var array $projects. Project's configuration
+     * @var array $config . Content of the config files (databases, email configurations,...)
      */
-    private $projects = array();
+    private array $config = array();
 
-    /**
-     * @var array $config. Content of the config files (databases, email configurations,...)
-     */
-    private $config = array();
+    private string $baseDomain = '';
 
-    /**
-     * @var string $domain. App domain
-     */
-    private $baseDomain = '';
+    private string $domain = '';
 
-    /**
-     * @var string $domain. App domain
-     */
-    private $domain = '';
+    private string $staticDomain = '';
 
-    /**
-     * @var string $staticDomain. Static domain
-     */
-    private $staticDomain = '';
+    private array $folders = array();
 
-    /**
-     * @var array $folders. Directory where must be all config files
-     */
-    private $folders = array();
+    private string $language = '';
 
-    /**
-     * @var string $language. Current language
-     */
-    private $language = '';
-
-    private $ignore = array('.', '..', '.DS_Store', 'projects.php', 'projects.dev.php', 'projects.prod.php');
+    private array $ignore = array('.', '..', '.DS_Store', 'projects.php', 'projects.dev.php', 'projects.prod.php');
 
     /**
      * load project configurations
+     * @throws \Exception
      */
-    private function __construct(){
+    private function __construct()
+    {
         $this->initFolders();
 
         // load projects info
         $projectFile = $this->folders[0] . 'projects.php';
-        if( !file_exists($projectFile) ){
-            $projectFile = $this->folders[0] . 'projects' . (( IS_DEV ) ? '.dev' : '.prod') . '.php';
+        if (!file_exists($projectFile)) {
+            $projectFile = $this->folders[0] . 'projects' . ((IS_DEV) ? '.dev' : '.prod') . '.php';
         }
         $this->projects = $this->load($projectFile);
-        if( array_key_exists('base_domain', $this->projects) ){
+        if (array_key_exists('base_domain', $this->projects)) {
             $this->baseDomain = $this->projects['base_domain'];
             unset($this->projects['base_domain']);
         }
 
         // create base domain if not specified
-        if( !$this->baseDomain && array_key_exists('SERVER_NAME', $_SERVER) ){
-            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
+        if (!$this->baseDomain && array_key_exists('SERVER_NAME', $_SERVER)) {
+            $protocol         = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
             $this->baseDomain = $protocol . $_SERVER['SERVER_NAME'];
-            if( !in_array($_SERVER['SERVER_PORT'], array(80, 443)) ){
+            if (!in_array($_SERVER['SERVER_PORT'], array(80, 443))) {
                 $this->baseDomain .= ':' . $_SERVER['SERVER_PORT'];
             }
             $this->baseDomain .= '/';
         }
     }
 
-    private function initFolders(){
+    private function initFolders(): void
+    {
         $this->folders = array(
             DIR_ROOT . 'config/',
-            DIR_ROOT . 'config/' . (( IS_DEV ) ? 'dev/' : 'prod/')
+            DIR_ROOT . 'config/' . ((IS_DEV) ? 'dev/' : 'prod/')
         );
 
         $ownVendorsPath = DIR_ROOT . 'vendor/appaqui/';
-        $ownVendors = @scandir($ownVendorsPath);
-        if( $ownVendors !== false ){
-            foreach($ownVendors as $vendor){
-                if( is_dir($ownVendorsPath . $vendor) && !in_array($vendor, $this->ignore) ){
+        $ownVendors     = @scandir($ownVendorsPath);
+        if ($ownVendors !== false) {
+            foreach ($ownVendors as $vendor) {
+                if (is_dir($ownVendorsPath . $vendor) && !in_array($vendor, $this->ignore)) {
                     $this->folders[] = $ownVendorsPath . $vendor . '/src/config/';
                 }
             }
@@ -107,85 +83,71 @@ class Config{
      * initializes the instance (if needed) based on the singleton pattern
      * @return \Core\Utils\Config
      */
-    public static function getInstance(){
-        if( self::$instance === null) {
+    public static function getInstance(): Config
+    {
+        if (self::$instance === null) {
             self::$instance = new Config();
         }
         return self::$instance;
     }
 
-    /**
-     * returns the projects configuration
-     * @return array
-     */
-    public function getProjects(){
+    public function getProjects(): array
+    {
         return $this->projects;
     }
 
-    /**
-     * returns the base app url
-     * @return string
-     */
-    public function getBaseDomain(){
+    public function getBaseDomain(): string
+    {
         return $this->baseDomain;
     }
 
-    /**
-     * returns the app url
-     * @return string
-     */
-    public function getDomain(){
+    public function getDomain(): string
+    {
         return $this->domain;
     }
 
-    /**
-     * returns the static url
-     * @return string
-     */
-    public function getStaticDomain(){
+    public function getStaticDomain(): string
+    {
         return $this->staticDomain;
     }
 
-    /**
-     * sets the base url
-     * @param array $domain     Set app and static domains
-     */
-    public function setDomains($domain){
-        $this->domain = $domain['app'];
+    public function setDomains(array $domain): void
+    {
+        $this->domain       = $domain['app'];
         $this->staticDomain = $domain['static'];
     }
 
-    /**
-     * @return string   Get current language
-     */
-    public function getLanguage(){
+    public function getLanguage(): string
+    {
         return $this->language;
     }
 
-    /**
-     * @param string $language  Set current language
-     */
-    public function setLanguage($language){
+    public function setLanguage(string $language): void
+    {
         $this->language = $language;
     }
 
     /**
      * load all the configurations on a specific folder
+     *
      * @param array $projectFolders
+     *
+     * @throws \Exception
      */
-    public function loadConfigs( $projectFolders ){
-        foreach($this->folders as $folder){
+    public function loadConfigs(array $projectFolders): void
+    {
+        foreach ($this->folders as $folder) {
             $this->loadFolder($folder);
 
-            foreach($projectFolders as $projectFolder){
+            foreach ($projectFolders as $projectFolder) {
                 // common folder
                 $dir = $folder . $projectFolder . '/';
                 $this->loadFolder($dir);
 
                 // environment folder
-                $projectFolder .= ( IS_DEV ) ? '/dev/' : '/prod/';
-                $dir = $folder . $projectFolder;
-                if( is_dir($dir) ){
+                $projectFolder .= (IS_DEV) ? '/dev/' : '/prod/';
+                $dir           = $folder . $projectFolder;
+                if (is_dir($dir)) {
                     // scan folder if exists
                     $this->loadFolder($dir);
                 }
@@ -193,11 +155,19 @@ class Config{
         }
     }
 
-    private function loadFolder($projectFolder){
+    /**
+     * @throws \Exception
+     */
+    private function loadFolder($projectFolder): void
+    {
         $files = @scandir($projectFolder);
-        if( $files !== false ){
-            foreach($files as $file){
-                if( !is_dir($projectFolder . $file) && pathinfo($file, PATHINFO_EXTENSION) == 'php' && !in_array($file, $this->ignore) ){
+        if ($files !== false) {
+            foreach ($files as $file) {
+                if (!is_dir($projectFolder . $file) && pathinfo($file, PATHINFO_EXTENSION) == 'php'
+                    && !in_array(
+                        $file,
+                        $this->ignore
+                    )) {
                     // load config
                     $this->config = array_merge_recursive($this->config, $this->load($projectFolder . $file));
                 }
@@ -209,20 +179,21 @@ class Config{
      * returns the value for the given key
      * @return string|array
      */
-    public function get(){
-        $args = func_get_args();
+    public function get(): string|array
+    {
+        $args      = func_get_args();
         $argsCount = count($args);
 
         $config = $this->config;
-        for($i=0; $i<$argsCount; $i++){
-            $key = $args[$i];
-            if( array_key_exists($key, $config) ){
-                if( $i ==  $argsCount-1 ){
-                    return $config[$key];
-                }else{
-                    $config = $config[$key];
+        for ($i = 0; $i < $argsCount; $i++) {
+            $key = $args[ $i ];
+            if (array_key_exists($key, $config)) {
+                if ($i == $argsCount - 1) {
+                    return $config[ $key ];
+                } else {
+                    $config = $config[ $key ];
                 }
-            }else{
+            } else {
                 break;
             }
         }
@@ -232,24 +203,32 @@ class Config{
 
     /**
      * returns the value for the given key
+     *
      * @param string $key
+     *
      * @return string
      */
-    public function __get( $key ){
+    public function __get(string $key): string
+    {
         return $this->get($key);
     }
 
     /**
      * load the config named $file_name
+     *
      * @param string $file
+     *
      * @return array
      * @throws \Exception
      */
-    public function load($file){
-        if( @include($file) ) {
+    public function load(string $file): array
+    {
+        if (@include($file)) {
             return $config;
-        }else{
-            throw new Exception("The config file that you are trying to load (<em>".$file."</em>), doesn't exists.");
+        } else {
+            throw new Exception(
+                "The config file that you are trying to load (<em>" . $file . "</em>), doesn't exists."
+            );
         }
     }
 }

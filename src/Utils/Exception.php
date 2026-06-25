@@ -2,24 +2,19 @@
 
 namespace Core\Utils;
 
-/**
- * Class Exception
- *
- * Handles the exceptions
- *
- * @package     Core\Utils
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date        10/05/2017
- */
+use JetBrains\PhpStorm\NoReturn;
 
-class Exception extends \Exception{
+class Exception extends \Exception
+{
 
     /**
      * creation of the exception
+     *
      * @param string $message
-     * @param int $code
+     * @param int    $code
      */
-    public function __construct( $message, $code = 0 ){
+    public function __construct(string $message, int $code = 0)
+    {
         parent::__construct($message, $code);
     }
 
@@ -27,13 +22,15 @@ class Exception extends \Exception{
      * if debug mode is on: shows a description of the problem
      * else: shows a simple error message
      */
-    public function showException(){
-        header ('HTTP/1.1 ' . $this->code);
+    #[NoReturn]
+    public function showException(): void
+    {
+        header('HTTP/1.1 ' . $this->code);
 
-        if( IS_DEV ){
+        if (IS_DEV) {
             echo '
-                <h2>'.$this->getMessage().'</h2>
-                Error on file: <b>'.$this->file.'</b> line <b>'.$this->line.'</b>
+                <h2>' . $this->getMessage() . '</h2>
+                Error on file: <b>' . $this->file . '</b> line <b>' . $this->line . '</b>
             ';
         } else {
             echo '<h1>Page not found</h1>';

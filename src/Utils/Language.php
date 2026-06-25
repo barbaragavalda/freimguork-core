@@ -3,26 +3,20 @@
 namespace Core\Utils;
 
 use Core\Model\Model;
+use Core\Routing\Project;
+use PDO;
 
-/**
- * Class Language
- *
- * Current language
- *
- * @package Core\Utils
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 25/10/2017
- */
-class Language extends Model {
+class Language extends Model
+{
 
-    const DOMAIN = 'messenges';
-    const DOMAIN_APPACMAN = 'messenges_appacman';
+    const string DOMAIN          = 'messenges';
+    const string DOMAIN_APPACMAN = 'messenges_appacman';
 
-    private $app = '';
-    private $language = null;
-    private $culture = null;
+    private string $app = '';
+    private string $language;
+    private string $culture;
 
-    const CONFIGURATION = array(
+    const array CONFIGURATION = array(
         'ca' => 'ca_ES',
         'de' => 'de_DE',
         'es' => 'es_ES',
@@ -32,41 +26,48 @@ class Language extends Model {
         'eu' => 'eu_ES',
     );
 
-    public function getLanguage(){
+    public function getLanguage(): string
+    {
         return $this->language;
     }
 
-    public function getCulture($languageID = null){
-        if( $languageID == null ){
+    public function getCulture($languageID = null): string
+    {
+        if ($languageID == null) {
             return $this->culture;
         }
 
-        if( $this->mysql == null ) parent::__construct();
-        $sql = '
+        if ($this->mysql == null) {
+            parent::__construct();
+        }
+        $sql      = '
             SELECT culture
             FROM appacman_lang
             WHERE id_appacman_lang = :id
         ';
-        $params = array(
-            'id' => array('value' => $languageID, 'type' => \PDO::PARAM_INT)
+        $params   = array(
+            'id' => array('value' => $languageID, 'type' => PDO::PARAM_INT)
         );
         $language = $this->mysql->query($sql, $params);
-        if( count($language)){
+        if (count($language)) {
             return $language[0]['culture'];
         }
         return 'es';
     }
 
-    public function setCulture($culture){
+    public function setCulture(string $culture): void
+    {
         $this->culture = $culture;
     }
 
-    public static function getLocale($culture){
-        return Language::CONFIGURATION[$culture];
+    public static function getLocale($culture): string
+    {
+        return Language::CONFIGURATION[ $culture ];
     }
 
-    public function __construct($userLanguage = null, $currentProject = null){
-        if( $currentProject != null ){
+    public function __construct(string $userLanguage = '', ?Project $currentProject = null)
+    {
+        if ($currentProject != null) {
             $this->app = $currentProject->getApp();
             $this->initLanguage($userLanguage, $currentProject);
             $this->initGettext();
@@ -75,27 +76,29 @@ class Language extends Model {
 
     /**
      * check the language of the user
-     * @param string $userLanguage
-     * @param string $currentProject
+     *
+     * @param string   $userLanguage
+     * @param ?Project $currentProject
      */
-    private function initLanguage($userLanguage, $currentProject){
+    private function initLanguage(string $userLanguage, ?Project $currentProject): void
+    {
         $projectLanguages = $currentProject->getLanguages();
-        if( $userLanguage ){
+        if ($userLanguage) {
             // language from URL
             $this->language = $userLanguage;
-        }else{
+        } else {
             $session = Session::getInstance();
-            if( $session->get('lang_culture') ){
+            if ($session->get('lang_culture')) {
                 $sessionLanguage = $session->get('lang_culture');
-                if( in_array($sessionLanguage, $projectLanguages) ){
+                if (in_array($sessionLanguage, $projectLanguages)) {
                     // language from session
                     $this->language = $sessionLanguage;
                 }
-            }else{
-                if( array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER) ){
+            } else {
+                if (array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
                     $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
                     $agentLanguage = $this->equivalents($agentLanguage, $projectLanguages[0]);
-                    if( in_array($agentLanguage, $projectLanguages) ){
+                    if (in_array($agentLanguage, $projectLanguages)) {
                         // language from browser
                         $this->language = $agentLanguage;
                     }
@@ -103,7 +106,7 @@ class Language extends Model {
             }
         }
 
-        if( !$this->language ){
+        if (!$this->language) {
             // language from config
             $this->language = $projectLanguages[0];
         }
@@ -111,30 +114,29 @@ class Language extends Model {
         $this->initCulture();
     }
 
-    private function equivalents($language, $preferred){
+    private function equivalents($language, $preferred): string
+    {
         if ($language == $preferred) {
             return $language;
         }
-        switch ($language){
-            case 'ca':
-            case 'eu':
-            case 'gl':
-                return 'es';
-                break;
-        }
+        return match ($language) {
+            'ca', 'eu', 'gl' => 'es',
+            default => '',
+        };
     }
 
     /**
      * initializes the gettext function with the current language
      */
-    public function initGettext(){
-        putenv('LC_ALL='.$this->culture);
+    public function initGettext(): void
+    {
+        putenv('LC_ALL=' . $this->culture);
         setlocale(LC_ALL, $this->culture);
 
-        $domain = self::DOMAIN;
+        $domain          = self::DOMAIN;
         $domainDirectory = DIR_ROOT . 'locale';
-        if( $this->app == 'Appacman' ) {
-            $domain = self::DOMAIN_APPACMAN;
+        if ($this->app == 'Appacman') {
+            $domain          = self::DOMAIN_APPACMAN;
             $domainDirectory = APPACMAN_DIR . 'locale';
         }
 
@@ -143,22 +145,27 @@ class Language extends Model {
         textdomain($domain);
     }
 
-    public function initID(){
-        if( $this->mysql == null ) parent::__construct();
+    public function initID(): void
+    {
+        if ($this->mysql == null) {
+            parent::__construct();
+        }
 
         $table = 'appacman_lang';
-        if( !$this->mysql->tableExists($table) ) $table = 'language';
-        $sql = '
+        if (!$this->mysql->tableExists($table)) {
+            $table = 'language';
+        }
+        $sql      = '
             SELECT id_' . $table . ' AS id
             FROM ' . $table . '
             WHERE culture = :culture
         ';
-        $params = array(
-            'culture' => array('value' => $this->language, 'type' => \PDO::PARAM_STR)
+        $params   = array(
+            'culture' => array('value' => $this->language, 'type' => PDO::PARAM_STR)
         );
         $language = $this->mysql->query($sql, $params);
 
-        if( count($language) ){
+        if (count($language)) {
             $session = Session::getInstance();
             $session->set('lang_id', $language[0]['id']);
             $session->set('lang_culture', $this->language);
@@ -167,47 +174,54 @@ class Language extends Model {
 
     /**
      * get culture depending on language
-     * @param string $languageID
+     *
+     * @param ?string $languageID
      */
-    public function initCulture($languageID = null){
-        if( $languageID !== null ){
+    public function initCulture(?string $languageID = null): void
+    {
+        if ($languageID !== null) {
             $this->language = $languageID;
         }
         $this->culture = self::CONFIGURATION[ $this->language ];
     }
 
-    public function getLanguages($culture = null){
-        if( $this->mysql == null ) parent::__construct();
+    public function getLanguages($culture = null): array
+    {
+        if ($this->mysql == null) {
+            parent::__construct();
+        }
 
         $table = 'appacman_lang';
-        if( !$this->mysql->tableExists($table) ) $table = 'language';
+        if (!$this->mysql->tableExists($table)) {
+            $table = 'language';
+        }
 
         $where  = '';
         $params = array();
-        if( $culture != null ){
+        if ($culture != null) {
             $where  = 'WHERE l.culture = :culture';
             $params = array(
-                'culture' => array('value' => $this->language, 'type' => \PDO::PARAM_STR)
+                'culture' => array('value' => $this->language, 'type' => PDO::PARAM_STR)
             );
         }
 
-        $sql = '
-            SELECT l.id_' . $table . ' AS id, l.name, l.icon
-            FROM ' . $table . ' AS l
-            ' . $where . '
+        $sql       = "
+            SELECT l.id_$table AS id, l.name, l.icon
+            FROM $table AS l
+            $where
             ORDER BY l.order ASC
-        ';
+        ";
         $languages = $this->mysql->query($sql, $params);
 
-        if( count($languages) ){
-            $config = Config::getInstance();
+        if (count($languages)) {
+            $config       = Config::getInstance();
             $staticDomain = $config->getStaticDomain();
 
             $session = Session::getInstance();
-            $langID = $session->get('lang_id');
-            foreach($languages as &$language){
+            $langID  = $session->get('lang_id');
+            foreach ($languages as &$language) {
                 $language['icon'] = $staticDomain . 'static/img/' . $language['icon'];
-                if( $language['id'] == $langID ){
+                if ($language['id'] == $langID) {
                     $language['current'] = true;
                 }
             }

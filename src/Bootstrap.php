@@ -2,9 +2,6 @@
 
 namespace Core;
 
-include DIR_ROOT . 'vendor/appaqui/freimguork-core/src/Utils/NonExistingFunctions.php';
-require(DIR_ROOT . 'vendor/appaqui/freimguork-core/src/Utils/PDF/fpdf.php');
-
 use Core\Controller\CacheManager;
 use Core\Controller\Controller;
 use Core\Routing\Projects;
