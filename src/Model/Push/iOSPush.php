@@ -189,34 +189,32 @@ class iOSPush extends iOS
 
     private function checkAppleErrorResponse($response, $token, $j)
     {
-        if ($httpCode != 200) {
-            $hasToDeleteDevice = false;
-            switch ($response) {
-                case 'BadDeviceToken':
-                case 'DeviceTokenNotForTopic':
-                case 'Unregistered':
-                    $hasToDeleteDevice = true;
-                    break;
-            }
+        $hasToDeleteDevice = false;
+        switch ($response) {
+            case 'BadDeviceToken':
+            case 'DeviceTokenNotForTopic':
+            case 'Unregistered':
+                $hasToDeleteDevice = true;
+                break;
+        }
 
-            // delete device
-            if ($hasToDeleteDevice) {
-                $this->deleteDevice($token);
-            }
+        // delete device
+        if ($hasToDeleteDevice) {
+            $this->deleteDevice($token);
+        }
 
-            // update log
-            if ($this->hasLog) {
-                $sql    = '
+        // update log
+        if ($this->hasLog) {
+            $sql    = '
                     UPDATE appacman_log_ios
                     SET result = :result
                     WHERE id_appacman_log_ios = :id
                 ';
-                $params = array(
-                    'id'     => array('value' => $this->logIDs[ $j ], 'type' => \PDO::PARAM_INT),
-                    'result' => array('value' => $response, 'type' => \PDO::PARAM_STR),
-                );
-                $this->mysql->query($sql, $params);
-            }
+            $params = array(
+                'id'     => array('value' => $this->logIDs[ $j ], 'type' => \PDO::PARAM_INT),
+                'result' => array('value' => $response, 'type' => \PDO::PARAM_STR),
+            );
+            $this->mysql->query($sql, $params);
         }
     }
 

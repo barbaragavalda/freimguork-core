@@ -6,7 +6,10 @@ use Core\Model\Utils\ImageUtils;
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
 use Core\Utils\Exception;
-use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 
 /**
  * Class File
@@ -367,10 +370,12 @@ class File extends Model
         $this->prepareSave($qrName);
         $path = $this->getRelativePath();
 
-        $qr = new BaconQrCodeGenerator();
-        $qr->format('png');
-        $qr->size($size);
-        $qr->generate($text, $path);
+        $renderer = new ImageRenderer(
+            new RendererStyle($size),
+            new ImagickImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $writer->writeFile($text, $path);
         return $this->saveToDatabase();
     }
 

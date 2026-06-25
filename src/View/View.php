@@ -5,7 +5,6 @@ namespace Core\View;
 use Core\Utils\Exception;
 use Core\View\Response\CSV;
 use Core\View\Response\HTML;
-use Core\View\Response\HTMLResponse;
 use Core\View\Response\Json;
 use Core\View\Response\Redirect;
 use Core\View\Response\XML;

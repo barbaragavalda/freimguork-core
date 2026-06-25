@@ -1,32 +1,35 @@
 {
-    "name": "appaqui/freimguork-core",
-    "description": "Core module for Freimguork projects",
-    "authors": [
-        {
-            "name": "Barbara Gavalda", 
-            "email": "bgb@optisistem.com"
-        },
-        {
-            "name": "Toni Palanques", 
-            "email": "tpv@optisistem.com"
-        }
-    ],
-    "require": {
-        "php": ">=5.3",
-        "twig/twig": "^3.0",
-        "jblond/twig-trans": "^1.0",
-        "digitalnature/php-ref": "dev-master",
-        "phpmailer/phpmailer": "^7.0.0",
-        "simplesoftwareio/simple-qrcode": "~1",
-        "phpunit/phpunit": "^8",
-        "phpoffice/phpspreadsheet": "^5.7.0",
-        "paragonie/sodium_compat": "^1.17",
-        "firebase/php-jwt": "^6.0",
-        "google/apiclient": "^2.15.0"
+  "name": "appaqui/freimguork-core",
+  "description": "Core module for Freimguork projects",
+  "authors": [
+    {
+      "name": "Barbara Gavalda",
+      "email": "bgb@optisistem.com"
     },
-    "autoload": {
-        "psr-4": {
-            "Core\\": "src/"
-        }
+    {
+      "name": "Toni Palanques",
+      "email": "tpv@optisistem.com"
     }
+  ],
+  "require": {
+    "php": "^8.5",
+    "ext-curl": "*",
+    "ext-exif": "*",
+    "ext-gettext": "*",
+    "ext-gd": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "twig/twig": "^3.0",
+    "jblond/twig-trans": "^1.2",
+    "phpmailer/phpmailer": "^7.1",
+    "simplesoftwareio/simple-qrcode": "^4.2",
+    "phpoffice/phpspreadsheet": "^5.8",
+    "firebase/php-jwt": "^7.1",
+    "google/apiclient": "^2.19"
+  },
+  "autoload": {
+    "psr-4": {
+      "Core\\": "src/"
+    }
+  }
 }
