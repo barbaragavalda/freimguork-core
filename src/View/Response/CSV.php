@@ -2,18 +2,10 @@
 
 namespace Core\View\Response;
 
-/**
- * Class CSV
- * @package Core\Views\Response
- */
 class CSV extends Response
 {
 
-    /**
-     * tableName
-     * @var string
-     */
-    private $tableName = '';
+    private string $tableName;
 
     public function __construct($tableName)
     {
@@ -23,12 +15,12 @@ class CSV extends Response
     /**
      * creates a file and downloads it through the browser
      *
-     * @param array  $info info to write to the file
-     * @param string $path path to file
+     * @param array   $info info to write to the file
+     * @param ?string $path path to file
      *
      * @return string
      */
-    public function initResponse($info = null, $path = null)
+    public function initResponse(array $info = array(), ?string $path = null): string
     {
         $file = $this->tableName . '-' . date('Y-m-d-His') . '.csv';
         if (array_key_exists('export_without_date', $info)) {
@@ -46,8 +38,8 @@ class CSV extends Response
         $f = fopen($destination, 'w');
 
         // titles
-        if( count($info['csv']['titles']) > 0 ){
-            fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
+        if (count($info['csv']['titles']) > 0) {
+            fputs($f, chr(0xEF) . chr(0xBB) . chr(0xBF));
             array_unshift($info['csv']['titles'], '');
             fputcsv($f, $info['csv']['titles'], ';');
         }
@@ -55,7 +47,7 @@ class CSV extends Response
         // list
         foreach ($info['csv']['list'] as $item) {
             foreach ($item as &$value) {
-                if(!empty($value)){
+                if (!empty($value)) {
                     $value = strip_tags($value);
                 }
             }
@@ -71,13 +63,13 @@ class CSV extends Response
      * @param string $fileName
      * @param array  $content
      */
-    public static function createCSV($fileName, $content)
+    public static function createCSV(string $fileName, array $content): void
     {
         $file = $fileName . '.csv';
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename="' . $file . '";');
         $f = fopen('php://output', 'w');
-        fputs($f, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
+        fputs($f, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         foreach ($content as $line) {
             fputcsv($f, $line, ';');

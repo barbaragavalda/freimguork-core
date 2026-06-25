@@ -2,7 +2,6 @@
 
 namespace Core\View;
 
-use Core\Utils\Exception;
 use Core\View\Response\CSV;
 use Core\View\Response\HTML;
 use Core\View\Response\Json;
@@ -11,89 +10,95 @@ use Core\View\Response\XML;
 
 /**
  * Class View
- *
  * Response of the petition
- *
- * @package Core\Controller
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 26/10/2017
  */
-class View{
+class View
+{
 
     /**
-     * @var array $info. Content of the variables that the view needs
+     * @var array $info . Content of the variables that the view needs
      */
-    private $info = array();
+    private array $info = array();
 
     /**
-     * @var string $projectFolder. Folder for project App
+     * @var string $projectFolder . Folder for project App
      */
-    private $projectFolder = null;
+    private string $projectFolder;
 
     /**
-     * @var object $response. Object response
+     * @var ?object $response . Object response
      */
-    private $response = null;
+    private ?object $response = null;
 
-    public function __construct($projectFolder){
+    public function __construct($projectFolder)
+    {
         $this->projectFolder = $projectFolder;
     }
-    
-    public function getProjectFolder(){
+
+    public function getProjectFolder(): string
+    {
         return $this->projectFolder;
     }
-    
+
     /**
      * returns the final result
      */
-    public function getResponse() {
+    public function getResponse(): string
+    {
         return $this->response->get();
     }
 
     /**
-     * set info needed for repsponse render
+     * set info needed for response render
      */
-    public function setInfo($info) {
+    public function setInfo($info)
+    {
         return $this->info = $info;
     }
 
     /**
      * generates the final response
      */
-    private function render() {
-        $this->response->initResponse( $this->info );
+    private function render(): void
+    {
+        $this->response->initResponse($this->info);
     }
 
     /**
      * renders a twig template
-     * @param string $file.     Template name
-     * @param int $status       Code (200, ...)
-     * @param array $headers    Extra headers
+     *
+     * @param string $file    .     Template name
+     * @param int    $status  Code (200, ...)
+     * @param array  $headers Extra headers
      */
-    public function template( $file, $status, $headers = array() ) {
-        if( !$this->response ) {
+    public function template(string $file, int $status, array $headers = array()): void
+    {
+        if (!$this->response) {
             $this->response = new HTML($file, $this->projectFolder, $status, $headers);
             $this->render();
         }
     }
 
     /**
-     * renders a json file
+     * renders a JSON file
      */
-    public function json() {
-        if( !$this->response ) {
+    public function json(): void
+    {
+        if (!$this->response) {
             $this->response = new Json();
             $this->render();
         }
     }
 
     /**
-     * renders a xml with twig template
-     * @param string $file. Template name
-     * @param string $path. Save to path
+     * renders an XML with twig template
+     *
+     * @param string  $file . Template name
+     * @param ?string $path . Save to path
      */
-    public function xml( $file, $path = null ){
-        if( !$this->response ) {
+    public function xml(string $file, ?string $path = null): void
+    {
+        if (!$this->response) {
             $this->response = new XML($file, $this->projectFolder, $path);
             $this->render();
         }
@@ -101,27 +106,26 @@ class View{
 
     /**
      * redirects to an URL
-     * @param string $url. URL to be redirect
-     * @param int $status. Code of the redirection (301, 302)
-     * @throws exception
+     *
+     * @param string $url    . URL to be redirect
+     * @param int    $status . Code of the redirection (301, 302)
      */
-    public function redirect( $url, $status ) {
-        if( !$this->response ){
-            try{
-                $this->response = new Redirect($url, $status);
-                $this->render();
-            } catch (Exception $e) {
-                $e->showException();
-            }
+    public function redirect(string $url, int $status): void
+    {
+        if (!$this->response) {
+            $this->response = new Redirect($url, $status);
+            $this->render();
         }
     }
 
     /**
      * downloads a csv file
-     * @param $tableName. Table name for file name
+     *
+     * @param $tableName . Table name for file name
      */
-    public function export($tableName){
-        if( !$this->response ){
+    public function export($tableName): void
+    {
+        if (!$this->response) {
             $this->response = new CSV($tableName);
             $this->render();
         }

@@ -2,31 +2,32 @@
 
 namespace Core\View\Response;
 
-/**
- * Class XML
- * @package Core\Views\Response
- */
-class XML extends HTML {
+class XML extends HTML
+{
 
-    private $path = null;
+    private string $path;
 
     /**
      * set the header of the response
-     * @param string $projectFolder     Folder for project
-     * @param string $file              Name of the twig file
-     * @param string $path              Save to path
+     *
+     * @param string  $projectFolder Folder for project
+     * @param string  $file          Name of the twig file
+     * @param ?string $path          Save to path
      */
-    public function __construct($file, $projectFolder, $path = null) {
-        parent::__construct($file, $projectFolder, 200);
+    public function __construct(string $file, string $projectFolder, ?string $path = null)
+    {
+        parent::__construct($file, $projectFolder);
         $this->setHeaderType('text/html');
 
         $this->path = $path;
     }
 
-    public function initResponse($info = null) {
+    public function initResponse(array $info = array()): string
+    {
         parent::initResponse($info);
 
         file_put_contents($this->path, $this->response);
+        return $this->response;
     }
 
 }
