@@ -4,41 +4,36 @@ namespace Core\Controller\Cache;
 
 use Core\Utils\Config;
 
-/**
- * Class Disk
- *
- * Cache abstract class
- *
- * @package Core\Controller\Cache
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 26/10/2017
- */
-abstract class Cache {
+abstract class Cache
+{
 
-    private $isCaching = true;
+    private bool $isCaching;
 
-    public function __construct() {
-        $config = Config::getInstance();
+    public function __construct()
+    {
+        $config          = Config::getInstance();
         $this->isCaching = $config->get('cache', 'is_caching');
     }
 
-    private function getKey($parameters) {
-        $key = sha1(serialize($parameters));
-        return $key;
+    private function getKey(string $parameters): string
+    {
+        return sha1(serialize($parameters));
     }
 
     /**
      * check if cache is enabled to save something on it
-     * @param string $key           name of the cache file
-     * @param mixed $content        content to be cached
-     * @param integer $expiration   cache expiration
+     *
+     * @param string $key        name of the cache file
+     * @param mixed  $content    content to be cached
+     * @param int    $expiration cache expiration
+     *
      * @return bool                 can be saved or not
      */
-    public function set($key, $content, $expiration){
-        if( $this->isCaching ){
+    public function set(string $key, mixed $content, int $expiration): bool
+    {
+        if ($this->isCaching) {
             $key = $this->getKey($key);
-            $ok =  $this->saveCache($key, $content, $expiration);
-            return $ok;
+            return $this->saveCache($key, $content, $expiration);
         }
 
         return false;
@@ -46,14 +41,17 @@ abstract class Cache {
 
     /**
      * check if cache is enabled to return it's content
-     * @param string $key   name of the cache file
-     * @return null|mixed   null = cannot be returned | mixed = cache content
+     *
+     * @param string $key name of the cache file
+     *
+     * @return mixed   null = cannot be returned | mixed = cache content
      */
-    public function get($key){
-        if( $this->isCaching ){
-            $key = $this->getKey($key);
+    public function get(string $key): mixed
+    {
+        if ($this->isCaching) {
+            $key     = $this->getKey($key);
             $content = $this->getCache($key);
-            if( $content !== false ){
+            if ($content !== false) {
                 return $content;
             }
         }
@@ -63,25 +61,31 @@ abstract class Cache {
 
     /**
      * saves cache
-     * @param string $key           name of the cache file
-     * @param mixed $content        to be cached
-     * @param integer $expiration   cache expiration
+     *
+     * @param string $key        name of the cache file
+     * @param mixed  $content    to be cached
+     * @param int    $expiration cache expiration
+     *
      * @return bool                 can be saved or not
      */
-    abstract protected function saveCache($key, $content, $expiration);
+    abstract protected function saveCache(string $key, mixed $content, int $expiration): bool;
 
     /**
      * returns the content of the cache if isn't expired
-     * @param string $key   name of cache
-     * @return null|mixed   null = cannot be returned | mixed = cache content
+     *
+     * @param string $key name of cache
+     *
+     * @return mixed   null = cannot be returned | mixed = cache content
      */
-    abstract protected function getCache($key);
+    abstract protected function getCache(string $key): mixed;
 
     /**
      * delete a key from cache
-     * @param string $key   name of the cache file
+     *
+     * @param string $key name of the cache file
+     *
      * @return bool         can be deleted or not
      */
-    abstract protected function delete($key);
+    abstract protected function delete(string $key): bool;
 
 } 

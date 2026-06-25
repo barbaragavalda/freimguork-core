@@ -2,10 +2,12 @@
 
 namespace Core\Controller;
 
+use Core\Model\Model;
 use Core\Utils\Config;
 use Core\Utils\Exception;
 use Core\Utils\Language;
 use Core\View\Extension\Twig;
+use Core\View\View;
 use jblond\TwigTrans\Translation;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -13,64 +15,67 @@ use Twig\TwigFilter;
 
 /**
  * Class Controller
- *
  * All Controllers must extend from this controller
- *
- * @package Core\Controller
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 26/10/2017
  */
-abstract class Controller {
+abstract class Controller
+{
 
     /**
-     * @var string $domain. Base URL including language (if any)
+     * @var string $domain . Base URL including language (if any)
      */
-    protected $domain = '';
+    protected string $domain = '';
 
     /**
-     * @var string $rootDomain. Base URL without language (if any)
+     * @var string $rootDomain . Base URL without language (if any)
      */
-    protected $rootDomain = '';
+    protected string $rootDomain = '';
 
     /**
-     * @var string $staticDomain. Base URL to static
+     * @var string $staticDomain . Base URL to static
      */
-    protected $staticDomain = '';
+    protected string $staticDomain = '';
 
     /**
-     * @var array $params. Parameters from URL petition
+     * @var array $params . Parameters from URL petition
      */
-    protected $params = array();
+    protected array $params = array() {
+        set {
+            $this->params = $value;
+        }
+    }
 
     /**
-     * @var array $parts. Parts of URL petition
+     * @var array $parts . Parts of URL petition
      */
-    protected $parts = array();
+    protected array $parts = array() {
+        set {
+            $this->parts = $value;
+        }
+    }
+
+    private ?View $view {
+        set {
+            $this->view = $value;
+        }
+    }
+
+    private array $headers = array();
 
     /**
-     * @var \Core\View\View $view. View class
+     * @var array $info . Content of the variables that the view needs
      */
-    private $view = array();
+    protected array $info = array();
 
-    private $headers = array();
-
-    /**
-     * @var array $info. Content of the variables that the view needs
-     */
-    protected $info = array();
-
-    /**
-     * @var \Core\Controller\CacheManager $modelCache. Cache Manager
-     */
-    protected $modelCache = null;
+    protected CacheManager $modelCache;
 
     /**
      * Bootstrap initialization
      */
-    public function __construct() {
+    public function __construct()
+    {
         //domains
-        $config = Config::getInstance();
-        $this->domain = $config->getDomain();
+        $config           = Config::getInstance();
+        $this->domain     = $config->getDomain();
         $this->rootDomain = $config->getBaseDomain();
 
         $this->assign('domain', $this->domain);
@@ -83,8 +88,10 @@ abstract class Controller {
         }
 
         $staticPath = 'static/';
-        $explode = explode('/', $_SERVER['DOCUMENT_ROOT']);
-        if( $explode[count($explode)-1] != 'public') $staticPath = 'public/' . $staticPath;
+        $explode    = explode('/', $_SERVER['DOCUMENT_ROOT']);
+        if ($explode[ count($explode) - 1 ] != 'public') {
+            $staticPath = 'public/' . $staticPath;
+        }
         $this->staticDomain = $this->rootDomain . $staticPath;
         $this->assign('staticDomain', $this->staticDomain);
 
@@ -100,68 +107,51 @@ abstract class Controller {
     /***
      * function to be executed by Bootstrap
      */
-    abstract public function build();
+    abstract public function build(): void;
 
     /*------------------------------------------
      * VIEW FUNCTIONS
      -------------------------------------------*/
-    /***
-     * sets the params from the URL (variable parts)
-     * @param array $params
-     */
-    public function setParams($params) {
-        $this->params = $params;
-    }
-
-    /***
-     * sets the parts from the URL (constant parts)
-     * @param array $parts
-     */
-    public function setParts($parts) {
-        $this->parts = $parts;
-    }
-
-    /***
-     * sets the object view
-     * @param \Core\View\View $view.
-     */
-    public function setView($view) {
-        $this->view = $view;
-    }
-
-    public function setHeaders($headers){
+    public function setHeaders($headers): void
+    {
         $this->headers = $headers;
     }
 
     /***
      * saves info that the view needs
+     *
      * @param string $var_name
-     * @param mixed $value
+     * @param mixed  $value
      */
-    public function assign( $var_name, $value ){
-        $this->info[$var_name] = $value;
+    public function assign(string $var_name, mixed $value): void
+    {
+        $this->info[ $var_name ] = $value;
     }
 
     /**
      * reset info array
      */
-    protected function removeInfo(){
+    protected function removeInfo(): void
+    {
         $this->info = array();
     }
 
     /**
      * returns the final result from the view
      */
-    public function getResponse(){
+    public function getResponse(): string
+    {
         return $this->view->getResponse();
     }
 
     /**
-     * renders a template file (twig) to html format
-     * @param string $file      Name of the template file
-     * @param int $status       Code (200, ...)
+     * renders a template file (twig) to HTML format
+     *
+     * @param string $file   Name of the template file
+     * @param int    $status Code (200, ...)
      */
-    protected function template($file, $status = 200) {
+    protected function template(string $file, int $status = 200): void
+    {
         $this->view->setInfo($this->info);
         $this->view->template($file, $status, $this->headers);
     }
@@ -169,49 +159,59 @@ abstract class Controller {
     /**
      * renders a json
      */
-    protected function json(){
+    protected function json(): void
+    {
         $this->view->setInfo($this->info);
         $this->view->json();
     }
 
     /**
      * renders a template file (twig) to xml format
-     * @param string $file      Name of the template file
+     *
+     * @param string $file Name of the template file
      */
-    protected function xml($file, $path = null){
+    protected function xml(string $file, ?string $path = null): void
+    {
         $this->view->setInfo($this->info);
         $this->view->xml($file, $path);
     }
 
     /**
      * makes a redirection
-     * @param string $url       URL to be redirect
-     * @param int $status       Code (301, 302)
+     *
+     * @param string $url    URL to be redirect
+     * @param int    $status Code (301, 302)
      */
-    protected function redirect($url, $status = 301){
+    protected function redirect(string $url, int $status = 301): void
+    {
         $this->view->setInfo($this->info);
-        try{
+        try {
             $this->view->redirect($url, $status);
         } catch (Exception $e) {
             $e->showException();
         }
     }
 
-    protected function export($tableName){
+    protected function export(string $tableName): void
+    {
         $this->view->setInfo($this->info);
         $this->view->export($tableName);
     }
 
     /**
      * returns the value of a parameter on the URL
+     *
      * @param string $param
+     *
      * @return bool|string
      */
-    protected function getParam( $param ){
-        if( array_key_exists($param, $this->params) )
-            return $this->params[$param];
-        else
+    protected function getParam(string $param): bool|string
+    {
+        if (array_key_exists($param, $this->params)) {
+            return $this->params[ $param ];
+        } else {
             return false;
+        }
     }
 
     /*------------------------------------------
@@ -219,59 +219,66 @@ abstract class Controller {
      -------------------------------------------*/
     /**
      * controller cache definition
+     * return array('ttl' => 300, 'key' => array('controller', __CLASS__));
      * @return array|bool
      */
-    public function getCacheDef() {
-        //return array('ttl' => 300, 'key' => array('controller', __CLASS__));
+    public function getCacheDef(): array|bool
+    {
         return false;
     }
 
     /**
      * loads the cache from a model
-     * @param \Core\Model\Model $model      object
-     * @param string $method                method to be called
-     * @param array $params                 cache params same as function params
-     * @return mixed|null
+     *
+     * @param Model  $model  object
+     * @param string $method method to be called
+     * @param array  $params cache params same as function params
+     *
+     * @return mixed
      */
-    protected function loadCache($model, $method, $params = array()){
+    protected function loadCache(Model $model, string $method, array $params = array()): mixed
+    {
         $cacheDefinition = $model->getCacheDef($method, $params);
-        $result = $this->modelCache->getCache($cacheDefinition);
-        if( $result == '' ){
-            $result = call_user_func_array( array($model, $method), $params);
+        $result          = $this->modelCache->getCache($cacheDefinition);
+        if ($result == '') {
+            $result = call_user_func_array(array($model, $method), $params);
             $this->modelCache->saveCache($result);
         }
         return $result;
     }
 
     /**
-     * obtain html content of twig file
-     * @param string $file
-     * @param array $info
-     * @param null $path
+     * obtain HTML content of twig file
+     *
+     * @param string  $file
+     * @param array   $info
+     * @param ?string $path
      *
      * @return string
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
-    protected function getHTML($file, $info = array(), $path = null) {
-        if( $path == null ){
+    protected function getHTML(string $file, array $info = array(), ?string $path = null): string
+    {
+        if ($path == null) {
             $path = DIR_ROOT . 'src/' . $this->view->getProjectFolder() . '/View/';
         }
 
         $loader = new FilesystemLoader(array($path));
-        $twig = new Environment($loader);
+        $twig   = new Environment($loader);
 
-        $twig->addExtension( new Translation() );
+        $twig->addExtension(new Translation());
         $filter = new TwigFilter(
-            'trans',
-            function ($context, $string) {
-                return Translation::transGetText($string, $context);
-            },
-            ['needs_context' => true]
+            'trans', function ($context, $string) {
+            return Translation::transGetText($string, $context);
+        }, ['needs_context' => true]
         );
         $twig->addFilter($filter);
 
-        $twig->addExtension( new Twig() );
-        if( array_key_exists('twig_filters', $info) ){
-            foreach($info['twig_filters'] as $filter){
+        $twig->addExtension(new Twig());
+        if (array_key_exists('twig_filters', $info)) {
+            foreach ($info['twig_filters'] as $filter) {
                 $twig->addFilter($filter);
             }
             unset($info['twig_filters']);
@@ -282,58 +289,60 @@ abstract class Controller {
         return $template->render($info);
     }
 
-    protected function getCanonicalURL($pagination = array(), $pageKey = 'p'){
-        $page = 1;
+    protected function getCanonicalURL(array $pagination = array(), string $pageKey = 'p'): array
+    {
+        $page       = 1;
         $parameters = array();
-        $query = $_SERVER['QUERY_STRING'];
-        if( !empty($query) ){
+        $query      = $_SERVER['QUERY_STRING'];
+        if (!empty($query)) {
             parse_str($query, $parameters);
-            if( array_key_exists($pageKey, $parameters) ){
-                $page = (int)$parameters[$pageKey];
-                unset($parameters[$pageKey]);
+            if (array_key_exists($pageKey, $parameters)) {
+                $page = (int) $parameters[ $pageKey ];
+                unset($parameters[ $pageKey ]);
                 $query = http_build_query($parameters);
             }
         }
 
         // final URL without page
-        $return = array();
-        $url = $this->getBaseURL();
+        $return    = array();
+        $url       = $this->getBaseURL();
         $canonical = $url;
-        if(!str_ends_with($canonical, '/')){
+        if (!str_ends_with($canonical, '/')) {
             $canonical .= '/';
         }
-        if( !empty($query) ){
+        if (!empty($query)) {
             $canonical .= '?' . $query;
         }
         $return['canonical'] = $canonical;
 
         // prev and next URL
-        $current = $page;
+        $current  = $page;
         $lastPage = $page;
-        if( count($pagination) ){
+        if (count($pagination)) {
             $current = $pagination['current'];
-            if( count($pagination['pages']) ){
+            if (count($pagination['pages'])) {
                 $lastPage = $pagination['pages'][ count($pagination['pages']) - 1 ];
             }
         }
-        if( ($page > 0 && $page != $lastPage) || $current < $lastPage ){
+        if (($page > 0 && $page != $lastPage) || $current < $lastPage) {
             $parameters['p'] = $page + 1;
-            $return['next'] = $url . '?' . http_build_query($parameters);
+            $return['next']  = $url . '?' . http_build_query($parameters);
         }
-        if( $page > 1 ){
+        if ($page > 1) {
             $parameters['p'] = $page - 1;
-            $return['prev'] = $url . '?' . http_build_query($parameters);
+            $return['prev']  = $url . '?' . http_build_query($parameters);
         }
 
         return $return;
     }
 
-    private function getBaseURL(){
+    private function getBaseURL(): string
+    {
         $canonical = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-        if( !empty($_SERVER['REDIRECT_URL']) ){
+        if (!empty($_SERVER['REDIRECT_URL'])) {
             $canonical .= $_SERVER['REDIRECT_URL'];
         }
         return $canonical;
     }
-    
+
 }
