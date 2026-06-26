@@ -5,11 +5,11 @@ namespace Core\Model\Utils;
 class ImageUtils
 {
 
-    const IMG_JPG  = 'jpg';
-    const IMG_JPEG = 'jpeg';
-    const IMG_GIF  = 'gif';
-    const IMG_PNG  = 'png';
-    const IMG_WEBP = 'webp';
+    const string IMG_JPG  = 'jpg';
+    const string IMG_JPEG = 'jpeg';
+    const string IMG_GIF  = 'gif';
+    const string IMG_PNG  = 'png';
+    const string IMG_WEBP = 'webp';
 
     /**
      * Generate Webp image format
@@ -21,7 +21,7 @@ class ImageUtils
      *
      * @return false|string Returns path to generated webp image, otherwise returns false.
      */
-    function generateWebpImage($folder, $file, $compression_quality = 90)
+    function generateWebpImage(string $folder, string $file, int $compression_quality = 90): false|string
     {
         $previousPath = $folder . $file;
 
@@ -66,9 +66,6 @@ class ImageUtils
                 if (false === $result) {
                     return false;
                 }
-
-                // Free up memory
-                imagedestroy($image);
 
                 return $newFile;
             }

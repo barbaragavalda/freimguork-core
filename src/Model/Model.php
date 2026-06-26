@@ -4,42 +4,40 @@ namespace Core\Model;
 
 use Core\Model\Encryptor\TwoWay;
 use Core\Model\MySQL\Manager;
+use Core\Model\MySQL\PDO;
 use Core\Utils\Session;
 
 /**
  * Class Model
  * MySQL connection
- * @package Core\Utils
- * @author  Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date    26/10/2017
  */
 class Model
 {
 
     /**
-     * @var  \Core\Model\MySQL\Manager  Database connection
+     * @var  ?PDO  Database connection
      */
-    public $mysql = null;
+    public ?PDO $mysql = null;
 
     /**
      * @var int  current lang id
      */
-    protected $langID = 0;
+    protected int $langID = 0;
 
     /**
      * @var int     identifier
      */
-    protected $id = 0;
+    protected int $id = 0;
 
     /**
      * @var string  encrypting key
      */
-    protected $key = '';
+    protected string $key = '';
 
     /**
-     * @var null    creation timestamp
+     * @var ?string    creation timestamp
      */
-    protected $created = null;
+    protected ?string $created = null;
 
     public function __construct()
     {
@@ -49,32 +47,32 @@ class Model
         $this->langID = $session->get('lang_id');
     }
 
-    public function getID()
+    public function getID(): int
     {
         return $this->id;
     }
 
-    public function setID($id)
+    public function setID(int $id): void
     {
         $this->id = $id;
     }
 
-    protected function setKey()
+    protected function setKey(): void
     {
         $this->key = $this->id . '_' . $this->created . '_';
     }
 
-    public function getCreated()
+    public function getCreated(): string
     {
         return $this->created;
     }
 
-    public function setCreated($created)
+    public function setCreated(string $created): void
     {
         $this->created = $created;
     }
 
-    protected function getFile($fileID, $suffix = '')
+    protected function getFile(int $fileID, string $suffix = ''): string
     {
         $file = new File($fileID);
         $path = $file->getAbsolutePath($suffix);
@@ -84,7 +82,7 @@ class Model
         return $path;
     }
 
-    protected function getFBImage($fileID, $suffix = '')
+    protected function getFBImage(int $fileID, string $suffix = ''): ?array
     {
         $file = new File($fileID);
         $size = $file->getSize($suffix);
@@ -98,7 +96,7 @@ class Model
         return null;
     }
 
-    protected function uploadFile($postFile, $fieldID = null)
+    protected function uploadFile(array $postFile, ?int $fieldID = null)
     {
         $file = null;
         if (!empty($postFile)) {
@@ -113,32 +111,32 @@ class Model
     /**
      * get image slider
      *
-     * @param string $table
-     * @param string $suffix
-     * @param string $where
-     * @param array  $params
-     * @param string $fields
-     * @param string $orderBy
+     * @param string  $table
+     * @param string  $suffix
+     * @param string  $where
+     * @param array   $params
+     * @param string  $fields
+     * @param ?string $orderBy
      *
      * @return array
      */
     protected function getImageSlider(
-        $table,
-        $suffix = '',
-        $where = '',
-        $params = array(),
-        $fields = 'image',
-        $orderBy = null
-    ) {
+        string $table,
+        string $suffix = '',
+        string $where = '',
+        array $params = array(),
+        string $fields = 'image',
+        ?string $orderBy = null
+    ): array {
         if ($orderBy != null) {
-            $orderBy = 'ORDER BY ' . $orderBy . ' ASC';
+            $orderBy = "ORDER BY $orderBy ASC";
         }
-        $sql    = '
-            SELECT ' . $fields . '
-            FROM ' . $table . '
-            ' . $where . '
-            ' . $orderBy . '
-        ';
+        $sql    = "
+            SELECT $fields
+            FROM $table
+            $where
+            $orderBy
+        ";
         $images = $this->mysql->query($sql, $params);
 
         if (count($images)) {
@@ -158,7 +156,7 @@ class Model
      *
      * @return string
      */
-    public function getWhere($conditions, $type = ' AND ')
+    public function getWhere(array $conditions, string $type = ' AND '): string
     {
         if (count($conditions)) {
             return 'WHERE ' . implode($type, $conditions);
@@ -169,21 +167,17 @@ class Model
     /**
      * add fields to query
      *
-     * @param array   $fields array('<name>' => true | false)
-     * @param string  $sql
-     * @param array   $params
-     * @param boolean $isPost
+     * @param array  $fields array('<name>' => true | false)
+     * @param string $sql
+     * @param array  $params
+     * @param bool   $isPost
      */
-    protected function addFields($fields, &$sql, &$params, $isPost = false)
+    protected function addFields(array $fields, string &$sql, array &$params, bool $isPost = false): void
     {
         foreach ($fields as $field => $encrypted) {
             $value = $this->$field;
             if ($isPost) {
-                if (isset($_POST[ $field ])) {
-                    $value = $_POST[ $field ];
-                } else {
-                    $value = '';
-                }
+                $value = $_POST[ $field ] ?? '';
             }
             if (empty($value)) {
                 $value = '';
@@ -192,7 +186,7 @@ class Model
                     $value = TwoWay::encrypt($value, $this->key . $field);
                 }
             }
-            $sql              .= ', `' . $field . '` = :' . $field . '';
+            $sql              .= ", `$field` = :$field";
             $params[ $field ] = array('value' => $value, 'type' => \PDO::PARAM_STR);
         }
     }
@@ -220,7 +214,7 @@ class Model
         return $default;
     }
 
-    public function getCacheDef($method, array $params)
+    public function getCacheDef(string $method, array $params): mixed
     {
         return false;
         // or return array('ttl' => 300, 'key' => $params);
@@ -234,11 +228,12 @@ class Model
      *
      * @return mixed                    return of the called function
      */
-    public function __call($method, $args)
+    public function __call(string $method, array $args): mixed
     {
         if ($this->mysql && method_exists($this->mysql, $method)) {
             return call_user_func_array(array($this->mysql, $method), $args);
         }
+        return null;
     }
 
 }

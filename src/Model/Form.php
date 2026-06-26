@@ -2,30 +2,25 @@
 
 namespace Core\Model;
 
-/**
- * Class Form
- *
- * Form validation
- *
- * @package Core\Utils
- * @author Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date 07/11/2017
- */
-class Form extends Model {
+class Form extends Model
+{
 
-    protected $error = false;
-    protected $send = false;
-    protected $form = array();
+    protected bool  $error = false;
+    protected bool  $send  = false;
+    protected array $form  = array();
 
-    public function getForm(){
+    public function getForm(): array
+    {
         return $this->form;
     }
 
-    public function getError(){
+    public function getError(): bool
+    {
         return $this->error;
     }
 
-    public function getSend(){
+    public function getSend(): bool
+    {
         return $this->send;
     }
 

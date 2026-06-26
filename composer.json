@@ -17,6 +17,7 @@
     "ext-exif": "*",
     "ext-gettext": "*",
     "ext-gd": "*",
+    "ext-intl": "*",
     "ext-openssl": "*",
     "ext-pdo": "*",
     "twig/twig": "^3.0",

@@ -5,50 +5,36 @@ namespace Core\Model;
 use Core\Model\Utils\ImageUtils;
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
-use Core\Utils\Exception;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use GdImage;
+use PDO;
 
 /**
  * Class File
- * saves images on disk, data base
- * o
- * @package Core\Routing
- * @author  B�rbara Gavald� <bgavalda@appaqui.com>
- * @date    25/10/2017
+ * saves images on disk, database
  */
 class File extends Model
 {
 
-    const MAX_SIZE = 9000000;
+    const int MAX_SIZE = 9000000;
 
     /**
      * @var int $folderID . Folder number where the file is
      */
-    private $folderID = 0;
+    private int $folderID = 0;
 
-    /**
-     * @var string $absoluteFolder . upload directory
-     */
-    private $absoluteFolder = '';
+    private string $absoluteFolder;
 
-    /**
-     * @var string $relativeFolder . upload directory
-     */
-    private $relativeFolder = '';
+    private string $relativeFolder;
 
-    /**
-     * @var string $fileName . Name of file
-     */
-    private $fileName = '';
-    /**
-     * @var string $fileName . Name of file
-     */
-    private $defaultExtension = '';
+    private string $fileName = '';
 
-    public function __construct($id = 0, $defaultExtension = 'jpg')
+    private string $defaultExtension;
+
+    public function __construct(int $id = 0, string $defaultExtension = 'jpg')
     {
         parent::__construct();
 
@@ -79,17 +65,12 @@ class File extends Model
         }
     }
 
-    public function getID()
-    {
-        return $this->id;
-    }
-
-    public function getRelativePath($suffix = '')
+    public function getRelativePath($suffix = ''): string
     {
         return $this->relativeFolder . $this->folderID . '/' . $this->getFileNameWidthSuffix($suffix);
     }
 
-    public function getAbsolutePath($suffix = '')
+    public function getAbsolutePath($suffix = ''): ?string
     {
         $relativePath = $this->getRelativePath($suffix);
         if (file_exists($relativePath)) {
@@ -98,7 +79,7 @@ class File extends Model
         return null;
     }
 
-    private function getFileNameWidthSuffix($suffix = '')
+    private function getFileNameWidthSuffix($suffix = ''): string
     {
         $fileBasename  = pathinfo($this->fileName, PATHINFO_FILENAME);
         $fileExtension = strtolower(pathinfo($this->fileName, PATHINFO_EXTENSION));
@@ -114,10 +95,7 @@ class File extends Model
         return $fileName;
     }
 
-    /**
-     * load
-     */
-    private function load()
+    private function load(): void
     {
         $this->initFolder();
 
@@ -131,7 +109,7 @@ class File extends Model
      * we calculate to which subfolder the file is based on its id
      * every 20 files go to a different folder
      */
-    private function initFolder()
+    private function initFolder(): void
     {
         $this->folderID = ceil($this->id / 20);
     }
@@ -140,7 +118,7 @@ class File extends Model
      * get the file name from the database
      * @return string
      */
-    private function getFileName()
+    private function getFileName(): string
     {
         if ($this->id != '') {
             $sql    = '
@@ -149,7 +127,7 @@ class File extends Model
 				WHERE id_appacman_file = :id_appacman_file
 			';
             $params = array(
-                'id_appacman_file' => array('value' => $this->id, 'type' => \PDO::PARAM_INT)
+                'id_appacman_file' => array('value' => $this->id, 'type' => PDO::PARAM_INT)
             );
             $img    = $this->mysql->query($sql, $params);
             if (count($img)) {
@@ -162,13 +140,13 @@ class File extends Model
     /**
      * delete image form database (1,2) and disc (3)
      *
-     * @param string  $table
-     * @param string  $field
-     * @param integer $itemID
+     * @param string $table
+     * @param string $field
+     * @param int    $itemID
      *
      * @return bool
      */
-    public function delete($table, $field, $itemID)
+    public function delete(string $table, string $field, int $itemID): bool
     {
         $tableDelete = false;
         if ($this->mysql->fieldExists($table, $field)) {
@@ -187,7 +165,7 @@ class File extends Model
                 WHERE id_' . $tableDelete . ' = :id
             ';
             $params = array(
-                'id' => array('value' => $itemID, 'type' => \PDO::PARAM_INT)
+                'id' => array('value' => $itemID, 'type' => PDO::PARAM_INT)
             );
             $this->mysql->query($sql, $params);
 
@@ -202,19 +180,19 @@ class File extends Model
         return false;
     }
 
-    public function deleteFromFileTable()
+    public function deleteFromFileTable(): void
     {
         $sql    = '
             DELETE FROM appacman_file
             WHERE id_appacman_file = :id
         ';
         $params = array(
-            'id' => array('value' => $this->id, 'type' => \PDO::PARAM_INT)
+            'id' => array('value' => $this->id, 'type' => PDO::PARAM_INT)
         );
         $this->mysql->query($sql, $params);
     }
 
-    public function deleteFromDisk()
+    public function deleteFromDisk(): void
     {
         $filePath = $this->getRelativePath();
         if (file_exists($filePath) && !is_dir($filePath)) {
@@ -226,7 +204,7 @@ class File extends Model
             $files = scandir($this->relativeFolder . $this->folderID . '/');
             foreach ($files as $file) {
                 if ($file != '.' && $file != '..') {
-                    if (StringUtils::startsWidth($file, $fileName)) {
+                    if (str_starts_with($file, $fileName)) {
                         $suffixFilePath = $this->relativeFolder . $this->folderID . '/' . $file;
                         if (file_exists($suffixFilePath)) {
                             unlink($suffixFilePath);
@@ -241,12 +219,12 @@ class File extends Model
      * save
      * saves image on disk and database
      *
-     * @param array   $file
-     * @param integer $fieldID
+     * @param array $file
+     * @param ?int  $fieldID
      *
      * @return false|int
      */
-    public function save($file, $fieldID = null)
+    public function save(array $file, ?int $fieldID = null): false|int
     {
         if ($file['error'] == 0) {
             $this->prepareSave($file['name']);
@@ -272,11 +250,11 @@ class File extends Model
     /**
      * Resize description of han image
      *
-     * @param integer $fieldID
+     * @param int $fieldID
      *
      * @return false|array
      */
-    private function getResize($fieldID)
+    private function getResize(int $fieldID): false|array
     {
         $sql    = '
             SELECT afr.width, afr.height, afr.suffix
@@ -284,7 +262,7 @@ class File extends Model
             WHERE afr.id_appacman_field = :field_id
         ';
         $params = array(
-            'field_id' => array('value' => $fieldID, 'type' => \PDO::PARAM_INT)
+            'field_id' => array('value' => $fieldID, 'type' => PDO::PARAM_INT)
         );
         $resize = $this->mysql->query($sql, $params);
 
@@ -302,7 +280,7 @@ class File extends Model
      *
      * @return false|int
      */
-    public function copy($fileName, $origin)
+    public function copy(string $fileName, string $origin): false|int
     {
         $this->prepareSave($fileName);
         $path = $this->getRelativePath();
@@ -314,15 +292,14 @@ class File extends Model
         return false;
     }
 
-    public function download($url, $fileName)
+    public function download(string $url, string $fileName): int
     {
         $this->prepareSave($fileName);
         $this->defaultExtension = $this->getImageExtension($url . $fileName);
         $path                   = $this->getRelativePath();
 
-        $data  = get_headers($url . $fileName, true);
-        $size  = isset($data['Content-Length']) ? (int) $data['Content-Length'] : 0;
-        $error = false;
+        $data = get_headers($url . $fileName, true);
+        $size = isset($data['Content-Length']) ? (int) $data['Content-Length'] : 0;
         if ($size > self::MAX_SIZE) {
             $percent = floor(100 * self::MAX_SIZE / $size) / 100;
             $error   = !$this->downloadResized($url . $fileName, $path, $percent);
@@ -333,10 +310,10 @@ class File extends Model
             $this->checkImageOrientation($path);
             return $this->saveToDatabase();
         }
-        return false;
+        return 0;
     }
 
-    private function downloadResized($fileName, $path, $percent = 0.75)
+    private function downloadResized($fileName, $path, $percent = 0.75): false|GdImage
     {
         list($width, $height) = getimagesize($fileName);
         $newWidth  = intval($width * $percent);
@@ -351,35 +328,29 @@ class File extends Model
         $image      = imagecreatetruecolor($newWidth, $newHeight);
         $emptyImage = $this->createEmptyImage($fileName, $fileName);
         imagecopyresampled($image, $emptyImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-        switch ($this->getImageExtension($fileName)) {
-            case ImageUtils::IMG_JPG:
-                return imagejpeg($emptyImage, $path);
-            case ImageUtils::IMG_GIF:
-                return imagegif($emptyImage, $path);
-            case ImageUtils::IMG_PNG:
-                return imagepng($emptyImage, $path);
-            case ImageUtils::IMG_WEBP:
-                return imagewebp($emptyImage, $path);
-            default:
-                return false;
-        }
+        return match ($this->getImageExtension($fileName)) {
+            ImageUtils::IMG_JPG => imagejpeg($emptyImage, $path),
+            ImageUtils::IMG_GIF => imagegif($emptyImage, $path),
+            ImageUtils::IMG_PNG => imagepng($emptyImage, $path),
+            ImageUtils::IMG_WEBP => imagewebp($emptyImage, $path),
+            default => false,
+        };
     }
 
-    public function saveQr($text, $qrName, $size = 1000)
+    public function saveQr(string $text, string $qrName, int $size = 1000): int
     {
         $this->prepareSave($qrName);
         $path = $this->getRelativePath();
 
         $renderer = new ImageRenderer(
-            new RendererStyle($size),
-            new ImagickImageBackEnd()
+            new RendererStyle($size), new ImagickImageBackEnd()
         );
-        $writer = new Writer($renderer);
+        $writer   = new Writer($renderer);
         $writer->writeFile($text, $path);
         return $this->saveToDatabase();
     }
 
-    public function prepareSave($fileName, $withID = true)
+    public function prepareSave($fileName, $withID = true): void
     {
         $this->id = $this->mysql->getMaxId('appacman_file');
 
@@ -395,7 +366,7 @@ class File extends Model
         $this->createFolder($this->relativeFolder . $this->folderID);
     }
 
-    public function saveToDatabase()
+    public function saveToDatabase(): int
     {
         $folder    = $this->relativeFolder . $this->folderID . '/';
         $extension = $this->getImageExtension($folder . $this->fileName);
@@ -410,8 +381,8 @@ class File extends Model
             SET id_appacman_file = :id, file_name = :file_name
         ';
         $params = array(
-            'id'        => array('value' => $this->id, 'type' => \PDO::PARAM_INT),
-            'file_name' => array('value' => $this->fileName, 'type' => \PDO::PARAM_STR)
+            'id'        => array('value' => $this->id, 'type' => PDO::PARAM_INT),
+            'file_name' => array('value' => $this->fileName, 'type' => PDO::PARAM_STR)
         );
         $this->mysql->query($sql, $params);
         if ($this->mysql->rowCount() > 0) {
@@ -419,7 +390,7 @@ class File extends Model
         } else {
             $this->deleteFromDisk();
         }
-        return false;
+        return 0;
     }
 
     /**
@@ -427,10 +398,10 @@ class File extends Model
      *
      * @param string $folder
      */
-    private function createFolder($folder)
+    private function createFolder(string $folder): void
     {
         if (!(file_exists($folder) && is_dir($folder))) {
-            mkdir($folder, 0777);
+            mkdir($folder);
         }
     }
 
@@ -441,68 +412,48 @@ class File extends Model
      *
      * @return bool
      */
-    function checkImageOrientation($path)
+    function checkImageOrientation(string $path): bool
     {
         $ext = $this->getImageExtension($this->getRelativePath());
         if ($ext == ImageUtils::IMG_JPG) {
-            try {
-                $image = imagecreatefromjpeg($path);
-                $exif  = @exif_read_data($path);
-                if (empty($exif['Orientation'])) {
-                    return false;
-                }
-
-                switch ($exif['Orientation']) {
-                    case 3:
-                        $image = imagerotate($image, 180, 0);
-                        break;
-                    case 6:
-                        $image = imagerotate($image, -90, 0);
-                        break;
-                    case 8:
-                        $image = imagerotate($image, 90, 0);
-                        break;
-                }
-                imagejpeg($image, $path);
-                return true;
-            } catch (Exception $e) {
-                // nothing
+            $image = imagecreatefromjpeg($path);
+            $exif  = @exif_read_data($path);
+            if (empty($exif['Orientation'])) {
+                return false;
             }
+
+            switch ($exif['Orientation']) {
+                case 3:
+                    $image = imagerotate($image, 180, 0);
+                    break;
+                case 6:
+                    $image = imagerotate($image, -90, 0);
+                    break;
+                case 8:
+                    $image = imagerotate($image, 90, 0);
+                    break;
+            }
+            imagejpeg($image, $path);
+            return true;
         }
         return false;
     }
 
-    /**
-     * resize image and save it
-     *
-     * @param array $dimensions
-     */
-    public function resize($dimensions)
+    public function resize(array $dimensions): void
     {
         foreach ($dimensions as $dimension) {
             $originPath      = $this->getRelativePath();
             $destinationPath = $this->getRelativePath($dimension['suffix']);
             $emptyImage      = $this->resizedImage($originPath, $dimension['width'], $dimension['height']);
 
-            $error = false;
             if ($emptyImage) {
-                switch ($this->getImageExtension($originPath)) {
-                    case ImageUtils::IMG_JPG:
-                        $error = imagejpeg($emptyImage, $destinationPath);
-                        break;
-                    case ImageUtils::IMG_GIF:
-                        $error = imagegif($emptyImage, $destinationPath);
-                        break;
-                    case ImageUtils::IMG_PNG:
-                        $error = imagepng($emptyImage, $destinationPath);
-                        break;
-                    case ImageUtils::IMG_WEBP:
-                        $error = imagewebp($emptyImage, $destinationPath);
-                        break;
-                    default:
-                        $error = true;
-                        break;
-                }
+                $error = match ($this->getImageExtension($originPath)) {
+                    ImageUtils::IMG_JPG => imagejpeg($emptyImage, $destinationPath),
+                    ImageUtils::IMG_GIF => imagegif($emptyImage, $destinationPath),
+                    ImageUtils::IMG_PNG => imagepng($emptyImage, $destinationPath),
+                    ImageUtils::IMG_WEBP => imagewebp($emptyImage, $destinationPath),
+                    default => true,
+                };
             } else {
                 $error = true;
             }
@@ -516,13 +467,13 @@ class File extends Model
     /**
      * create image with new dimensions keeping aspect ratio
      *
-     * @param string  $image
-     * @param integer $max_width
-     * @param integer $max_height
+     * @param string $image
+     * @param int    $max_width
+     * @param int    $max_height
      *
      * @return resource
      */
-    private function resizedImage($image, $max_width, $max_height)
+    private function resizedImage(string $image, int $max_width, int $max_height): GdImage|false
     {
         $size = $this->getSize();
         if ($size) {
@@ -551,7 +502,7 @@ class File extends Model
         return false;
     }
 
-    public function getSize($suffix = '')
+    public function getSize(string $suffix = ''): array
     {
         $relativePath = $this->getRelativePath($suffix);
         if (file_exists($relativePath)) {
@@ -563,38 +514,31 @@ class File extends Model
                 );
             }
         }
-        return false;
+        return array();
     }
 
-    /**
-     * getImageExtension
-     * @return int
-     */
-    private function getImageExtension($path)
+    private function getImageExtension(string $path): int
     {
         $extension = exif_imagetype($path);
-        switch ($extension) {
-            case IMAGETYPE_JPEG:
-                return ImageUtils::IMG_JPG;
-            case IMAGETYPE_PNG:
-                return ImageUtils::IMG_PNG;
-            case IMAGETYPE_GIF:
-                return ImageUtils::IMG_GIF;
-            case IMAGETYPE_WEBP:
-                return ImageUtils::IMG_WEBP;
-        }
-        return false;
+        return match ($extension) {
+            IMAGETYPE_JPEG => ImageUtils::IMG_JPG,
+            IMAGETYPE_PNG => ImageUtils::IMG_PNG,
+            IMAGETYPE_GIF => ImageUtils::IMG_GIF,
+            IMAGETYPE_WEBP => ImageUtils::IMG_WEBP,
+            default => false,
+        };
     }
 
     /**
      * createEmptyImage
      * creates empty image depending on image extension
      *
-     * @param string $image
+     * @param string      $image
+     * @param string|null $path
      *
      * @return resource
      */
-    private function createEmptyImage($image, $path = null)
+    private function createEmptyImage(string $image, ?string $path = null): string
     {
         if ($path == null) {
             $path = $this->getRelativePath();
@@ -614,9 +558,6 @@ class File extends Model
                 break;
             case ImageUtils::IMG_WEBP:
                 $src = imagecreatefromwebp($image);
-                break;
-            default:
-                $src = null;
                 break;
         }
         return $src;

@@ -18,13 +18,13 @@ class Json extends Response
         $allowOrigins = $config->get('api', 'allow-origin');
         if (is_array($allowOrigins) && count($allowOrigins) && array_key_exists('HTTP_ORIGIN', $_SERVER)) {
             $origin = $_SERVER['HTTP_ORIGIN'];
-            if (!StringUtils::endsWidth($origin, '/')) {
+            if (!str_ends_with($origin, '/')) {
                 $origin .= '/';
             }
 
             foreach ($allowOrigins as $allowOrigin) {
                 $compareOrigin = $allowOrigin;
-                if (!StringUtils::endsWidth($compareOrigin, '/')) {
+                if (!str_ends_with($compareOrigin, '/')) {
                     $compareOrigin .= '/';
                 }
 

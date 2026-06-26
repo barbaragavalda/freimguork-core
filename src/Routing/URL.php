@@ -88,12 +88,12 @@ class URL
         $userURL = $this->getFullUserURL();
 
         $domain = $config->getDomain();
-        if (StringUtils::endsWidth($domain, '/')) {
+        if (str_starts_with($domain, '/')) {
             $domain = substr($domain, 0, -1);
         }
 
         $userPetition = str_replace($domain, '', $userURL);
-        if (StringUtils::startsWidth($userPetition, '/')) {
+        if (str_starts_with($userPetition, '/')) {
             $userPetition = substr($userPetition, 1);
         }
         $routingRegExp = $this->prepareRouting();
@@ -124,11 +124,11 @@ class URL
                 $explodeRouting = explode('/', $regExp['petition']);
                 $explodeUser    = explode('/', $userPetition);
                 for ($i = 0; $i < count($explodeRouting); $i++) {
-                    if (StringUtils::startsWidth($explodeRouting[ $i ], '{')) {
+                    if (str_starts_with($explodeRouting[ $i ], '{')) {
                         preg_match('/({' . self::REG_PARAM . '})(.+)?/', $explodeRouting[ $i ], $matches);
                         if (count($matches) > 1) {
                             if (count($matches) > 2) {
-                                if (StringUtils::endsWidth($explodeUser[ $i ], $matches[2])) {
+                                if (str_starts_with($explodeUser[ $i ], $matches[2])) {
                                     $explodeUser[ $i ] = str_replace($matches[2], '', $explodeUser[ $i ]);
                                 } else {
                                     $this->controller = null;
@@ -182,7 +182,7 @@ class URL
                             }
                         }
                     }
-                    if (!StringUtils::endsWidth($regExp, '(/)')) {
+                    if (!str_ends_with($regExp, '(/)')) {
                         $regExp .= '(/)';
                     }
                 }

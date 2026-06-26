@@ -85,10 +85,10 @@ class Projects
         if (empty($url)) {
             $url = $protocol . $_SERVER['HTTP_HOST'];
         }
-        if (!StringUtils::startsWidth($url, $protocol)) {
+        if (!str_starts_with($url, $protocol)) {
             $url = $this->config->getBaseDomain() . $url;
         }
-        if (!StringUtils::endsWidth($url, '/')) {
+        if (!str_starts_with($url, '/')) {
             $url .= '/';
         }
 
@@ -127,12 +127,7 @@ class Projects
             if (preg_match($domainRegExp, $currentURL)) {
                 $found = true;
             } else {
-                if (StringUtils::endsWidth($domain, self::LANG_PATTERN)
-                    || StringUtils::endsWidth(
-                        $domain,
-                        self::LANG_PATTERN . '/'
-                    )) {
-
+                if (str_ends_with($domain, self::LANG_PATTERN) || str_ends_with($domain, self::LANG_PATTERN . '/')) {
                     //if not found, try if the user didn't enter the language
                     $domainRegExp = str_replace(self::LANG_PATTERN . '/', '', $domain)
                             |> (fn($x) => str_replace(self::LANG_PATTERN, '', $x))
@@ -168,8 +163,8 @@ class Projects
     /**
      * Regular expresión for the URL
      *
-     * @param string                $domain         current domain
-     * @param array                 $project        current project
+     * @param string   $domain         current domain
+     * @param array    $project        current project
      * @param ?Project $defaultProject by reference, default project if no project found
      *
      * @return array                                    regular expression for the domain and language position

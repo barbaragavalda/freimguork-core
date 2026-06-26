@@ -5,23 +5,20 @@ namespace Core\Model\Encryptor;
 /**
  * Class TwoWay
  * encrypts a string that will not be decrypted
- * @package Core\Model\Encryptor
- * @author  Bàrbara Gavaldà <bgavalda@appaqui.com>
- * @date    26/10/2017
  */
 class TwoWay
 {
 
-    const METHOD = 'AES-128-CTR';
+    const string METHOD = 'AES-128-CTR';
 
     /**
      * set encryption key. If you don't supply your own key, this will be the default
      *
-     * @param bool $key
+     * @param string $key
      *
-     * @return bool|string
+     * @return string
      */
-    private static function initKey($key = false)
+    private static function initKey(string $key = ''): string
     {
         if (!$key) {
             $key = gethostname() . "|" . ip2long($_SERVER['SERVER_ADDR']);
@@ -34,7 +31,7 @@ class TwoWay
         return $key;
     }
 
-    private static function iv_bytes()
+    private static function iv_bytes(): string
     {
         return openssl_cipher_iv_length(self::METHOD);
     }
@@ -45,13 +42,12 @@ class TwoWay
      *
      * @return string           encrypted string
      */
-    public static function encrypt($string, $key)
+    public static function encrypt(string $string, string $key): string
     {
         $key = self::initKey($key);
 
-        $iv               = openssl_random_pseudo_bytes(self::iv_bytes());
-        $encrypted_string = bin2hex($iv) . openssl_encrypt($string, self::METHOD, $key, 0, $iv);
-        return $encrypted_string;
+        $iv = openssl_random_pseudo_bytes(self::iv_bytes());
+        return bin2hex($iv) . openssl_encrypt($string, self::METHOD, $key, 0, $iv);
     }
 
     /**
@@ -62,7 +58,7 @@ class TwoWay
      *
      * @return string|bool          decrypted string or false
      */
-    public static function decrypt($encrypted, $key)
+    public static function decrypt(string $encrypted, string $key): string|bool
     {
         $key = self::initKey($key);
 
@@ -70,8 +66,7 @@ class TwoWay
         if ($encrypted) {
             if (preg_match("/^(.{" . $iv_strlen . "})(.+)$/", $encrypted, $regs)) {
                 list(, $iv, $crypted_string) = $regs;
-                $decrypted_string = openssl_decrypt($crypted_string, self::METHOD, $key, 0, hex2bin($iv));
-                return $decrypted_string;
+                return openssl_decrypt($crypted_string, self::METHOD, $key, 0, hex2bin($iv));
             }
         }
 

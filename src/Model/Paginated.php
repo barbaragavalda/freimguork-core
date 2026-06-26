@@ -2,45 +2,51 @@
 
 namespace Core\Model;
 
-abstract class Paginated extends Model {
+abstract class Paginated extends Model
+{
 
-    private $visiblePages = 4;
+    private int $visiblePages;
 
-    protected $itemsPerPage = 25;
+    protected int $itemsPerPage;
 
     /**
      * @var int     current page
      */
-    protected $page = 0;
+    protected int $page = 0;
 
     /**
      * @var array   all items
      */
-    protected $items = array();
+    protected array $items = array();
 
     /**
      * @var array   list filters selected by user
      */
-    protected $filters = array();
+    protected array $filters = array();
 
-    public function __construct($page, $itemsPerPage = 25, $autoInit = true, $visiblePages = 4){
+    public function __construct(int $page, int $itemsPerPage = 25, bool $autoInit = true, int $visiblePages = 4)
+    {
         parent::__construct();
 
         $this->itemsPerPage = $itemsPerPage;
         $this->visiblePages = $visiblePages;
 
-        if( $page && $page > 0 ){
+        if ($page && $page > 0) {
             $this->page = $page - 1;
         }
 
-        if( $autoInit ) $this->initAll();
+        if ($autoInit) {
+            $this->initAll();
+        }
     }
 
-    public function getFilters(){
+    public function getFilters(): array
+    {
         return $this->filters;
     }
 
-    public function setFilters($filters){
+    public function setFilters($filters): void
+    {
         $this->filters = $filters;
     }
 
@@ -48,13 +54,14 @@ abstract class Paginated extends Model {
      * load all items without pagination
      * @return array
      */
-    abstract public function initAll();
+    abstract public function initAll(): array;
 
     /**
      * get all items on pagination
      * @return array
      */
-    public function getAll(){
+    public function getAll(): array
+    {
         return $this->items;
     }
 
@@ -62,9 +69,10 @@ abstract class Paginated extends Model {
      * return only items on current page
      * @return array
      */
-    public function getItemsPage(){
-        if( count($this->items) ){
-            $start = $this->page * $this->itemsPerPage;
+    public function getItemsPage(): array
+    {
+        if (count($this->items)) {
+            $start  = $this->page * $this->itemsPerPage;
             $length = $this->itemsPerPage;
             return array_slice($this->items, $start, $length);
         }
@@ -75,12 +83,13 @@ abstract class Paginated extends Model {
      * create pagination structure
      * @return array   pagination
      */
-    public function paginate(){
+    public function paginate(): array
+    {
         $currentPage = $this->page + 1;
-        $itemCount = count($this->items);
-        $firstPage = 1;
-        $lastPage  = ceil($itemCount / $this->itemsPerPage);
-        if( $lastPage == 1 || $this->page > $lastPage  ){
+        $itemCount   = count($this->items);
+        $firstPage   = 1;
+        $lastPage    = ceil($itemCount / $this->itemsPerPage);
+        if ($lastPage == 1 || $this->page > $lastPage) {
             // no pagination
             return array();
         }
@@ -93,8 +102,8 @@ abstract class Paginated extends Model {
             $lastAdjacentPage  = $lastPage;
             $firstAdjacentPage = $lastPage - $this->visiblePages;
         } else {
-            $firstAdjacentPage = $currentPage - $this->visiblePages/2;
-            $lastAdjacentPage  = $currentPage + $this->visiblePages/2;
+            $firstAdjacentPage = $currentPage - $this->visiblePages / 2;
+            $lastAdjacentPage  = $currentPage + $this->visiblePages / 2;
         }
 
         $pagination = array();
@@ -115,7 +124,7 @@ abstract class Paginated extends Model {
         }
 
         return array(
-            'pages' => $pagination,
+            'pages'   => $pagination,
             'current' => $this->page + 1
         );
     }
