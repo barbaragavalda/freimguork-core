@@ -27,12 +27,12 @@ class PDO
     /**
      * PDO constructor
      *
-     * @param array   $dbConfig
+     * @param ?array   $dbConfig
      * @param boolean $throwError throw error or just ignore it
      *
      * @throws Exception
      */
-    public function __construct(array $dbConfig, bool $throwError)
+    public function __construct(?array $dbConfig, bool $throwError)
     {
         if ($dbConfig == null) {
             $config   = Config::getInstance();

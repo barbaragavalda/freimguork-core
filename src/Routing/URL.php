@@ -2,7 +2,6 @@
 
 namespace Core\Routing;
 
-use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
 
 /**
@@ -172,7 +171,7 @@ class URL
                         if ($regExp != '') {
                             $regExp .= '(/)';
                         }
-                        if (StringUtils::startsWidth($part, '{')) {
+                        if (str_starts_with($part, '{')) {
                             $regExp .= '(' . self::REG_PARAM . ')';
                         } else {
                             if ($part == '') {
