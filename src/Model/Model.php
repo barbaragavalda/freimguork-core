@@ -20,9 +20,9 @@ class Model
     public ?PDO $mysql = null;
 
     /**
-     * @var int  current lang id
+     * @var ?int  current lang id
      */
-    protected int $langID = 0;
+    protected ?int $langID = null;
 
     /**
      * @var int     identifier
@@ -72,8 +72,12 @@ class Model
         $this->created = $created;
     }
 
-    protected function getFile(int $fileID, string $suffix = ''): string
+    protected function getFile(?int $fileID = null, string $suffix = ''): string
     {
+        if ($fileID === null) {
+            return '';
+        }
+
         $file = new File($fileID);
         $path = $file->getAbsolutePath($suffix);
         if ($path == null && $suffix != '') {

@@ -21,9 +21,9 @@ class View
     private array $info = array();
 
     /**
-     * @var string $projectFolder . Folder for project App
+     * @var ?string $projectFolder . Folder for project App
      */
-    private string $projectFolder;
+    private ?string $projectFolder;
 
     /**
      * @var ?object $response . Object response

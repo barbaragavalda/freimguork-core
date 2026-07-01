@@ -2,9 +2,6 @@
 
 namespace Core\Routing;
 
-use Core\Model\Push\Android;
-use Google\Service\BeyondCorp\Resource\V;
-
 /**
  * Class Router
  * Determines witch controller is going to be initialized depending on the routing.php file
@@ -12,9 +9,9 @@ use Google\Service\BeyondCorp\Resource\V;
 class Router
 {
 
-    private ?URL $url = null;
+    private ?URL $url;
 
-    private string $appFolder = '';
+    private ?string $appFolder;
 
     public function __construct($appFolder = null)
     {

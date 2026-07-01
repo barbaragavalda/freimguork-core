@@ -25,7 +25,7 @@ class Bootstrap
 
     private ?Controller $controller;
 
-    private string $projectFolder;
+    private ?string $projectFolder = null;
 
     private ?CacheManager $controllerCache;
 
@@ -57,6 +57,7 @@ class Bootstrap
     /**
      * search for the controller to be used
      * depending on the routing and project configuration
+     * @throws \Exception
      */
     private function router(): void
     {
@@ -82,7 +83,7 @@ class Bootstrap
 
         if (($hasCustomLanguage && $userLang) || !$hasCustomLanguage) {
             //session first initialization with ID
-            Session::getInstance($config->getBaseDomain());
+            Session::getInstance();
 
             $language->initID();
 
