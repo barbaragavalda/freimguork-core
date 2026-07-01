@@ -25,9 +25,9 @@ class Model
     protected ?int $langID = null;
 
     /**
-     * @var int     identifier
+     * @var ?int     identifier
      */
-    protected int $id = 0;
+    protected ?int $id = 0;
 
     /**
      * @var string  encrypting key
