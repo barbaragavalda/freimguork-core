@@ -9,6 +9,7 @@ use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFilter;
 
@@ -64,7 +65,8 @@ class HTML extends Response
         if ($config->get('cache', 'is_caching')) {
             $environment = IS_DEV ? 'dev' : 'prod';
             $twigConfig  = array(
-                'cache' => DIR_ROOT . 'src/cache/' . $environment . '/twig'
+                'cache' => DIR_ROOT . 'src/cache/' . $environment . '/twig',
+                'debug' => IS_DEV,
             );
         }
 
@@ -74,6 +76,9 @@ class HTML extends Response
 
         // translations
         $twig->addExtension(new Translation());
+        if(IS_DEV) {
+            $twig->addExtension(new DebugExtension());
+        }
         $filter = new TwigFilter(
             'trans', function ($context, $string) {
             return Translation::transGetText($string, $context);
@@ -92,8 +97,8 @@ class HTML extends Response
         try {
             $template       = $twig->load($this->file);
             $this->response = $template->render($info);
-        } catch (LoaderError|RuntimeError|SyntaxError) {
-
+        } catch (\Throwable $e) {
+            throw $e;
         }
         return $this->response;
     }
