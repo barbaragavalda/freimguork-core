@@ -2,7 +2,7 @@
 
 namespace Core\Utils;
 
-define('APPACMAN_DIR', DIR_ROOT . 'vendor/appaqui/freimguork-appacman/src/');
+define('APPACMAN_DIR', DIR_ROOT . 'vendor/Optisistem/freimguork-appacman/src/');
 
 class Config
 {
@@ -68,7 +68,7 @@ class Config
             DIR_ROOT . 'config/' . ((IS_DEV) ? 'dev/' : 'prod/')
         );
 
-        $ownVendorsPath = DIR_ROOT . 'vendor/appaqui/';
+        $ownVendorsPath = DIR_ROOT . 'vendor/Optisistem/';
         $ownVendors     = @scandir($ownVendorsPath);
         if ($ownVendors !== false) {
             foreach ($ownVendors as $vendor) {
