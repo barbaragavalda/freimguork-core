@@ -114,6 +114,7 @@ class AttributeRouteLoader
                 $attribute = $attributeRef->newInstance();
                 foreach ($prefixes as $prefix) {
                     $path         = rtrim($prefix->path, '/') . '/' . ltrim($attribute->path, '/');
+                    $path         = $this->translatePath($path);
                     $requirements = array_merge($prefix->requirements, $attribute->requirements);
 
                     $collection->add(
@@ -129,6 +130,27 @@ class AttributeRouteLoader
                 }
             }
         }
+    }
+
+    /**
+     * runs every literal (non-parameter) path segment through gettext, mirroring
+     * the translated-URL-slug convention the old routing.php configs relied on
+     * (e.g. `_('recepta') . '/{uri}'`). Applied unconditionally to every static
+     * segment rather than opt-in per route: segments with no matching msgid are
+     * returned unchanged by gettext itself, so this is safe by default. The
+     * caller (Bootstrap) is expected to have already resolved the current
+     * language and initialized gettext (setlocale/bindtextdomain/textdomain)
+     * before routes are loaded, exactly as the old routing.php loading did.
+     */
+    private function translatePath(string $path): string
+    {
+        $segments = explode('/', $path);
+        foreach ($segments as &$segment) {
+            if ($segment !== '' && !str_starts_with($segment, '{')) {
+                $segment = _($segment);
+            }
+        }
+        return implode('/', $segments);
     }
 
     private function writeCache(string $cacheFile, RouteCollection $collection): void

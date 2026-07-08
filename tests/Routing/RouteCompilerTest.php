@@ -59,4 +59,16 @@ class RouteCompilerTest extends TestCase
         $this->assertSame('/', RouteCompiler::normalizePath(''));
     }
 
+    public function testSplitPathReturnsOrderedSegments(): void
+    {
+        $this->assertSame(['shop', 'pro', '2'], RouteCompiler::splitPath('/shop/pro/2/'));
+        $this->assertSame(['shop', 'pro', '2'], RouteCompiler::splitPath('shop/pro/2'));
+    }
+
+    public function testSplitPathOfRootIsEmpty(): void
+    {
+        $this->assertSame([], RouteCompiler::splitPath('/'));
+        $this->assertSame([], RouteCompiler::splitPath(''));
+    }
+
 }

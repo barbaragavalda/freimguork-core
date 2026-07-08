@@ -10,6 +10,22 @@ class AttributeRouteLoaderTest extends TestCase
 
     private const string NAMESPACE = 'Core\\Tests\\Fixtures';
 
+    private string|false $originalLocale;
+
+    private string|false $originalTextDomain;
+
+    protected function setUp(): void
+    {
+        $this->originalLocale     = setlocale(LC_ALL, 0);
+        $this->originalTextDomain = textdomain(null);
+    }
+
+    protected function tearDown(): void
+    {
+        setlocale(LC_ALL, $this->originalLocale);
+        textdomain($this->originalTextDomain);
+    }
+
     private function fixturesDirectory(): string
     {
         return __DIR__ . '/../../Fixtures/Controller';
@@ -22,7 +38,10 @@ class AttributeRouteLoaderTest extends TestCase
         $names = array_map(static fn ($route) => $route->name, $routes->all());
         sort($names);
 
-        $this->assertSame(array('blog.index', 'blog.show', 'blog.update', 'home'), $names);
+        $this->assertSame(
+            array('blog.index', 'blog.show', 'blog.update', 'home', 'translated.show'),
+            $names
+        );
         $this->assertNull($routes->getByName('base.index'));
     }
 
@@ -31,6 +50,55 @@ class AttributeRouteLoaderTest extends TestCase
         $routes = (new AttributeRouteLoader())->load(self::NAMESPACE, $this->fixturesDirectory());
 
         $this->assertSame('/blog', $routes->getByName('blog.index')->path);
+    }
+
+    public function testStaticSegmentsPassThroughUnchangedWithNoTranslationBound(): void
+    {
+        $routes = (new AttributeRouteLoader())->load(self::NAMESPACE, $this->fixturesDirectory());
+
+        $this->assertSame('/recepta/{uri}', $routes->getByName('translated.show')->path);
+    }
+
+    public function testStaticSegmentsAreTranslatedWhenATranslationExists(): void
+    {
+        if (shell_exec('which msgfmt') === null) {
+            $this->markTestSkipped('msgfmt is not available to compile a test .mo file');
+        }
+
+        $localeDir = sys_get_temp_dir() . '/freimguork-locale-test-' . uniqid();
+        $domain    = 'routing_test';
+        $moDir     = $localeDir . '/en_US.UTF-8/LC_MESSAGES';
+        mkdir($moDir, 0777, true);
+
+        $poFile = $localeDir . '/messages.po';
+        file_put_contents($poFile, <<<PO
+            msgid ""
+            msgstr ""
+            "Content-Type: text/plain; charset=UTF-8\\n"
+
+            msgid "recepta"
+            msgstr "recipe"
+            PO);
+        exec('msgfmt ' . escapeshellarg($poFile) . ' -o ' . escapeshellarg($moDir . '/' . $domain . '.mo'));
+
+        try {
+            putenv('LC_ALL=en_US.UTF-8');
+            setlocale(LC_ALL, 'en_US.UTF-8', 'en_US');
+            bindtextdomain($domain, $localeDir);
+            bind_textdomain_codeset($domain, 'UTF-8');
+            textdomain($domain);
+
+            $routes = (new AttributeRouteLoader())->load(self::NAMESPACE, $this->fixturesDirectory());
+
+            // static segment translated, {uri} param segment left untouched
+            $this->assertSame('/recipe/{uri}', $routes->getByName('translated.show')->path);
+        } finally {
+            unlink($moDir . '/' . $domain . '.mo');
+            rmdir($moDir);
+            rmdir(dirname($moDir));
+            unlink($poFile);
+            rmdir($localeDir);
+        }
     }
 
     public function testMissingDirectoryReturnsEmptyCollection(): void

@@ -10,6 +10,7 @@ use Core\Routing\Loader\AttributeRouteLoader;
 use Core\Routing\Project;
 use Core\Routing\Projects;
 use Core\Routing\RouteCollection;
+use Core\Routing\RouteCompiler;
 use Core\Routing\RouteMatch;
 use Core\Routing\Router;
 use Core\Utils\Config;
@@ -99,7 +100,7 @@ class Bootstrap
 
             //routing
             $this->projectFolder = $project->getApp();
-            $router              = new Router($this->loadRoutes($project));
+            $router              = new Router($this->loadRoutes($project, $currentLanguage));
             Router::setCurrent($router);
 
             try {
@@ -119,15 +120,29 @@ class Bootstrap
     }
 
     /**
-     * scans (or loads from cache) the RouteCollection of the given sub-project
+     * scans (or loads from cache) the RouteCollection of the given sub-project.
+     * Cached per language too, not just per app: route paths can contain
+     * gettext-translated static segments (see AttributeRouteLoader), so two
+     * languages of the same app compile to different paths/regexes.
      */
-    private function loadRoutes(Project $project): RouteCollection
+    private function loadRoutes(Project $project, string $language): RouteCollection
     {
         $app       = $project->getApp();
         $directory = DIR_ROOT . 'src/' . $app . '/Controller/';
-        $cacheFile = IS_DEV ? null : DIR_ROOT . 'src/cache/prod/freimguork/routes-' . $app . '.php';
+        $cacheFile = IS_DEV
+            ? null
+            : DIR_ROOT . 'src/cache/prod/freimguork/routes-' . $app . '-' . $language . '.php';
 
         return (new AttributeRouteLoader())->load($app, $directory, $cacheFile);
+    }
+
+    /**
+     * literal URL path segments for the current request, in order (e.g. "shop/pro/2" => ["shop", "pro", "2"])
+     * @return array<string>
+     */
+    private function currentParts(): array
+    {
+        return RouteCompiler::splitPath($this->request->getUri()->getPath());
     }
 
     /**
@@ -140,6 +155,7 @@ class Bootstrap
         $controllerName   = $this->routeMatch->controllerClass;
         $this->controller = new $controllerName();
         $this->controller->setParams($this->routeMatch->params);
+        $this->controller->setParts($this->currentParts());
 
         $cacheDef = $this->controller->getCacheDef();
         $cache    = $this->controllerCache->getCache($cacheDef);

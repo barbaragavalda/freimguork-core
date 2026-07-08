@@ -40,6 +40,11 @@ abstract class Controller
      */
     protected array $params = array();
 
+    /**
+     * @var array $parts . Literal (non-parameter) path segments of the current URL, in order
+     */
+    protected array $parts = array();
+
     protected View $view;
 
     private array $headers = array();
@@ -97,6 +102,11 @@ abstract class Controller
     public function setParams(array $params): void
     {
         $this->params = $params;
+    }
+
+    public function setParts(array $parts): void
+    {
+        $this->parts = $parts;
     }
 
     public function setView(View $view): void

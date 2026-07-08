@@ -180,8 +180,24 @@ Key pieces (`src/Routing/`):
 
 Per-project route caching follows the same `IS_DEV` convention as the existing disk cache
 (`Core\Controller\Cache\Disk`): in dev, routes are rescanned from disk on every request; in prod,
-they're compiled once to `src/cache/prod/freimguork/routes-<app>.php` and reused. This is wired up
-in `Bootstrap::loadRoutes()` — the loader itself is cache-convention-agnostic.
+they're compiled once to `src/cache/prod/freimguork/routes-<app>-<language>.php` and reused (keyed
+per language too — see below). This is wired up in `Bootstrap::loadRoutes()` — the loader itself is
+cache-convention-agnostic.
+
+**Translated URL slugs.** The old `routing.php` configs built SEO-friendly, per-language paths by
+wrapping literal segments in gettext, e.g. `_('recepta') . '/{uri}'`. PHP attribute arguments must
+be compile-time constants, so that can't be written directly inside `#[Route(...)]` — instead,
+write the canonical/source-language literal straight into the attribute
+(`#[Route('/recepta/{uri}')]`) and `AttributeRouteLoader::translatePath()` runs every *literal*
+(non-`{param}`) path segment through gettext's `_()` unconditionally while building each `Route`.
+Segments with no matching msgid are returned unchanged by gettext itself, so this is safe even for
+routes that were never meant to be translated — no per-route opt-in/out needed. This only works
+because `Bootstrap::router()` already resolves the language and initializes gettext
+(`Language::initGettext()`, via `setlocale`/`bindtextdomain`/`textdomain`) *before* `loadRoutes()`
+runs, exactly mirroring how the old `routing.php` `include` timing worked. It's also why the prod
+route cache is keyed per language, not just per app — two languages of the same app compile to
+different paths/regexes for the same logical route (the route *name* stays language-invariant, so
+`path('recipe.detail')` in Twig keeps working regardless of the active language).
 
 Two framework-invoked "special" controllers bypass normal attribute routing and are dispatched
 by a fixed method name, `handle()`, set directly in `Bootstrap::router()`:
@@ -193,7 +209,22 @@ by a fixed method name, `handle()`, set directly in `Bootstrap::router()`:
 `freimguork-jwt`, the `*-local` sites) still have `routing.php` config files and
 `DefaultController::build()`/`run()` methods from the old router — those need migrating to
 `#[Route]` attributes and a `handle()` method respectively before those apps will work against
-this version of core. That migration is intentionally out of scope for core itself.
+this version of core. That migration is intentionally out of scope for core itself, with one
+exception already found and fixed: `Controller::$parts`/`setParts()` (the raw literal URL path
+segments, e.g. for `in_array('pro', $this->parts)`-style checks) was mistakenly deleted as
+apparently-dead code during the rewrite — it's actively used by `freimguork-appacman`,
+`freimguork-webservice`, and several `*-local` apps. It's restored, now populated by `Bootstrap`
+from `RouteCompiler::splitPath()` on the request path rather than from route matching.
+
+`freimguork-appacman` specifically has two more gaps beyond routing.php migration, found but not
+yet fixed (out of scope until that package is tackled): (1) `Bootstrap::loadRoutes()` assumes a
+sub-project's controllers live under `<app-root>/src/<App>/Controller/`, which is wrong for
+Appacman — its controllers live in the separate `freimguork-appacman` package
+(`vendor/optisistem/freimguork-appacman/src/Controller/`, namespace `Appacman\`); `View.php` and
+`Language.php` already special-case this, `Bootstrap` doesn't yet. (2) All ~30 Appacman controllers
+share one inherited `build()` (defined once on `AppacmanController` as an auth/permission gate) —
+`AttributeRouteLoader` only reads `#[Route]` attributes declared directly on the concrete class,
+skipping inherited methods, so it wouldn't discover per-controller routes for any of them as built.
 
 ### Controllers and Models
 - `Core\Controller\Controller` (abstract base) — every request-handling controller extends this.

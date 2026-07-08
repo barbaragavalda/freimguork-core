@@ -52,4 +52,16 @@ class RouteCompiler
         return '/' . trim($path, '/');
     }
 
+    /**
+     * splits a URL path into its literal segments, in order, e.g.
+     * "/shop/pro/2/" => ["shop", "pro", "2"]
+     *
+     * @return array<string>
+     */
+    public static function splitPath(string $path): array
+    {
+        $path = self::normalizePath($path);
+        return array_values(array_filter(explode('/', $path), static fn ($part) => $part !== ''));
+    }
+
 }
