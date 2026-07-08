@@ -64,7 +64,7 @@ abstract class Response
      */
     protected function setHeader(string $key, string $value): void
     {
-        header($key . ': ' . $value);
+        @header($key . ': ' . $value);
     }
 
 }
