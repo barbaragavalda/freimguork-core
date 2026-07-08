@@ -31,6 +31,13 @@ class Bootstrap
 
     private ServerRequestInterface $request;
 
+    /**
+     * @var string request path with the current sub-project's resolved domain
+     *              prefix (e.g. the language segment) already stripped, so it
+     *              lines up with routes/parts that are defined without it
+     */
+    private string $petitionPath;
+
     private ?RouteMatch $routeMatch;
 
     private ?Controller $controller;
@@ -92,6 +99,13 @@ class Bootstrap
         $config->setDomains($projects->getDomains($currentLanguage));
         $config->setLanguage($currentLanguage);
 
+        // routes/parts are defined relative to the sub-project, without its
+        // resolved domain prefix (e.g. the language segment) - strip that
+        // prefix from the request path before matching, same as the old
+        // URL::loadParams() did against $config->getDomain()
+        $domainPrefix       = parse_url($config->getDomain(), PHP_URL_PATH) ?? '';
+        $this->petitionPath = RouteCompiler::stripPrefix($this->request->getUri()->getPath(), $domainPrefix);
+
         if (($hasCustomLanguage && $userLang) || !$hasCustomLanguage) {
             //session first initialization with ID
             Session::getInstance();
@@ -103,8 +117,10 @@ class Bootstrap
             $router              = new Router($this->loadRoutes($project, $currentLanguage));
             Router::setCurrent($router);
 
+            $matchRequest = $this->request->withUri($this->request->getUri()->withPath($this->petitionPath));
+
             try {
-                $this->routeMatch = $router->match($this->request);
+                $this->routeMatch = $router->match($matchRequest);
             } catch (RouteNotFoundException|MethodNotAllowedException) {
                 $this->routeMatch = new RouteMatch(
                     $this->projectFolder . '\\Controller\\DefaultController',
@@ -137,12 +153,13 @@ class Bootstrap
     }
 
     /**
-     * literal URL path segments for the current request, in order (e.g. "shop/pro/2" => ["shop", "pro", "2"])
+     * literal URL path segments for the current request, in order (e.g. "shop/pro/2" => ["shop", "pro", "2"]),
+     * relative to the sub-project's domain prefix - same as {@see $petitionPath}
      * @return array<string>
      */
     private function currentParts(): array
     {
-        return RouteCompiler::splitPath($this->request->getUri()->getPath());
+        return RouteCompiler::splitPath($this->petitionPath);
     }
 
     /**

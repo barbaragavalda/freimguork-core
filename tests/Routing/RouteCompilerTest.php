@@ -71,4 +71,26 @@ class RouteCompilerTest extends TestCase
         $this->assertSame([], RouteCompiler::splitPath(''));
     }
 
+    public function testStripPrefixRemovesLeadingSegment(): void
+    {
+        $this->assertSame('/receptes', RouteCompiler::stripPrefix('/ca/receptes', '/ca'));
+        $this->assertSame('/receptes/2024', RouteCompiler::stripPrefix('/ca/receptes/2024', '/ca/'));
+    }
+
+    public function testStripPrefixIsNoOpWhenPathDoesNotStartWithIt(): void
+    {
+        $this->assertSame('/receptes', RouteCompiler::stripPrefix('/receptes', '/es'));
+    }
+
+    public function testStripPrefixIsNoOpForRootPrefix(): void
+    {
+        $this->assertSame('/receptes', RouteCompiler::stripPrefix('/receptes', '/'));
+        $this->assertSame('/receptes', RouteCompiler::stripPrefix('/receptes', ''));
+    }
+
+    public function testStripPrefixOfExactMatchLeavesRoot(): void
+    {
+        $this->assertSame('/', RouteCompiler::stripPrefix('/ca', '/ca'));
+    }
+
 }

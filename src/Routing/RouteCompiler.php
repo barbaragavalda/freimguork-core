@@ -64,4 +64,22 @@ class RouteCompiler
         return array_values(array_filter(explode('/', $path), static fn ($part) => $part !== ''));
     }
 
+    /**
+     * strips a leading path prefix (e.g. a sub-project's resolved domain
+     * path, such as a language segment) from a request path, so it lines up
+     * with routes defined without that prefix. A no-op if the path doesn't
+     * actually start with the prefix, or the prefix is just "/".
+     */
+    public static function stripPrefix(string $path, string $prefix): string
+    {
+        $path   = self::normalizePath($path);
+        $prefix = self::normalizePath($prefix);
+
+        if ($prefix !== '/' && str_starts_with($path, $prefix)) {
+            $path = substr($path, strlen($prefix));
+        }
+
+        return self::normalizePath($path);
+    }
+
 }
