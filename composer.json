@@ -11,6 +11,12 @@
       "email": "tpv@optisistem.com"
     }
   ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@bitbucket.org:optisistem/php-ref.git"
+    }
+  ],
   "require": {
     "php": "^8.5",
     "ext-curl": "*",
@@ -27,11 +33,12 @@
     "phpoffice/phpspreadsheet": "^5.8",
     "firebase/php-jwt": "^7.1",
     "google/apiclient": "^2.19",
-    "digitalnature/php-ref": "^1.3"
+    "optisistem/php-ref": "dev-main"
   },
   "autoload": {
     "psr-4": {
       "Core\\": "src/"
     }
-  }
+  },
+  "minimum-stability": "dev"
 }
