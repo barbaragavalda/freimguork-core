@@ -170,6 +170,19 @@ Key pieces (`src/Routing/`):
   for controllers (subclasses of `Core\Controller\Controller`, non-abstract) and their `#[Route]`
   attributes. **Takes no globals/constants** — directory, namespace, and optional cache file path
   are all explicit parameters, which is what makes it unit-testable without a web server.
+  Two ways to attach routes to a controller: (1) method-level `#[Route]` for multi-action
+  controllers (class-level `#[Route]`, if present, acts as a path prefix shared by every attributed
+  method) — see `BlogController` above; (2) **class-level-only** `#[Route]` (no `#[Route]` on any
+  method of the class itself) for the single-action controllers this framework family
+  predominantly uses, where a shared abstract base class defines `build()` once and every concrete
+  page just overrides a hook method (conventionally `run()`) — since a `#[Route]` can't be
+  discovered on an inherited method (the loader only reads attributes declared directly on the
+  concrete class), a class-level-only `#[Route]` is instead treated as "this whole class is one
+  route, dispatching to `build()`". Multiple class-level `#[Route]` attributes on the same
+  single-action class each register as independent full routes (order matters when they overlap —
+  see `Potato\Map` in `cuina-de-profit-local` for a real example: the more specific `/braves/pro/...`
+  attribute must come before the more general `/braves/...` one, since attributes are read in
+  declaration order and the router returns the first match).
 - `Router.php` — `match(ServerRequestInterface): RouteMatch` (throws `RouteNotFoundException` /
   `MethodNotAllowedException`) and `generate(name, params): string` for reverse routing. Uses
   `Psr\Http\Message\ServerRequestInterface` as the match input (built via Guzzle's `ServerRequest`,
@@ -200,31 +213,33 @@ different paths/regexes for the same logical route (the route *name* stays langu
 `path('recipe.detail')` in Twig keeps working regardless of the active language).
 
 Two framework-invoked "special" controllers bypass normal attribute routing and are dispatched
-by a fixed method name, `handle()`, set directly in `Bootstrap::router()`:
+directly by `Bootstrap::router()`, by calling `build()` — the same conventional entrypoint every
+other controller in this framework family already uses (see the class-level-only routing
+convention above), so neither needed a special method name of its own:
 - `<App>\Controller\DefaultController` — fallback when no route matches (404/405)
 - `Core\Controller\RedirectLang` — redirects to the language-prefixed URL when a project requires
   a language in the URL but the request didn't include one
 
 **Known migration debt**: consuming apps (`freimguork-appacman`, `freimguork-webservice`,
-`freimguork-jwt`, the `*-local` sites) still have `routing.php` config files and
-`DefaultController::build()`/`run()` methods from the old router — those need migrating to
-`#[Route]` attributes and a `handle()` method respectively before those apps will work against
-this version of core. That migration is intentionally out of scope for core itself, with one
-exception already found and fixed: `Controller::$parts`/`setParts()` (the raw literal URL path
-segments, e.g. for `in_array('pro', $this->parts)`-style checks) was mistakenly deleted as
+`freimguork-jwt`, the `*-local` sites) still have `routing.php` config files — those need migrating
+to `#[Route]` attributes (method-level for multi-action controllers, class-level-only for the
+far more common shared-`build()`-plus-`run()`-hook single-action pattern — no method renames
+needed either way, since `build()` is already the universal convention) before those apps will
+work against this version of core. That migration is intentionally out of scope for core itself,
+with one exception already found and fixed: `Controller::$parts`/`setParts()` (the raw literal URL
+path segments, e.g. for `in_array('pro', $this->parts)`-style checks) was mistakenly deleted as
 apparently-dead code during the rewrite — it's actively used by `freimguork-appacman`,
 `freimguork-webservice`, and several `*-local` apps. It's restored, now populated by `Bootstrap`
 from `RouteCompiler::splitPath()` on the request path rather than from route matching.
 
-`freimguork-appacman` specifically has two more gaps beyond routing.php migration, found but not
-yet fixed (out of scope until that package is tackled): (1) `Bootstrap::loadRoutes()` assumes a
+`freimguork-appacman` specifically has one more gap beyond routing.php migration, found but not
+yet fixed (out of scope until that package is tackled): `Bootstrap::loadRoutes()` assumes a
 sub-project's controllers live under `<app-root>/src/<App>/Controller/`, which is wrong for
 Appacman — its controllers live in the separate `freimguork-appacman` package
 (`vendor/optisistem/freimguork-appacman/src/Controller/`, namespace `Appacman\`); `View.php` and
-`Language.php` already special-case this, `Bootstrap` doesn't yet. (2) All ~30 Appacman controllers
-share one inherited `build()` (defined once on `AppacmanController` as an auth/permission gate) —
-`AttributeRouteLoader` only reads `#[Route]` attributes declared directly on the concrete class,
-skipping inherited methods, so it wouldn't discover per-controller routes for any of them as built.
+`Language.php` already special-case this, `Bootstrap` doesn't yet. (Its shared-`build()` dispatch
+pattern is otherwise identical to `cuina-de-profit-local`'s Web controllers and is already handled
+by the class-level-only routing convention above — that part of the original concern is resolved.)
 
 ### Controllers and Models
 - `Core\Controller\Controller` (abstract base) — every request-handling controller extends this.

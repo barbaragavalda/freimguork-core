@@ -39,10 +39,24 @@ class AttributeRouteLoaderTest extends TestCase
         sort($names);
 
         $this->assertSame(
-            array('blog.index', 'blog.show', 'blog.update', 'home', 'translated.show'),
+            array('blog.index', 'blog.show', 'blog.update', 'home', 'single.home', 'translated.show'),
             $names
         );
         $this->assertNull($routes->getByName('base.index'));
+    }
+
+    public function testClassLevelOnlyRouteDispatchesToBuild(): void
+    {
+        $routes = (new AttributeRouteLoader())->load(self::NAMESPACE, $this->fixturesDirectory());
+
+        $route = $routes->getByName('single.home');
+        $this->assertNotNull($route);
+        $this->assertSame('/single-home', $route->path);
+        $this->assertSame('build', $route->action);
+        $this->assertSame(
+            'Core\\Tests\\Fixtures\\Controller\\SingleAction\\HomeController',
+            $route->controllerClass
+        );
     }
 
     public function testClassLevelRouteActsAsPrefix(): void

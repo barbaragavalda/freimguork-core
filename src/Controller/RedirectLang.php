@@ -7,7 +7,7 @@ use Core\Utils\Config;
 class RedirectLang extends Controller
 {
 
-    public function handle(): void
+    public function build(): void
     {
         $config  = Config::getInstance();
         $oldLang = $config->get('old_lang');

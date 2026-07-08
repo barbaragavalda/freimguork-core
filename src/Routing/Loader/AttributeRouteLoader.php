@@ -97,13 +97,13 @@ class AttributeRouteLoader
             return;
         }
 
-        $prefixes = array_map(
+        $classAttributes = $reflection->getAttributes(RouteAttribute::class);
+        $prefixes        = array_map(
             static fn ($attribute) => $attribute->newInstance(),
-            $reflection->getAttributes(RouteAttribute::class)
+            $classAttributes
         );
-        if (empty($prefixes)) {
-            $prefixes = array(new RouteAttribute());
-        }
+
+        $methodRouteFound = false;
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             if ($method->getDeclaringClass()->getName() !== $class) {
@@ -111,8 +111,9 @@ class AttributeRouteLoader
             }
 
             foreach ($method->getAttributes(RouteAttribute::class) as $attributeRef) {
-                $attribute = $attributeRef->newInstance();
-                foreach ($prefixes as $prefix) {
+                $methodRouteFound = true;
+                $attribute        = $attributeRef->newInstance();
+                foreach (($prefixes ?: array(new RouteAttribute())) as $prefix) {
                     $path         = rtrim($prefix->path, '/') . '/' . ltrim($attribute->path, '/');
                     $path         = $this->translatePath($path);
                     $requirements = array_merge($prefix->requirements, $attribute->requirements);
@@ -128,6 +129,31 @@ class AttributeRouteLoader
                         )
                     );
                 }
+            }
+        }
+
+        // single-action controllers: many controllers in this framework family
+        // share one inherited dispatch method (conventionally build(), defined
+        // once on an abstract base class and never overridden) with per-page
+        // behavior living in a separately-overridden hook method (e.g. run()).
+        // A #[Route] attribute can't be discovered on an inherited method that
+        // way (see the declaring-class check above), so a class-level-only
+        // #[Route] (no #[Route] anywhere on a method of its own) is treated as
+        // "this whole class is one route, dispatching to build()".
+        if (!$methodRouteFound && count($classAttributes) && method_exists($class, 'build')) {
+            foreach ($prefixes as $attribute) {
+                $path = $this->translatePath($attribute->path);
+
+                $collection->add(
+                    Route::compile(
+                        $path,
+                        $attribute->methods,
+                        $class,
+                        'build',
+                        $attribute->name,
+                        $attribute->requirements
+                    )
+                );
             }
         }
     }

@@ -108,14 +108,14 @@ class Bootstrap
             } catch (RouteNotFoundException|MethodNotAllowedException) {
                 $this->routeMatch = new RouteMatch(
                     $this->projectFolder . '\\Controller\\DefaultController',
-                    'handle',
+                    'build',
                     array(),
                     'default'
                 );
             }
         } else {
             //no language on the URL: redirect to the language-prefixed one
-            $this->routeMatch = new RouteMatch('Core\\Controller\\RedirectLang', 'handle', array(), 'redirect');
+            $this->routeMatch = new RouteMatch('Core\\Controller\\RedirectLang', 'build', array(), 'redirect');
         }
     }
 
