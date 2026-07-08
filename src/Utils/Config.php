@@ -111,6 +111,23 @@ class Config
         return $this->staticDomain;
     }
 
+    /**
+     * URL path prefix needed to reach the web-exposed folder (e.g. "public/" or
+     * "web/") from the domain root — empty if DocumentRoot already points directly
+     * at it. Works regardless of what that folder is actually named, so apps can
+     * be deployed with DocumentRoot pointing straight at their web folder (no
+     * prefix needed) or with DocumentRoot at the project root and the web folder
+     * reached through it (prefix needed), without any code change.
+     */
+    public static function getWebFolderPrefix(): string
+    {
+        $webFolder = dirname($_SERVER['SCRIPT_FILENAME']);
+        if (rtrim($_SERVER['DOCUMENT_ROOT'], '/') === rtrim($webFolder, '/')) {
+            return '';
+        }
+        return basename($webFolder) . '/';
+    }
+
     public function setDomains(array $domain): void
     {
         $this->domain       = $domain['app'];

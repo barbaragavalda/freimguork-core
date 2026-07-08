@@ -43,18 +43,19 @@ class File extends Model
         // init directory
         $config = Config::getInstance();
 
-        $configDomains = $config->get('domains', 'upload');
+        $webFolderPrefix = Config::getWebFolderPrefix();
+        $configDomains   = $config->get('domains', 'upload');
         if (is_array($configDomains) && count($configDomains)) {
             $domains = $configDomains;
             $folder  = $domains[ array_rand($domains) ];
-            $url     = parse_url($config->getBaseDomain() . 'public/upload/');
+            $url     = parse_url($config->getBaseDomain() . $webFolderPrefix . 'upload/');
             $host    = $url['host'];
             if (str_starts_with($host, 'pre.')) {
                 $host = str_replace('pre.', '', $host);
             }
             $this->absoluteFolder = $url['scheme'] . '://' . $folder . '.' . $host . $url['path'];
         } else {
-            $this->absoluteFolder = $config->getBaseDomain() . 'public/upload/';
+            $this->absoluteFolder = $config->getBaseDomain() . $webFolderPrefix . 'upload/';
         }
         $this->relativeFolder = 'upload/';
 

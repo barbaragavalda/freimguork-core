@@ -40,11 +40,6 @@ abstract class Controller
      */
     protected array $params = array();
 
-    /**
-     * @var array $parts . Parts of URL petition
-     */
-    protected array $parts = array();
-
     protected View $view;
 
     private array $headers = array();
@@ -75,11 +70,7 @@ abstract class Controller
             $this->assign('min', '.min');
         }
 
-        $staticPath = 'static/';
-        $explode    = explode('/', $_SERVER['DOCUMENT_ROOT']);
-        if ($explode[ count($explode) - 1 ] != 'public') {
-            $staticPath = 'public/' . $staticPath;
-        }
+        $staticPath         = Config::getWebFolderPrefix() . 'static/';
         $this->staticDomain = $this->rootDomain . $staticPath;
         $this->assign('staticDomain', $this->staticDomain);
 
@@ -92,10 +83,13 @@ abstract class Controller
         $this->modelCache = new CacheManager();
     }
 
-    /***
-     * function to be executed by Bootstrap
+    /**
+     * calls the action method matched by the router
      */
-    abstract public function build(): void;
+    public function dispatch(string $action): void
+    {
+        $this->$action();
+    }
 
     /*------------------------------------------
      * VIEW FUNCTIONS
@@ -103,11 +97,6 @@ abstract class Controller
     public function setParams(array $params): void
     {
         $this->params = $params;
-    }
-
-    public function setParts(array $parts): void
-    {
-        $this->parts = $parts;
     }
 
     public function setView(View $view): void

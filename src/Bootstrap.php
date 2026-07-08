@@ -4,8 +4,13 @@ namespace Core;
 
 use Core\Controller\CacheManager;
 use Core\Controller\Controller;
+use Core\Routing\Exception\MethodNotAllowedException;
+use Core\Routing\Exception\RouteNotFoundException;
+use Core\Routing\Loader\AttributeRouteLoader;
+use Core\Routing\Project;
 use Core\Routing\Projects;
-use Core\Routing\RedirectRouter;
+use Core\Routing\RouteCollection;
+use Core\Routing\RouteMatch;
 use Core\Routing\Router;
 use Core\Utils\Config;
 
@@ -13,6 +18,8 @@ use Core\Utils\Exception;
 use Core\Utils\Language;
 use Core\Utils\Session;
 use Core\View\View;
+use GuzzleHttp\Psr7\ServerRequest;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class Bootstrap
@@ -21,7 +28,9 @@ use Core\View\View;
 class Bootstrap
 {
 
-    private ?Router $router;
+    private ServerRequestInterface $request;
+
+    private ?RouteMatch $routeMatch;
 
     private ?Controller $controller;
 
@@ -38,6 +47,7 @@ class Bootstrap
     {
         define('IS_DEV', $isDev);
         date_default_timezone_set('Europe/Madrid');
+        $this->request = ServerRequest::fromGlobals();
     }
 
     /**
@@ -55,8 +65,8 @@ class Bootstrap
     }
 
     /**
-     * search for the controller to be used
-     * depending on the routing and project configuration
+     * search for the route to be used
+     * depending on the current sub-project's controllers and configuration
      * @throws \Exception
      */
     private function router(): void
@@ -89,11 +99,35 @@ class Bootstrap
 
             //routing
             $this->projectFolder = $project->getApp();
-            $this->router        = new Router($this->projectFolder);
-            $this->router->doRouting($config->get('routing'));
+            $router              = new Router($this->loadRoutes($project));
+            Router::setCurrent($router);
+
+            try {
+                $this->routeMatch = $router->match($this->request);
+            } catch (RouteNotFoundException|MethodNotAllowedException) {
+                $this->routeMatch = new RouteMatch(
+                    $this->projectFolder . '\\Controller\\DefaultController',
+                    'handle',
+                    array(),
+                    'default'
+                );
+            }
         } else {
-            $this->router = new RedirectRouter();
+            //no language on the URL: redirect to the language-prefixed one
+            $this->routeMatch = new RouteMatch('Core\\Controller\\RedirectLang', 'handle', array(), 'redirect');
         }
+    }
+
+    /**
+     * scans (or loads from cache) the RouteCollection of the given sub-project
+     */
+    private function loadRoutes(Project $project): RouteCollection
+    {
+        $app       = $project->getApp();
+        $directory = DIR_ROOT . 'src/' . $app . '/Controller/';
+        $cacheFile = IS_DEV ? null : DIR_ROOT . 'src/cache/prod/freimguork/routes-' . $app . '.php';
+
+        return (new AttributeRouteLoader())->load($app, $directory, $cacheFile);
     }
 
     /**
@@ -103,10 +137,9 @@ class Bootstrap
      */
     private function execute(): void
     {
-        $controllerName   = $this->router->getController();
+        $controllerName   = $this->routeMatch->controllerClass;
         $this->controller = new $controllerName();
-        $this->controller->setParams($this->router->getParams());
-        $this->controller->setParts($this->router->getParts());
+        $this->controller->setParams($this->routeMatch->params);
 
         $cacheDef = $this->controller->getCacheDef();
         $cache    = $this->controllerCache->getCache($cacheDef);
@@ -132,7 +165,7 @@ class Bootstrap
         $this->controller->setView(new View($this->projectFolder));
 
         try {
-            $this->controller->build();
+            $this->controller->dispatch($this->routeMatch->action);
         } catch (Exception $e) {
             $e->showException();
         }
