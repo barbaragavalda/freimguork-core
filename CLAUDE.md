@@ -12,10 +12,12 @@ plus a `config/` directory), and there is no way to `run` or exercise it outside
 app. Sibling packages in this family include `freimguork-appacman` (admin panel), `freimguork-webservice`,
 and `freimguork-jwt`.
 
-The framework was written ~10 years ago; it is currently being modernized in stages (Routing was
-just rewritten from scratch as a clean-break v2 — see "Routing" below — DI and a broader test
-suite are the next planned phases). Expect a mix of very old, singleton/superglobal-heavy code
-(`Config`, `Session`, `Model`) alongside the newer, PSR-7/attribute-based routing.
+The framework was written ~10 years ago; it is currently being modernized in stages. Routing was
+rewritten from scratch as a clean-break v2 (see "Routing" below). Dependency Injection followed as
+its own phase (see "Dependency Injection" below) — a `Core\Container\Container` with `Bootstrap` as
+the composition root. A broader test suite is the next planned phase. Expect a mix of very old,
+singleton/superglobal-heavy code (`Config`, `Session`) — which the DI phase deliberately wraps
+rather than replaces — alongside the newer, PSR-7/attribute-based routing and the container.
 
 ## Commands
 
@@ -77,8 +79,9 @@ Each sub-project entry has:
 **The set of sub-projects can differ between dev and prod** (e.g. an `import` tool only defined
 in `projects.dev.php`) — this is intentional, not a bug to "fix". `Core\Routing\Projects` resolves
 which sub-project the current request belongs to; `Core\Routing\Project` is the resolved value
-object. This class pair is considered stable/foundational — routing and future DI work builds on
-top of it rather than replacing it.
+object. This class pair is considered stable/foundational — routing and DI build on top of it
+rather than replacing it (`Bootstrap` registers the resolved `Projects`/`Project` as container
+instances — see "Dependency Injection" below).
 
 ### Config layering
 `Core\Utils\Config` (singleton via `getInstance()`) layers config files from, in order: `config/`,
@@ -201,9 +204,11 @@ Key pieces (`src/Routing/`):
   `MethodNotAllowedException`) and `generate(name, params): string` for reverse routing. Uses
   `Psr\Http\Message\ServerRequestInterface` as the match input (built via Guzzle's `ServerRequest`,
   already a dependency) specifically so routing logic never touches superglobals directly.
-  Also exposes a `Router::getCurrent()`/`setCurrent()` static holder — a deliberate stopgap (not a
-  general pattern to imitate) so `path()`/`url()` Twig functions can reach the current request's
-  router before a DI container exists.
+  Also exposes a `Router::getCurrent()`/`setCurrent()` static holder so `path()`/`url()` Twig
+  functions can reach the current request's router. It's now backed by `Core\Container\Container`
+  (see "Dependency Injection" below) rather than its own private static — still a static facade,
+  since `View\Extension\Twig` isn't itself part of the container's object graph, but no longer the
+  ad hoc stopgap it used to be.
 
 Per-project route caching follows the same `IS_DEV` convention as the existing disk cache
 (`Core\Controller\Cache\Disk`): in dev, routes are rescanned from disk on every request; in prod,
@@ -279,15 +284,61 @@ Appacman — its controllers live in the separate `freimguork-appacman` package
 pattern is otherwise identical to `cuina-de-profit-local`'s Web controllers and is already handled
 by the class-level-only routing convention above — that part of the original concern is resolved.)
 
+### Dependency Injection
+
+`Core\Container\Container` (`src/Container/`) is a minimal PSR-11 autowiring container. The rule
+that makes it correct: **only ids explicitly registered via `instance()`/`singleton()` are shared —
+everything else it builds via constructor reflection is a fresh instance every call.** This matters
+concretely for `Core\Controller\CacheManager`: `Bootstrap` and `Controller` each need their *own*
+instance (they cache different things, and the object is stateful across a `getCache()`/
+`saveCache()` call pair), so it must never be silently promoted to a shared singleton just because
+it was autowired.
+
+`Core\Bootstrap` is the composition root. Its constructor creates the container, publishes it via
+`Container::setCurrent()`, and registers `Config`/`Session`/the default DB connection
+(`Core\Model\MySQL\PDO`) as container-backed singletons that just wrap the existing
+`::getInstance()` calls — those classes themselves are untouched, so every other direct
+`::getInstance()` call site (including in every consuming app) still returns the exact same object.
+`Bootstrap::execute()` builds the matched controller via `$container->make($controllerClass)`
+instead of a bare `new`, which is what makes controller-level constructor injection actually happen.
+
+- `Core\Controller\Controller` takes `Config $config, CacheManager $modelCache` as **required**
+  constructor parameters (no defaults) — safe because every controller in every consuming app is
+  built by the container, as long as any app-level intermediate base class forwards them (see
+  "Known migration debt" below).
+- `Core\Controller\CacheManager` takes `Disk $cache` as a required parameter too.
+- `Core\Model\Model` is the deliberate exception: its constructor takes **optional**
+  `?PDO $mysql = null, ?Session $session = null`, defaulting to `Manager::getInstance()`/
+  `Session::getInstance()`. This is not a consuming-app back-compat shim — `Model` is subclassed by
+  `File`/`Language`/`Form`/`Push`/`Paginated`, and `Model.php` itself does `new File($fileID)` deep
+  inside its own methods, none of which goes through the container; making those dependencies
+  required would mean rewriting every subclass's constructor just to keep *core itself* working,
+  without reaching any consuming app anyway. Keeping them optional is what makes
+  `new Model(new PDO([], false), new Session())` work in a test without a real database connection
+  (see "Testing conventions" below).
+- `Core\Routing\Router::getCurrent()`/`setCurrent()` (see "Routing" above) is a pure proxy to the
+  container instead of its own private static.
+
+**Known migration debt**: a consuming app whose own Controller (or Model) base class declares its
+own `__construct()` calling `parent::__construct()` with no arguments will break against this
+version of core, since `Controller`'s new dependencies are required — that base class needs to
+accept and forward `Config`/`CacheManager` itself. `cuina-de-profit-local`'s
+`Web\Controller\Controller` (the shared single-action-controller base every `Web` controller
+extends) is already migrated — treat it as the reference example. `freimguork-appacman`,
+`freimguork-webservice`, `freimguork-jwt`, and the rest of the `*-local` sites have not been
+checked/migrated yet.
+
 ### Controllers and Models
 - `Core\Controller\Controller` (abstract base) — every request-handling controller extends this.
-  Constructor wires up domain/language/static-path template variables via `assign()`. Actions are
-  arbitrary public methods (see Routing above) invoked through `dispatch()`, not a single fixed
-  entrypoint. `getCacheDef()` (override to opt into response caching), `loadCache()` (model-level
-  caching), `getHTML()` (render a Twig fragment to a string, e.g. for emails/PDFs).
-- `Core\Model\Model` (base for all models) — wraps a `Core\Model\MySQL\PDO` connection
-  (`Core\Model\MySQL\Manager::getInstance()`, keyed by connection name, config comes from the
-  `db` config key). Uses `__call()` to proxy unknown method calls straight to the PDO wrapper.
+  Constructor wires up domain/language/static-path template variables via `assign()` (see
+  "Dependency Injection" above for how `Config`/`CacheManager` reach it). Actions are arbitrary
+  public methods (see Routing above) invoked through `dispatch()`, not a single fixed entrypoint.
+  `getCacheDef()` (override to opt into response caching), `loadCache()` (model-level caching),
+  `getHTML()` (render a Twig fragment to a string, e.g. for emails/PDFs).
+- `Core\Model\Model` (base for all models) — wraps a `Core\Model\MySQL\PDO` connection, either
+  injected (see "Dependency Injection" above) or defaulted to
+  `Core\Model\MySQL\Manager::getInstance()` (keyed by connection name, config comes from the `db`
+  config key). Uses `__call()` to proxy unknown method calls straight to the PDO wrapper.
   `Core\Utils\Language` also extends `Model` (it needs DB access to resolve language IDs).
 - Encryption helpers live in `Core\Model\Encryptor\{OneWay,TwoWay}`; file/image handling in
   `Core\Model\File`; spreadsheet export in `Core\Model\Utils\Excel`; push notifications in
@@ -308,8 +359,13 @@ Tests live in `tests/`, PSR-4 autoloaded as `Core\Tests\` (see `composer.json` `
 that constant is normally defined by a consuming app's `public/index.php` before anything else
 runs, and tests bypass that entry point). Coverage so far is `Core\Routing` (`tests/Routing/`, plus
 fixture controllers under `tests/Fixtures/Controller/` used to exercise `AttributeRouteLoader`
-against real files/reflection rather than mocks) and `Core\Utils\Config::getWebFolderPrefix()`
-(`tests/Utils/`). Follow the same pattern for new tests — real PSR-7 requests via
-`GuzzleHttp\Psr7\ServerRequest`, real fixture classes/superglobal values, no mocking framework.
-Anything that needs a real MySQL connection (most of `Core\Model\*`, `Core\Utils\Language`) isn't
-unit-tested yet — that's expected until the DI phase makes those dependencies swappable.
+against real files/reflection rather than mocks), `Core\Utils\Config::getWebFolderPrefix()`
+(`tests/Utils/`), `Core\Container\Container` (`tests/Container/`, plus fixture classes under
+`tests/Fixtures/Container/` covering no-constructor/typed-dependency/scalar-default/nullable-typed/
+unresolvable-parameter cases), and a first slice of `Core\Model\Model` (`tests/Model/ModelTest.php`,
+using an injected disconnected `Core\Model\MySQL\PDO` — `new PDO([], false)` leaves the internal
+`\PDO` null, so `query()` just returns `[]` — instead of a real database connection, now that
+`Model`'s constructor accepts one). Follow the same pattern for new tests — real PSR-7 requests via
+`GuzzleHttp\Psr7\ServerRequest`, real fixture classes/superglobal values, no mocking framework. Most
+of `Core\Model\*`/`Core\Utils\Language` still isn't unit-tested — the DI phase made the dependencies
+swappable, but writing tests for each class is still open work.

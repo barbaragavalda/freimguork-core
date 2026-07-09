@@ -63,10 +63,13 @@ docker exec php sh -c "cd /var/www/html/freimguork-core && vendor/bin/phpunit"
 ## Status
 
 The framework is ~10 years old and is being modernized in stages. Routing was rewritten from
-scratch as a clean-break v2 (attribute-based, HTTP-method-aware, unit-tested). Dependency
-Injection and broader test coverage (most of the framework still relies on singletons and a real
-MySQL connection) are the next planned phases. Not every consuming app has migrated to the new
-routing yet — see `CLAUDE.md`'s "Known migration debt" for current status.
+scratch as a clean-break v2 (attribute-based, HTTP-method-aware, unit-tested). Dependency Injection
+followed as its own phase: a PSR-11 `Core\Container\Container` with `Bootstrap` as the composition
+root, `Controller`/`CacheManager` taking required constructor dependencies, and `Model` deliberately
+kept on optional dependencies (see `CLAUDE.md`'s "Dependency Injection" section for why). Broader
+test coverage is the next planned phase — most of `Core\Model\*`/`Core\Utils\Language` still isn't
+unit-tested. Not every consuming app has migrated to the new routing or the new controller
+constructors yet — see `CLAUDE.md`'s "Known migration debt" notes for current status.
 
 ## More documentation
 
