@@ -118,14 +118,21 @@ class Config
      * be deployed with DocumentRoot pointing straight at their web folder (no
      * prefix needed) or with DocumentRoot at the project root and the web folder
      * reached through it (prefix needed), without any code change.
+     *
+     * Deliberately uses $_SERVER['SCRIPT_NAME'] (a URL-space path Apache derives
+     * from the request/rewrite, e.g. "/index.php" or "/public/index.php") rather
+     * than comparing DOCUMENT_ROOT against SCRIPT_FILENAME's directory: those are
+     * filesystem paths, and under a reverse proxy where Apache and PHP-FPM run in
+     * separate containers (this project's own local dev VM included) they live in
+     * completely different filesystem namespaces even when they point at "the
+     * same" directory, so a filesystem-path comparison never matches. SCRIPT_NAME
+     * has no such problem — it's always relative to the web root as Apache itself
+     * resolved it, regardless of which container/mount produced it.
      */
     public static function getWebFolderPrefix(): string
     {
-        $webFolder = dirname($_SERVER['SCRIPT_FILENAME']);
-        if (rtrim($_SERVER['DOCUMENT_ROOT'], '/') === rtrim($webFolder, '/')) {
-            return '';
-        }
-        return basename($webFolder) . '/';
+        $scriptDir = trim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        return $scriptDir === '' ? '' : $scriptDir . '/';
     }
 
     public function setDomains(array $domain): void

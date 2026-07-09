@@ -52,8 +52,10 @@ Every request through a consuming app funnels through `Core\Bootstrap`:
    request via `GuzzleHttp\Psr7\ServerRequest::fromGlobals()`.
 2. `Bootstrap::router()` resolves which **sub-project** the request belongs to (see "Multi-project
    structure" below) via `Core\Routing\Projects`/`Project`, loads that sub-project's config
-   (`Core\Utils\Config::loadConfigs()`), resolves the language, then loads/matches routes for that
-   sub-project (see "Routing" below) into a `Core\Routing\RouteMatch`.
+   (`Core\Utils\Config::loadConfigs()`), resolves the language, strips that sub-project's resolved
+   domain prefix (e.g. the language segment) from the request path (see "Domain prefix stripping"
+   under Routing below), then loads/matches routes for that sub-project (see "Routing" below) into
+   a `Core\Routing\RouteMatch`.
 3. `Bootstrap::execute()` instantiates the matched controller class, applies controller-level
    response caching (`Core\Controller\CacheManager` + `Core\Controller\Cache\Disk`), and calls
    `Controller::dispatch($action)` to invoke the matched action method.
@@ -122,14 +124,23 @@ actually achieved depends on the deployment target, and it's currently inconsist
   web-servable; `Options Indexes` is also enabled, so any directory without an index file gets
   listed).
 - **The web-folder name is no longer hardcoded in this framework.** `Core\Utils\Config::getWebFolderPrefix()`
-  derives whatever URL prefix is needed (empty if `DocumentRoot` already points straight at the web
-  folder, `<actual-folder-name>/` if `DocumentRoot` is an ancestor of it) by comparing
-  `$_SERVER['DOCUMENT_ROOT']` against the entry script's own directory — it does not care whether
-  that folder is named `public`, `web`, or anything else. `Controller::__construct()` (static asset
-  URLs) and `Model\File::__construct()` (upload URLs) both use it; previously they hardcoded the
-  literal string `'public'`, which would have silently produced wrong URLs the moment any app
-  renamed that folder. When migrating an app's `public/` to `web/`, only the folder itself and the
-  app's own `.htaccess`/`robots.txt` need updating — no framework code changes required.
+  derives whatever URL prefix is needed (empty if the entry script already sits at the web root,
+  `<actual-folder-name>/` if it's one level down) from `dirname($_SERVER['SCRIPT_NAME'])` — a
+  URL-space path Apache itself resolves from the request/rewrite (e.g. `/index.php` or
+  `/public/index.php`), not a filesystem path. **Deliberately not** `$_SERVER['DOCUMENT_ROOT']` vs
+  `dirname($_SERVER['SCRIPT_FILENAME'])`, which was the first implementation and is broken under a
+  reverse proxy where Apache and PHP-FPM run in separate containers (this project's own local dev
+  VM does exactly this): those are filesystem paths, and they live in different filesystem
+  namespaces per-container (`/usr/local/apache2/htdocs/...` for Apache, `/var/www/html/...` for
+  PHP-FPM here) even when they point at "the same" directory, so the comparison silently always
+  concluded "prefix needed" — this exact bug shipped, broke `cuina-de-profit-local`'s asset URLs
+  right after its `public/`→`web/` migration, and needed a follow-up fix; don't reintroduce a
+  filesystem-path comparison here if this is ever touched again. `Controller::__construct()`
+  (static asset URLs) and `Model\File::__construct()` (upload URLs) both use it; before either
+  implementation existed, both hardcoded the literal string `'public'`, which would have silently
+  produced wrong URLs the moment any app renamed that folder. With the `SCRIPT_NAME`-based
+  implementation, migrating an app's `public/` to `web/` only needs the folder itself and the
+  app's own `.htaccess`/`robots.txt`/vhost updating — no further framework code changes.
 - **Known issue, found in at least one live app (`cuina-de-profit-local`)**: real credentials
   (`config/dev/db.php`, `config/prod/db.php`, `config/keys.php`, `config/mail.php`) and a full `.sql`
   database dump are committed to git, with the dump recurring across multiple "database update"
@@ -162,8 +173,11 @@ class BlogController extends Controller
 
 Key pieces (`src/Routing/`):
 - `Attribute/Route.php` — the attribute itself (`path`, `methods`, `name`, `requirements`)
-- `RouteCompiler.php` — pure function turning a path pattern into a regex (`{name}` required,
-  `{name?}` optional-trailing, per-param `requirements` override the default `[^/]+`)
+- `RouteCompiler.php` — pure functions: `compile()` turns a path pattern into a regex (`{name}`
+  required, `{name?}` optional-trailing, per-param `requirements` override the default `[^/]+`);
+  `normalizePath()`/`splitPath()`/`stripPrefix()` are path-string helpers reused by `Bootstrap`
+  (domain-prefix stripping, `$parts` — see below) precisely so that logic is unit-testable without
+  needing a full `Bootstrap` (which pulls in `Config`/DB dependencies)
 - `Route.php` / `RouteCollection.php` / `RouteMatch.php` — value objects; `RouteCollection`
   round-trips through `toArray()`/`fromArray()` for caching
 - `Loader/AttributeRouteLoader.php` — scans a given directory + namespace via `ReflectionClass`
@@ -212,6 +226,21 @@ route cache is keyed per language, not just per app — two languages of the sam
 different paths/regexes for the same logical route (the route *name* stays language-invariant, so
 `path('recipe.detail')` in Twig keeps working regardless of the active language).
 
+**Domain prefix stripping.** Routes are defined relative to a sub-project, without whatever prefix
+that sub-project's resolved domain adds — most commonly the language segment for a `{lang}`-keyed
+project (e.g. `#[Route('/receptes')]`, not `#[Route('/{lang}/receptes')]`). A real request's raw
+path includes that prefix (`/ca/receptes`), so `Bootstrap::router()` strips it — via
+`RouteCompiler::stripPrefix($path, $prefix)`, where `$prefix` is
+`parse_url($config->getDomain(), PHP_URL_PATH)` — before ever calling `Router::match()`, and stores
+the stripped path as `$petitionPath` for `Controller::$parts` to use too (see below). **This is not
+optional or Web-project-specific** — it's the same for every sub-project, including ones with a
+literal (non-`{lang}`) prefix like `cronjob`/`wallaby`/`import`, since `Projects::getDomains()`
+resolves a domain path for all of them. Forgetting this step (which the original routing rewrite
+did) means every route silently fails to match and every request falls through to the 404
+fallback — a real bug that shipped and needed a follow-up fix, so don't reintroduce it if this
+logic is ever touched again. The old `URL::loadParams()` did the equivalent stripping against
+`$config->getDomain()` before matching against `routing.php`.
+
 Two framework-invoked "special" controllers bypass normal attribute routing and are dispatched
 directly by `Bootstrap::router()`, by calling `build()` — the same conventional entrypoint every
 other controller in this framework family already uses (see the class-level-only routing
@@ -220,17 +249,26 @@ convention above), so neither needed a special method name of its own:
 - `Core\Controller\RedirectLang` — redirects to the language-prefixed URL when a project requires
   a language in the URL but the request didn't include one
 
-**Known migration debt**: consuming apps (`freimguork-appacman`, `freimguork-webservice`,
-`freimguork-jwt`, the `*-local` sites) still have `routing.php` config files — those need migrating
-to `#[Route]` attributes (method-level for multi-action controllers, class-level-only for the
-far more common shared-`build()`-plus-`run()`-hook single-action pattern — no method renames
-needed either way, since `build()` is already the universal convention) before those apps will
-work against this version of core. That migration is intentionally out of scope for core itself,
-with one exception already found and fixed: `Controller::$parts`/`setParts()` (the raw literal URL
-path segments, e.g. for `in_array('pro', $this->parts)`-style checks) was mistakenly deleted as
-apparently-dead code during the rewrite — it's actively used by `freimguork-appacman`,
-`freimguork-webservice`, and several `*-local` apps. It's restored, now populated by `Bootstrap`
-from `RouteCompiler::splitPath()` on the request path rather than from route matching.
+**Known migration debt**: most consuming apps (`freimguork-appacman`, `freimguork-webservice`,
+`freimguork-jwt`, most `*-local` sites) still have `routing.php` config files — those need
+migrating to `#[Route]` attributes (method-level for multi-action controllers, class-level-only
+for the far more common shared-`build()`-plus-`run()`-hook single-action pattern — no method
+renames needed either way, since `build()` is already the universal convention) before those apps
+will work against this version of core. **`cuina-de-profit-local`'s `Web`/`Cronjob`/`Import`
+sub-projects are already migrated** (its `config/{web,cronjob,import}/routing.php` are gone,
+replaced by attributes directly on those controllers) — treat that migration as the reference
+example for doing the rest, including how it handles two real wrinkles: `Potato\Map` needs two
+ordered class-level `#[Route]` attributes (see the ordering note above) since collapsing
+`/braves/pro/...` and `/braves/...` into one pattern would let a bare `{param1}` swallow the
+literal `pro` segment, and `Recipe\Detail` drops a second routing.php entry that mapped to the
+exact same controller action as the general one and was already unreachable under the old router
+too. The rest of that migration is intentionally out of scope for core itself, with one exception
+already found and fixed: `Controller::$parts`/`setParts()` (the raw literal URL path segments, e.g.
+for `in_array('pro', $this->parts)`-style checks) was mistakenly deleted as apparently-dead code
+during the rewrite — it's actively used by `freimguork-appacman`, `freimguork-webservice`, and
+several `*-local` apps. It's restored, now populated by `Bootstrap` from the same
+domain-prefix-stripped path used for route matching (see "Domain prefix stripping" above), not
+from route matching itself.
 
 `freimguork-appacman` specifically has one more gap beyond routing.php migration, found but not
 yet fixed (out of scope until that package is tackled): `Bootstrap::loadRoutes()` assumes a
