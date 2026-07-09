@@ -59,10 +59,9 @@ abstract class Controller
     /**
      * Bootstrap initialization
      */
-    public function __construct()
+    public function __construct(Config $config, CacheManager $modelCache)
     {
         //domains
-        $config           = Config::getInstance();
         $this->domain     = $config->getDomain();
         $this->rootDomain = $config->getBaseDomain();
 
@@ -85,7 +84,7 @@ abstract class Controller
         $this->assign('langLocale', Language::getLocale($culture));
 
         //cache
-        $this->modelCache = new CacheManager();
+        $this->modelCache = $modelCache;
     }
 
     /**

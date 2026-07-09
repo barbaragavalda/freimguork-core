@@ -2,8 +2,11 @@
 
 namespace Core;
 
+use Core\Container\Container;
 use Core\Controller\CacheManager;
 use Core\Controller\Controller;
+use Core\Model\MySQL\Manager;
+use Core\Model\MySQL\PDO;
 use Core\Routing\Exception\MethodNotAllowedException;
 use Core\Routing\Exception\RouteNotFoundException;
 use Core\Routing\Loader\AttributeRouteLoader;
@@ -46,6 +49,8 @@ class Bootstrap
 
     private ?CacheManager $controllerCache;
 
+    private Container $container;
+
     /**
      * Bootstrap constructor.
      *
@@ -56,6 +61,13 @@ class Bootstrap
         define('IS_DEV', $isDev);
         date_default_timezone_set('Europe/Madrid');
         $this->request = ServerRequest::fromGlobals();
+
+        $this->container = new Container();
+        Container::setCurrent($this->container);
+        $this->container->instance(ServerRequestInterface::class, $this->request);
+        $this->container->singleton(Config::class, fn() => Config::getInstance());
+        $this->container->singleton(Session::class, fn() => Session::getInstance());
+        $this->container->singleton(PDO::class, fn() => Manager::getInstance());
     }
 
     /**
@@ -80,19 +92,22 @@ class Bootstrap
     private function router(): void
     {
         $projects = new Projects();
+        $this->container->instance(Projects::class, $projects);
 
         $userLang          = $projects->getUserLanguage();
         $hasCustomLanguage = $projects->hasCustomLanguage();
         $project           = $projects->getProject();
         $projectFolders    = $project->getFolders();
         $language          = new Language($userLang, $project);
+        $this->container->instance(Project::class, $project);
+        $this->container->instance(Language::class, $language);
 
         //load project configs
         $config = Config::getInstance();
         $config->loadConfigs($projectFolders);
 
         //controller cache
-        $this->controllerCache = new CacheManager();
+        $this->controllerCache = $this->container->make(CacheManager::class);
 
         //language
         $currentLanguage = $language->getLanguage();
@@ -170,7 +185,7 @@ class Bootstrap
     private function execute(): void
     {
         $controllerName   = $this->routeMatch->controllerClass;
-        $this->controller = new $controllerName();
+        $this->controller = $this->container->make($controllerName);
         $this->controller->setParams($this->routeMatch->params);
         $this->controller->setParts($this->currentParts());
 

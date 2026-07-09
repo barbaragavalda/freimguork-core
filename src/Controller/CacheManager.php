@@ -11,9 +11,9 @@ class CacheManager
     private string $key = '';
     private int    $ttl = 0;
 
-    public function __construct()
+    public function __construct(Disk $cache)
     {
-        $this->cache = new Disk();
+        $this->cache = $cache;
     }
 
     public function getCache($cacheDefinition): mixed

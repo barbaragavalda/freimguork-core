@@ -39,11 +39,11 @@ class Model
      */
     protected ?string $created = null;
 
-    public function __construct()
+    public function __construct(?PDO $mysql = null, ?Session $session = null)
     {
-        $this->mysql = Manager::getInstance();
+        $this->mysql = $mysql ?? Manager::getInstance();
 
-        $session      = Session::getInstance();
+        $session       = $session ?? Session::getInstance();
         $this->langID = $session->get('lang_id');
     }
 

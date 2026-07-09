@@ -2,6 +2,7 @@
 
 namespace Core\Routing;
 
+use Core\Container\Container;
 use Core\Routing\Exception\MethodNotAllowedException;
 use Core\Routing\Exception\RouteNotFoundException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,27 +15,24 @@ use Psr\Http\Message\ServerRequestInterface;
 class Router
 {
 
-    /**
-     * @var ?Router holds the router of the currently matched project, so it's
-     *              reachable from the Twig extension for path()/url() reverse
-     *              routing without a full DI container (a stopgap for the
-     *              upcoming DI phase, kept consistent with the Config/Session
-     *              singleton-style access already used throughout the framework)
-     */
-    private static ?Router $current = null;
-
     public function __construct(private readonly RouteCollection $routes)
     {
     }
 
+    /**
+     * publishes the router of the currently matched project into the active
+     * DI container, so it's reachable from the Twig extension for path()/url()
+     * reverse routing without threading it through the whole render call stack
+     */
     public static function setCurrent(self $router): void
     {
-        self::$current = $router;
+        Container::getCurrent()?->instance(self::class, $router);
     }
 
     public static function getCurrent(): ?self
     {
-        return self::$current;
+        $container = Container::getCurrent();
+        return ($container !== null && $container->has(self::class)) ? $container->get(self::class) : null;
     }
 
     /**

@@ -34,6 +34,7 @@
     "firebase/php-jwt": "^7.1",
     "google/apiclient": "^2.19",
     "guzzlehttp/psr7": "^2.0",
+    "psr/container": "^1.1 || ^2.0",
     "psr/http-message": "^1.0 || ^2.0",
     "optisistem/php-ref": "dev-main"
   },
