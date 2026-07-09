@@ -83,16 +83,22 @@ class Language extends Model
     private function initLanguage(string $userLanguage, ?Project $currentProject): void
     {
         $projectLanguages = $currentProject->getLanguages();
+
+        // resolved into a local variable rather than $this->language directly:
+        // $this->language is a typed property with no default, so reading it
+        // before it's definitely assigned (e.g. no URL/session/browser match)
+        // would throw "must not be accessed before initialization"
+        $language = null;
         if ($userLanguage) {
             // language from URL
-            $this->language = $userLanguage;
+            $language = $userLanguage;
         } else {
             $session = Session::getInstance();
             if ($session->get('lang_culture')) {
                 $sessionLanguage = $session->get('lang_culture');
                 if (in_array($sessionLanguage, $projectLanguages)) {
                     // language from session
-                    $this->language = $sessionLanguage;
+                    $language = $sessionLanguage;
                 }
             } else {
                 if (array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
@@ -100,16 +106,14 @@ class Language extends Model
                     $agentLanguage = $this->equivalents($agentLanguage, $projectLanguages[0]);
                     if (in_array($agentLanguage, $projectLanguages)) {
                         // language from browser
-                        $this->language = $agentLanguage;
+                        $language = $agentLanguage;
                     }
                 }
             }
         }
 
-        if (!$this->language) {
-            // language from config
-            $this->language = $projectLanguages[0];
-        }
+        // language from config, if nothing else matched
+        $this->language = $language ?: $projectLanguages[0];
 
         $this->initCulture();
     }
