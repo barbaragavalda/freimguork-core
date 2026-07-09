@@ -81,6 +81,12 @@ class Bootstrap
             $this->execute();
         } catch (Exception $e) {
             $e->showException();
+        } catch (\Throwable $e) {
+            // anything that isn't already a Core\Utils\Exception (a TypeError,
+            // a plain \Exception, a PDO failure, ...) would otherwise escape
+            // uncaught and let PHP dump a raw stack trace - including file
+            // paths - straight to the response, in prod too
+            (new Exception($e->getMessage(), 500, $e))->showException();
         }
     }
 
