@@ -19,6 +19,14 @@ the composition root. A broader test suite is the next planned phase. Expect a m
 singleton/superglobal-heavy code (`Config`, `Session`) — which the DI phase deliberately wraps
 rather than replaces — alongside the newer, PSR-7/attribute-based routing and the container.
 
+**Modernization work in this repo should not be constrained by keeping every consuming app working
+as-is.** Design each phase (routing, DI, and whatever comes next) the correct way for core itself;
+do not add back-compat shims or defensive fallbacks whose only purpose is to avoid breaking
+`freimguork-appacman`, `freimguork-webservice`, `freimguork-jwt`, or the `*-local` sites. Migrating
+those apps to each new core version is separate, later work (see each phase's "Known migration
+debt" notes below for what's been migrated so far and what hasn't) — this is the same approach the
+Routing rewrite and the DI phase both already took.
+
 ## Commands
 
 This repo has no local PHP/Composer toolchain on the host — PHP only exists inside the project's
