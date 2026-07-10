@@ -34,7 +34,7 @@ class PDO
      */
     public function __construct(?array $dbConfig, bool $throwError)
     {
-        if ($dbConfig == null) {
+        if ($dbConfig === null) {
             $config   = Config::getInstance();
             $dbConfig = $config->get('db');
         }

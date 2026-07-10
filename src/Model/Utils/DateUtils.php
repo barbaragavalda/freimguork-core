@@ -98,6 +98,13 @@ class DateUtils
         if (!empty($date)) {
             try {
                 $dateTime = DateTime::createFromFormat($from, $date);
+                if ($dateTime === false) {
+                    // createFromFormat() returns false (doesn't throw) on a
+                    // malformed date - calling ->format() on it would be a
+                    // PHP Error, not an Exception, so the catch below never
+                    // sees it
+                    return false;
+                }
                 return $dateTime->format($to);
             } catch (Exception) {
                 return false;

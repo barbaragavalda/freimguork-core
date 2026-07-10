@@ -253,6 +253,13 @@ class StringUtils
         $cif       = strtoupper($cif);
         $cif_codes = 'JABCDEFGHI';
 
+        if (!ctype_digit(substr($cif, 1, 7))) {
+            // a CIF's organization/serial digits (positions 1-7) must be
+            // numeric - getCifSum() does arithmetic directly on them and
+            // would throw a TypeError otherwise
+            return false;
+        }
+
         $sum = (string) self::getCifSum($cif);
         $n   = (10 - substr($sum, -1)) % 10;
 
@@ -294,9 +301,11 @@ class StringUtils
         $nif       = strtoupper($nif);
         $nif_codes = 'TRWAGMYFPDXBNJZSQVHLCKE';
 
-        $sum = (string) self::getCifSum($nif);
-        $n   = 10 - substr($sum, -1);
-
+        // $n (via getCifSum(), which does arithmetic directly on $nif's
+        // characters) is only needed by the "NIFs especiales" branch below -
+        // computing it eagerly for every format used to throw a TypeError on
+        // e.g. a "NIE extraño", whose format legitimately allows non-digit
+        // characters getCifSum() can't handle
         if (preg_match('/^[0-9]{8}[A-Z]{1}$/', $nif)) {
             // DNIs
             $num = substr($nif, 0, 8);
@@ -308,8 +317,10 @@ class StringUtils
             $tmp = strtr(substr($nif, 0, 1), 'XYZ', '012') . $tmp;
 
             return ($nif[8] == $nif_codes[ $tmp % 23 ]);
-        } elseif (preg_match('/^[KLM]{1}/', $nif)) {
+        } elseif (preg_match('/^[KLM][0-9]{7}[A-Z]{1}$/', $nif)) {
             // NIFs especiales
+            $n = 10 - substr((string) self::getCifSum($nif), -1);
+
             return ($nif[8] == chr($n + 64));
         } elseif (preg_match('/^[T]{1}[A-Z0-9]{8}$/', $nif)) {
             // NIE extraño
@@ -398,7 +409,8 @@ class StringUtils
             $string = 'http://' . $string;
         }
         $url = parse_url($string);
-        if (!array_key_exists('host', $url)) {
+        if ($url === false || !array_key_exists('host', $url)) {
+            // parse_url() returns false (not an array) for a malformed URL
             return false;
         }
 

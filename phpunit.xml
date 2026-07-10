@@ -4,17 +4,13 @@
          bootstrap="tests/bootstrap.php"
          colors="true">
     <testsuites>
-        <testsuite name="Routing">
-            <directory>tests/Routing</directory>
-        </testsuite>
-        <testsuite name="Utils">
-            <directory>tests/Utils</directory>
+        <testsuite name="Core">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <source>
         <include>
-            <directory>src/Routing</directory>
-            <directory>src/Utils</directory>
+            <directory>src</directory>
         </include>
     </source>
 </phpunit>
