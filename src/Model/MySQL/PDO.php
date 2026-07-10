@@ -94,9 +94,22 @@ class PDO
             try {
                 $this->success = $this->statement->execute();
             } catch (PDOException $e) {
+                // $success must be explicitly reset here - it's only ever
+                // assigned on the line above, so without this it would keep
+                // whatever value an earlier, unrelated successful query left
+                // it at, and getState() (checked across most consuming apps)
+                // would report success for a query that actually failed
+                $this->success = false;
+
+                // previously the only trace of a failed query was r()'s
+                // dev-only on-page dump - in prod, a broken query silently
+                // returned an empty result set with no record anywhere,
+                // making prod bugs very hard to diagnose
+                error_log('PDO query failed: ' . $e->getMessage() . ' | SQL: ' . $sql);
                 if (IS_DEV) {
                     r($sql, $params, $e->getMessage());
                 }
+                return array();
             }
             return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
         }
