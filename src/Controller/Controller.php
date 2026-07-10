@@ -3,6 +3,7 @@
 namespace Core\Controller;
 
 use Core\Model\Model;
+use Core\Routing\Router;
 use Core\Utils\Config;
 use Core\Utils\Exception;
 use Core\Utils\Language;
@@ -56,11 +57,15 @@ abstract class Controller
 
     protected CacheManager $modelCache;
 
+    protected Config $config;
+
     /**
      * Bootstrap initialization
      */
     public function __construct(Config $config, CacheManager $modelCache)
     {
+        $this->config = $config;
+
         //domains
         $this->domain     = $config->getDomain();
         $this->rootDomain = $config->getBaseDomain();
@@ -277,7 +282,7 @@ abstract class Controller
         );
         $twig->addFilter($filter);
 
-        $twig->addExtension(new Twig());
+        $twig->addExtension(new Twig(Router::getCurrent(), $this->config));
         if (array_key_exists('twig_filters', $info)) {
             foreach ($info['twig_filters'] as $filter) {
                 $twig->addFilter($filter);

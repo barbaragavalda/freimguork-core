@@ -12,6 +12,16 @@ use Twig\TwigFunction;
 class Twig extends AbstractExtension
 {
 
+    /**
+     * @param ?Router $router the current request's router, if one was
+     *                        matched - null for flows that never reach
+     *                        routing (e.g. RedirectLang), matching
+     *                        Router::getCurrent()'s existing contract
+     */
+    public function __construct(private readonly ?Router $router, private readonly Config $config)
+    {
+    }
+
     public function getFilters(): array
     {
         return [
@@ -35,11 +45,10 @@ class Twig extends AbstractExtension
      */
     public function path(string $name, array $params = array()): string
     {
-        $router = Router::getCurrent();
-        if ($router === null) {
+        if ($this->router === null) {
             return '';
         }
-        return $router->generate($name, $params);
+        return $this->router->generate($name, $params);
     }
 
     /**
@@ -47,7 +56,7 @@ class Twig extends AbstractExtension
      */
     public function url(string $name, array $params = array()): string
     {
-        return rtrim(Config::getInstance()->getDomain(), '/') . $this->path($name, $params);
+        return rtrim($this->config->getDomain(), '/') . $this->path($name, $params);
     }
 
     public function formatPrice($price, $decimals = 2, $thousandsSep = '.', $decPoint = ','): string

@@ -2,6 +2,7 @@
 
 namespace Core\View\Response;
 
+use Core\Routing\Router;
 use Core\Utils\Config;
 use Core\View\Extension\Twig;
 use jblond\TwigTrans\Translation;
@@ -72,7 +73,7 @@ class HTML extends Response
 
         $loader = new FilesystemLoader($this->twigFolders);
         $twig   = new Environment($loader, $twigConfig);
-        $twig->addExtension(new Twig());
+        $twig->addExtension(new Twig(Router::getCurrent(), $config));
 
         // translations
         $twig->addExtension(new Translation());

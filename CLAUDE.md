@@ -212,11 +212,15 @@ Key pieces (`src/Routing/`):
   `MethodNotAllowedException`) and `generate(name, params): string` for reverse routing. Uses
   `Psr\Http\Message\ServerRequestInterface` as the match input (built via Guzzle's `ServerRequest`,
   already a dependency) specifically so routing logic never touches superglobals directly.
-  Also exposes a `Router::getCurrent()`/`setCurrent()` static holder so `path()`/`url()` Twig
-  functions can reach the current request's router. It's now backed by `Core\Container\Container`
-  (see "Dependency Injection" below) rather than its own private static — still a static facade,
-  since `View\Extension\Twig` isn't itself part of the container's object graph, but no longer the
-  ad hoc stopgap it used to be.
+  Also exposes a `Router::getCurrent()`/`setCurrent()` static holder, backed by
+  `Core\Container\Container` (see "Dependency Injection" below) rather than its own private
+  static. `Core\View\Extension\Twig` (the `path()`/`url()` Twig functions) no longer calls it
+  directly though - it now takes `Router`/`Config` as real constructor parameters, passed in by
+  its two composition points (`Controller::getHTML()`, `Response\HTML::initResponse()`), which
+  call `Router::getCurrent()` themselves. `getCurrent()` remains public/static because those two
+  call sites aren't themselves built through the container (`View`/`Response\HTML` take
+  runtime-only constructor params like the template file name, not services - threading the
+  container all the way through them is a bigger, separate change).
 
 Per-project route caching follows the same `IS_DEV` convention as the existing disk cache
 (`Core\Controller\Cache\Disk`): in dev, routes are rescanned from disk on every request; in prod,
@@ -313,8 +317,17 @@ instead of a bare `new`, which is what makes controller-level constructor inject
 - `Core\Controller\Controller` takes `Config $config, CacheManager $modelCache` as **required**
   constructor parameters (no defaults) — safe because every controller in every consuming app is
   built by the container, as long as any app-level intermediate base class forwards them (see
-  "Known migration debt" below).
+  "Known migration debt" below). `$config` is also kept as `$this->config`, so `getHTML()` can
+  reuse it instead of a second `Config::getInstance()` call.
 - `Core\Controller\CacheManager` takes `Disk $cache` as a required parameter too.
+- `Core\View\Extension\Twig` (the `path()`/`url()` Twig functions) takes `?Router $router, Config
+  $config` as real constructor parameters instead of reaching for `Router::getCurrent()`/
+  `Config::getInstance()` itself — `$router` stays nullable to preserve `getCurrent()`'s existing
+  "no router matched yet" contract (`path()`/`url()` already handled that gracefully). Its two
+  composition points, `Controller::getHTML()` and `Response\HTML::initResponse()`, aren't
+  container-built themselves, so they call `Router::getCurrent()` to obtain the value to pass in —
+  see the "Routing" section's `Router::getCurrent()` note above for why that static accessor is
+  still there.
 - `Core\Model\Model` is the deliberate exception: its constructor takes **optional**
   `?PDO $mysql = null, ?Session $session = null`, defaulting to `Manager::getInstance()`/
   `Session::getInstance()`. This is not a consuming-app back-compat shim — `Model` is subclassed by
