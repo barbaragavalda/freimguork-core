@@ -12,7 +12,7 @@ abstract class Cache
     public function __construct()
     {
         $config          = Config::getInstance();
-        $this->isCaching = $config->get('cache', 'is_caching');
+        $this->isCaching = (bool) $config->get('cache', 'is_caching');
     }
 
     private function getKey(string $parameters): string

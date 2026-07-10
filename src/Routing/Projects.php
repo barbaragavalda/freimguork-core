@@ -19,9 +19,14 @@ class Projects
 
     private Config $config;
 
-    private ?Project $currentProject;
+    // must default to null (not just be nullable) - $currentProject is read
+    // via `== null` in searchProject() as a fallback check, and reading an
+    // uninitialized typed property (as opposed to one actually holding null)
+    // throws instead of comparing falsy, if no configured domain matches the
+    // current URL at all
+    private ?Project $currentProject = null;
 
-    private ?URL $url;
+    private URL $url;
 
     /**
      * asks the controller name
@@ -197,7 +202,12 @@ class Projects
 
         $domainRegExp = '/' . str_replace('/', '\/', $domainRegExp) . '(.*)/';
         if ($defaultProject != null) {
-            if ($pos == 0 && $defaultProject->isEmpty()) {
+            // $pos is false (not 0) when the domain has no {lang} pattern at
+            // all - `== 0` would treat "not found" the same as "found at the
+            // very start", silently populating the default project fallback
+            // from whichever non-{lang} project happens to be processed
+            // first, instead of only the one actually flagged isDefault
+            if ($pos === 0 && $defaultProject->isEmpty()) {
                 $defaultProject->setURL($domain);
                 $defaultProject->setRegularExpression($domainRegExp);
                 $defaultProject->setInfo($project);

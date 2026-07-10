@@ -46,13 +46,28 @@ docker exec php sh -c "cd /var/www/html/freimguork-core && vendor/bin/phpunit --
 
 # lint a file
 docker exec php sh -c "cd /var/www/html/freimguork-core && php -l src/Routing/Router.php"
+
+# static analysis (PHPStan, level 5, config in phpstan.neon)
+docker exec php sh -c "cd /var/www/html/freimguork-core && composer phpstan"
+# equivalent: vendor/bin/phpstan analyse --memory-limit=512M (the default 128M isn't enough)
 ```
 
 If a package requirement changes, use `composer update <package>` (not a bare `composer install`)
 so the lock file only re-resolves what actually changed — this repo has a lot of vendored
 dependencies (Google API client, PhpSpreadsheet, Twig, etc.) and a full re-lock is slow and noisy.
 
-There is no separate lint/static-analysis tool configured (no phpcs/phpstan config in this repo).
+**Static analysis**: PHPStan (level 5) is configured in `phpstan.neon`, scanning `src/` only (not
+`tests/`). `phpstan-bootstrap.php` declares `DIR_ROOT`/`IS_DEV` — real globals a consuming app's
+entry script always defines before any framework code runs, invisible to PHPStan since it analyzes
+this package in isolation; `IS_DEV` is additionally listed under `dynamicConstantNames` so PHPStan
+doesn't treat the bootstrap stub's placeholder value as a compile-time-constant `true` and flag
+every `else`/`!IS_DEV` branch as dead code. `phpstan-baseline.neon` snapshots 49 pre-existing issues
+that weren't fixed when the tool was introduced — mostly `Model/File.php`'s GD image-handling code
+(PHP 8's resource→`GdImage` migration was never fully adapted here) and the `Model/Push/*` push
+notification classes (some of which reference `Appacman\*` classes that don't exist in this
+package at all — cross-package coupling to `freimguork-appacman`, not yet investigated). Don't grow
+the baseline for new code — it exists to unblock adopting the tool on a 10-year-old codebase, not
+as a general-purpose suppression list.
 
 ## Architecture
 

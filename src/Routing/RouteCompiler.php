@@ -27,7 +27,9 @@ class RouteCompiler
 
             if (preg_match(self::PARAM_PATTERN, $segment, $matches) === 1) {
                 $name       = $matches[1];
-                $optional   = isset($matches[2]) && $matches[2] === '?';
+                // group 2 only ever participates in the match when it captured
+                // a literal '?' (see PARAM_PATTERN) - isset() alone is enough
+                $optional   = isset($matches[2]);
                 $pattern    = $requirements[ $name ] ?? '[^/]+';
                 $group      = '(?P<' . $name . '>' . $pattern . ')';
                 $paramNames[] = $name;

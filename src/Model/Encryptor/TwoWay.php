@@ -31,7 +31,7 @@ class TwoWay
         return $key;
     }
 
-    private static function iv_bytes(): string
+    private static function iv_bytes(): int
     {
         return openssl_cipher_iv_length(self::METHOD);
     }

@@ -22,6 +22,11 @@ composer.lock
 .phpunit.result.cache
 /.phpunit.cache/
 
+############
+# PHPStan  #
+############
+/.phpstan.cache/
+
 #########
 # Cache #
 #########

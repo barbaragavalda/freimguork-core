@@ -248,6 +248,9 @@ class Config
     public function load(string $file): array
     {
         if (@include($file)) {
+            // $config is defined by the included file itself (every config
+            // file assigns a $config = [...] array) - not a local variable
+            /** @var array $config */
             return $config;
         } else {
             throw new Exception(

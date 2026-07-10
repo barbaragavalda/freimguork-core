@@ -41,13 +41,13 @@ class Bootstrap
      */
     private string $petitionPath;
 
-    private ?RouteMatch $routeMatch;
+    private RouteMatch $routeMatch;
 
-    private ?Controller $controller;
+    private Controller $controller;
 
     private ?string $projectFolder = null;
 
-    private ?CacheManager $controllerCache;
+    private CacheManager $controllerCache;
 
     private Container $container;
 

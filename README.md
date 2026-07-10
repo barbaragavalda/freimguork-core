@@ -58,6 +58,7 @@ PHP and Composer only exist inside this project's Docker container (see the top-
 ```bash
 docker exec php sh -c "cd /var/www/html/freimguork-core && composer install"
 docker exec php sh -c "cd /var/www/html/freimguork-core && vendor/bin/phpunit"
+docker exec php sh -c "cd /var/www/html/freimguork-core && composer phpstan"
 ```
 
 ## Status
@@ -66,10 +67,12 @@ The framework is ~10 years old and is being modernized in stages. Routing was re
 scratch as a clean-break v2 (attribute-based, HTTP-method-aware, unit-tested). Dependency Injection
 followed as its own phase: a PSR-11 `Core\Container\Container` with `Bootstrap` as the composition
 root, `Controller`/`CacheManager` taking required constructor dependencies, and `Model` deliberately
-kept on optional dependencies (see `CLAUDE.md`'s "Dependency Injection" section for why). Broader
-test coverage is the next planned phase — most of `Core\Model\*`/`Core\Utils\Language` still isn't
-unit-tested. Not every consuming app has migrated to the new routing or the new controller
-constructors yet — see `CLAUDE.md`'s "Known migration debt" notes for current status.
+kept on optional dependencies (see `CLAUDE.md`'s "Dependency Injection" section for why). Static
+analysis (PHPStan, level 5) is now configured too, with a baseline covering what wasn't fixed when
+it was introduced (mostly `Model/File.php`'s GD image-handling code and the `Model/Push/*` push
+notification classes). Broader test coverage is ongoing — most of `Core\Model\*`/`Core\Utils\Language`
+still isn't unit-tested. Not every consuming app has migrated to the new routing or the new
+controller constructors yet — see `CLAUDE.md`'s "Known migration debt" notes for current status.
 
 ## More documentation
 

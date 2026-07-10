@@ -1,0 +1,265 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Loose comparison using \!\= between int and ''webp'' will always evaluate to true\.$#'
+			identifier: notEqual.alwaysTrue
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Loose comparison using \=\= between int and ''jpg'' will always evaluate to false\.$#'
+			identifier: equal.alwaysFalse
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Match arm comparison between int and ''gif'' is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: src/Model/File.php
+
+		-
+			message: '#^Match arm comparison between int and ''jpg'' is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: src/Model/File.php
+
+		-
+			message: '#^Match arm comparison between int and ''png'' is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: src/Model/File.php
+
+		-
+			message: '#^Match arm comparison between int and ''webp'' is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: src/Model/File.php
+
+		-
+			message: '#^Method Core\\Model\\File\:\:createEmptyImage\(\) should return string but returns GdImage\|false\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Method Core\\Model\\File\:\:downloadResized\(\) never returns GdImage so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Method Core\\Model\\File\:\:getImageExtension\(\) should return int but returns string\|false\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^PHPDoc tag @return with type resource is incompatible with native type GdImage\|false\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^PHPDoc tag @return with type resource is incompatible with native type string\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Parameter \#1 \$image of function imagegif expects GdImage, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Parameter \#1 \$image of function imagejpeg expects GdImage, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Parameter \#1 \$image of function imagepng expects GdImage, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Parameter \#1 \$image of function imagescale expects GdImage, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Parameter \#1 \$image of function imagewebp expects GdImage, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Parameter \#2 \$src_image of function imagecopyresampled expects GdImage, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Property Core\\Model\\File\:\:\$defaultExtension \(string\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Property Core\\Model\\File\:\:\$folderID \(int\) does not accept float\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Model/File.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between array and false will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Model/Model.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: src/Model/Model.php
+
+		-
+			message: '#^Access to an undefined property Core\\Model\\Push\\Android\:\:\$fields\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Model/Push/Android.php
+
+		-
+			message: '#^Constructor of class Core\\Model\\Push\\Android has an unused parameter \$image\.$#'
+			identifier: constructor.unusedParameter
+			count: 1
+			path: src/Model/Push/Android.php
+
+		-
+			message: '#^Call to method Core\\Model\\Push\\Android\:\:close\(\) on a separate line has no effect\.$#'
+			identifier: method.resultUnused
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Call to method getEmails\(\) on an unknown class Appacman\\Model\\Utils\\Admin\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Call to method update\(\) on an unknown class Appacman\\Model\\Push\\Statistic\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Class Core\\Model\\Push\\iOSPush constructor invoked with 5 parameters, 2\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Instantiated class Appacman\\Model\\Push\\Statistic not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Instantiated class Appacman\\Model\\Utils\\Admin not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Parameter \#1 \$from of method Core\\Model\\Utils\\Mail\:\:send\(\) expects array, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Property Core\\Model\\Push\\Push\:\:\$reportEmail is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Model/Push/Push.php
+
+		-
+			message: '#^Parameter \#2 \$options of function curl_setopt_array expects array\{84\: int, 10002\: non\-empty\-string, 3\: int, 10023\: array\<int, string\>, 47\: bool, 10015\: array\|string, 19913\: bool, 13\: int, \.\.\.\}, array\{84\: 3, 10002\: non\-falsy\-string, 3\: mixed, 10023\: array\{non\-falsy\-string, non\-falsy\-string\}, 47\: true, 10015\: mixed, 19913\: true, 13\: 30, \.\.\.\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/Push/iOSPush.php
+
+		-
+			message: '#^Property Core\\Model\\Push\\iOSPush\:\:\$currentTime is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Model/Push/iOSPush.php
+
+		-
+			message: '#^Parameter \#3 \$value of function curl_setopt expects 0\|2, false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/Utils/Curl.php
+
+		-
+			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/Utils/Curl.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Model/Utils/Excel.php
+
+		-
+			message: '#^Binary operation "%%" between non\-empty\-string and 23 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Model/Utils/StringUtils.php
+
+		-
+			message: '#^Binary operation "%%" between non\-falsy\-string and 23 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Model/Utils/StringUtils.php
+
+		-
+			message: '#^Binary operation "\*" between 2 and non\-empty\-string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Model/Utils/StringUtils.php
+
+		-
+			message: '#^Binary operation "\+" between non\-empty\-string and 0\|non\-empty\-string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Model/Utils/StringUtils.php
+
+		-
+			message: '#^Binary operation "\+" between non\-empty\-string and non\-empty\-string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Model/Utils/StringUtils.php
+
+		-
+			message: '#^Binary operation "\-" between 10 and non\-empty\-string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 2
+			path: src/Model/Utils/StringUtils.php
+
+		-
+			message: '#^Parameter \#1 \$num of function number_format expects float, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Model/Utils/StringUtils.php

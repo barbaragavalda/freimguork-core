@@ -237,7 +237,11 @@ class DateUtils
     {
         $start = strtotime($endDate->format(self::FORMAT_TIMESTAMP_DB));
         $end   = strtotime($startDate->format(self::FORMAT_TIMESTAMP_DB));
-        return round(abs($end - $start) / 60, 2);
+        // round(..., 2) preserved for its exact prior behavior even though
+        // the 2 decimals never survived the (previously implicit) cast to
+        // int - not changing the return type since that would change what
+        // every caller actually receives
+        return (int) round(abs($end - $start) / 60, 2);
     }
 
     public static function timeAgo(string $startString): string

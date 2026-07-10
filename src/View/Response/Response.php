@@ -33,7 +33,7 @@ abstract class Response
      */
     protected function setHeaderStatus(int $status): void
     {
-        $this->setHeader('HTTP/1.1', $status);
+        $this->setHeader('HTTP/1.1', (string) $status);
     }
 
     /**

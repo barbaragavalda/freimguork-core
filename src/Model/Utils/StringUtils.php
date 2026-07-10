@@ -415,7 +415,7 @@ class StringUtils
         }
 
         $scheme   = isset($url['scheme']) ? $url['scheme'] . '://' : '';
-        $host     = $url['host'] ?? '';
+        $host     = $url['host']; // guaranteed present by the check above
         $port     = isset($url['port']) ? ':' . $url['port'] : '';
         $user     = $url['user'] ?? '';
         $pass     = isset($url['pass']) ? ':' . $url['pass'] : '';

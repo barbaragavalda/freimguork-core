@@ -80,7 +80,7 @@ class PDO
      * @param string $sql    . Query
      * @param array  $params . binding params
      *
-     * @return array. Result
+     * @return array Result
      */
     public function query(string $sql, array $params = array()): array
     {
@@ -295,7 +295,7 @@ class PDO
      * @param string $function_name . Function name
      * @param array  $args          . Parameters of the function
      *
-     * @return mixed. result of the function
+     * @return mixed result of the function
      * @throws Exception
      */
     public function __call(string $function_name, array $args): mixed
@@ -439,10 +439,11 @@ class PDO
      */
     public function restart(): bool
     {
-        $ok = true;
-        $ok *= $this->stop();
-        $ok *= $this->start();
-        return $ok;
+        // both are always called regardless of the other's result, matching
+        // the previous $ok *= ... behavior (not short-circuited)
+        $stopped  = $this->stop();
+        $started  = $this->start();
+        return $stopped && $started;
     }
 
 }
