@@ -167,7 +167,9 @@ class Bootstrap
     private function loadRoutes(Project $project, string $language): RouteCollection
     {
         $app       = $project->getApp();
-        $directory = DIR_ROOT . 'src/' . $app . '/Controller/';
+        $directory = $app === 'Appacman'
+            ? APPACMAN_DIR . 'Controller/'
+            : DIR_ROOT . 'src/' . $app . '/Controller/';
         $cacheFile = IS_DEV
             ? null
             : DIR_ROOT . 'src/cache/prod/freimguork/routes-' . $app . '-' . $language . '.php';

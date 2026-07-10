@@ -306,14 +306,14 @@ several `*-local` apps. It's restored, now populated by `Bootstrap` from the sam
 domain-prefix-stripped path used for route matching (see "Domain prefix stripping" above), not
 from route matching itself.
 
-`freimguork-appacman` specifically has one more gap beyond routing.php migration, found but not
-yet fixed (out of scope until that package is tackled): `Bootstrap::loadRoutes()` assumes a
-sub-project's controllers live under `<app-root>/src/<App>/Controller/`, which is wrong for
-Appacman — its controllers live in the separate `freimguork-appacman` package
-(`vendor/optisistem/freimguork-appacman/src/Controller/`, namespace `Appacman\`); `View.php` and
-`Language.php` already special-case this, `Bootstrap` doesn't yet. (Its shared-`build()` dispatch
-pattern is otherwise identical to `cuina-de-profit-local`'s Web controllers and is already handled
-by the class-level-only routing convention above — that part of the original concern is resolved.)
+`freimguork-appacman` specifically had one more gap beyond routing.php migration, now fixed:
+`Bootstrap::loadRoutes()` used to assume a sub-project's controllers live under
+`<app-root>/src/<App>/Controller/`, which was wrong for Appacman — its controllers live in the
+separate `freimguork-appacman` package (`vendor/optisistem/freimguork-appacman/src/Controller/`,
+namespace `Appacman\`). `View.php` and `Language.php` already special-cased this via `APPACMAN_DIR`;
+`Bootstrap::loadRoutes()` now does the same (`$app === 'Appacman' ? APPACMAN_DIR . 'Controller/' :
+...`). (Its shared-`build()` dispatch pattern is otherwise identical to `cuina-de-profit-local`'s
+Web controllers and is already handled by the class-level-only routing convention above.)
 
 ### Dependency Injection
 
