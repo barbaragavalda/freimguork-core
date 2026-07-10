@@ -10,6 +10,7 @@ use Core\Utils\Language;
 use Core\View\Extension\Twig;
 use Core\View\View;
 use jblond\TwigTrans\Translation;
+use Psr\Http\Message\ResponseInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFilter;
@@ -145,7 +146,7 @@ abstract class Controller
     /**
      * returns the final result from the view
      */
-    public function getResponse(): string
+    public function getResponse(): ResponseInterface
     {
         return $this->view->getResponse();
     }

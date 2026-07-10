@@ -6,6 +6,7 @@ use Core\Routing\Router;
 use Core\Utils\Config;
 use Core\View\Extension\Twig;
 use jblond\TwigTrans\Translation;
+use Psr\Http\Message\ResponseInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -31,6 +32,8 @@ class HTML extends Response
      */
     public function __construct(string $file, string $projectFolder, int $status = 200, array $headers = array())
     {
+        parent::__construct();
+
         $this->file = $file;
         $this->setHeaderType('text/html');
         $this->setHeader('Accept-Encoding', 'gzip, compress, br');
@@ -58,7 +61,7 @@ class HTML extends Response
      * if debug mode is on, the cache is disabled
      * also indicates the variables that can be used on the template
      */
-    public function initResponse(array $info = array()): string
+    public function initResponse(array $info = array()): ResponseInterface
     {
         //cache configuration
         $config     = Config::getInstance();
@@ -96,8 +99,8 @@ class HTML extends Response
 
         //response
         try {
-            $template       = $twig->load($this->file);
-            $this->response = $template->render($info);
+            $template = $twig->load($this->file);
+            $this->setBody($template->render($info));
         } catch (\Throwable $e) {
             throw $e;
         }

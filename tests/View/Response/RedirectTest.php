@@ -43,12 +43,29 @@ class RedirectTest extends TestCase
         (new Redirect('', 301))->initResponse();
     }
 
+    public function testSetsTheStatusCodeFromTheConstructor(): void
+    {
+        $response = (new Redirect('http://example.com/', 301))->initResponse();
+
+        $this->assertSame(301, $response->getStatusCode());
+    }
+
+    public function testDevModeDoesNotSetALocationHeader(): void
+    {
+        // by design (see Redirect.php) - dev mode shows a notice page
+        // instead of auto-redirecting, so a developer can see it happening
+        $response = (new Redirect('http://example.com/', 301))->initResponse();
+
+        $this->assertFalse($response->hasHeader('Location'));
+    }
+
     public function testDevModeBodyEscapesTheTargetUrl(): void
     {
-        $html = (new Redirect('http://example.com/?a=1&b=2', 301))->initResponse();
+        $response = (new Redirect('http://example.com/?a=1&b=2', 301))->initResponse();
+        $body     = (string) $response->getBody();
 
-        $this->assertStringContainsString('http://example.com/?a=1&amp;b=2', $html);
-        $this->assertStringNotContainsString('a=1&b=2"', $html);
+        $this->assertStringContainsString('http://example.com/?a=1&amp;b=2', $body);
+        $this->assertStringNotContainsString('a=1&b=2"', $body);
     }
 
     /**
@@ -68,9 +85,10 @@ class RedirectTest extends TestCase
     #[DataProvider('statusMessageProvider')]
     public function testDevModeBodyIncludesTheStatusMessage(int $status, string $expectedMessage): void
     {
-        $html = (new Redirect('http://example.com/', $status))->initResponse();
+        $response = (new Redirect('http://example.com/', $status))->initResponse();
+        $body     = (string) $response->getBody();
 
-        $this->assertStringContainsString("$status $expectedMessage", $html);
+        $this->assertStringContainsString("$status $expectedMessage", $body);
     }
 
 }

@@ -15,9 +15,13 @@ and `freimguork-jwt`.
 The framework was written ~10 years ago; it is currently being modernized in stages. Routing was
 rewritten from scratch as a clean-break v2 (see "Routing" below). Dependency Injection followed as
 its own phase (see "Dependency Injection" below) — a `Core\Container\Container` with `Bootstrap` as
-the composition root. A broader test suite is the next planned phase. Expect a mix of very old,
+the composition root. The response layer is now PSR-7 too (see "Views" below) — controllers hand
+back a `Psr\Http\Message\ResponseInterface`, with `Bootstrap` as the single point that actually
+emits it. PHPStan (level 5, with a baseline for what predates it) is configured for static analysis.
+Broader test coverage remains ongoing, alongside all of this. Expect a mix of very old,
 singleton/superglobal-heavy code (`Config`, `Session`) — which the DI phase deliberately wraps
-rather than replaces — alongside the newer, PSR-7/attribute-based routing and the container.
+rather than replaces — alongside the newer, PSR-7/attribute-based routing, the container, and the
+PSR-7 response layer.
 
 **Modernization work in this repo should not be constrained by keeping every consuming app working
 as-is.** Design each phase (routing, DI, and whatever comes next) the correct way for core itself;
@@ -388,6 +392,29 @@ called (`template()` → `HTML`, `json()` → `Json`, `xml()` → `XML`, `redire
 (`jblond/twig-trans`) and the custom `Core\View\Extension\Twig` extension (custom filters like
 `formatPrice`/`customTrans`, and the `path()`/`url()` reverse-routing functions).
 
+**Response layer is PSR-7.** `Response` (abstract base) holds a real `Psr\Http\Message\ResponseInterface`
+(`GuzzleHttp\Psr7\Response`) instead of a plain string with side-effecting `header()` calls;
+`setHeader()`/`setHeaderStatus()`/`setBody()` all do `$this->response = $this->response->with...()`.
+Every subclass's `initResponse()` returns that `ResponseInterface`, all the way up through
+`View::getResponse()`/`Controller::getResponse()`. `Core\Bootstrap` is the single place that
+actually emits it — `emit(ResponseInterface $response)` calls `http_response_code()`, replays every
+header (multi-value-safe), then echoes the body — replacing the old `headers_list()`-based replay,
+which (confirmed empirically) never worked under PHP's CLI SAPI in the first place, meaning none of
+this layer's header-setting behavior was ever actually unit-testable before this change. The
+controller-level response cache (`CacheManager`/`Cache\Disk`) stores structured
+`['status' => int, 'headers' => array, 'body' => string]` now instead of a raw string plus
+`headers_list()`; `Bootstrap::isValidCache()` guards against a stale on-disk entry from before this
+change (missing those keys) being read back as a hit with missing data.
+
+Two subclasses are deliberately **not** part of this: `CSV`'s static `createCSV()` helper is called
+directly by consuming apps outside the `Bootstrap`-driven request cycle entirely (confirmed via a
+monorepo-wide search — `fedesk-local`, `pugu-local`, including a standalone CLI export script) and
+is untouched; only `CSV`'s instance side (`View::export()`) builds a PSR-7 response, by writing to
+`php://temp` instead of `php://output` and wrapping the resulting stream. `Mail` no longer extends
+`Response` at all — it renders a Twig template to a plain string for an email body
+(`Model\Utils\Mail.php`'s only caller), never touches HTTP headers/status, and forcing it into
+`ResponseInterface` would have been the wrong abstraction.
+
 ## Testing conventions
 
 Tests live in `tests/`, PSR-4 autoloaded as `Core\Tests\` (see `composer.json` `autoload-dev` and
@@ -401,7 +428,11 @@ against real files/reflection rather than mocks), `Core\Utils\Config::getWebFold
 unresolvable-parameter cases), and a first slice of `Core\Model\Model` (`tests/Model/ModelTest.php`,
 using an injected disconnected `Core\Model\MySQL\PDO` — `new PDO([], false)` leaves the internal
 `\PDO` null, so `query()` just returns `[]` — instead of a real database connection, now that
-`Model`'s constructor accepts one). Follow the same pattern for new tests — real PSR-7 requests via
-`GuzzleHttp\Psr7\ServerRequest`, real fixture classes/superglobal values, no mocking framework. Most
-of `Core\Model\*`/`Core\Utils\Language` still isn't unit-tested — the DI phase made the dependencies
-swappable, but writing tests for each class is still open work.
+`Model`'s constructor accepts one), and most of `Core\View\Response\*` (`tests/View/Response/` —
+`Json`/`Redirect`/`CSV` assert directly on the returned `ResponseInterface`'s status/headers/body,
+only possible now that this layer builds real PSR-7 responses instead of relying on `header()`/
+`headers_list()`, which doesn't work under PHP's CLI SAPI). Follow the same pattern for new tests —
+real PSR-7 requests via `GuzzleHttp\Psr7\ServerRequest`, real fixture classes/superglobal values, no
+mocking framework. Most of `Core\Model\*`/`Core\Utils\Language`/`HTML`/`XML` still isn't
+unit-tested — the DI/PSR-7 phases made the dependencies swappable, but writing tests for each class
+is still open work.

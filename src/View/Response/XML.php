@@ -2,6 +2,8 @@
 
 namespace Core\View\Response;
 
+use Psr\Http\Message\ResponseInterface;
+
 class XML extends HTML
 {
 
@@ -22,11 +24,11 @@ class XML extends HTML
         $this->path = $path;
     }
 
-    public function initResponse(array $info = array()): string
+    public function initResponse(array $info = array()): ResponseInterface
     {
         parent::initResponse($info);
 
-        file_put_contents($this->path, $this->response);
+        file_put_contents($this->path, (string) $this->response->getBody());
         return $this->response;
     }
 

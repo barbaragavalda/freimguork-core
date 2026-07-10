@@ -3,6 +3,7 @@
 namespace Core\View\Response;
 
 use Exception;
+use Psr\Http\Message\ResponseInterface;
 
 class Redirect extends Response
 {
@@ -25,6 +26,8 @@ class Redirect extends Response
      */
     public function __construct(string $url, int $status)
     {
+        parent::__construct();
+
         $this->url    = $url;
         $this->status = $status;
         $this->setHeaderStatus($status);
@@ -38,16 +41,16 @@ class Redirect extends Response
      *
      * @throws \Exception
      */
-    public function initResponse(array $info = array()): string
+    public function initResponse(array $info = array()): ResponseInterface
     {
         if (empty($this->url)) {
             throw new Exception('Cannot redirect to an empty URL.');
         }
 
         if (IS_DEV) {
-            $title          = '<h1>' . $this->status . ' ' . $this->getMessage() . '</h1>';
-            $this->url      = htmlspecialchars($this->url, ENT_QUOTES, 'UTF-8');
-            $this->response = "
+            $title     = '<h1>' . $this->status . ' ' . $this->getMessage() . '</h1>';
+            $this->url = htmlspecialchars($this->url, ENT_QUOTES, 'UTF-8');
+            $this->setBody("
                 <!DOCTYPE html>
                 <html lang='en'>
                     <head>
@@ -60,7 +63,7 @@ class Redirect extends Response
                         to <a href='$this->url'>$this->url</a></h2>
                     </body>
                 </html>
-            ";
+            ");
         } else {
             $this->setHeaderLocation($this->url);
         }

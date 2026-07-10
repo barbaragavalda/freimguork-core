@@ -2,38 +2,46 @@
 
 namespace Core\View\Response;
 
+use GuzzleHttp\Psr7\Response as PsrResponse;
+use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\ResponseInterface;
+
 abstract class Response
 {
 
     /**
-     * @var string $response . Response to be shown to the user
+     * @var ResponseInterface $response . Response to be shown to the user
      */
-    protected string $response = '';
+    protected ResponseInterface $response;
+
+    public function __construct()
+    {
+        $this->response = new PsrResponse();
+    }
 
     /**
      * abstract function that specifies how to render the response
      *
      * @param array $info Variables involved on the view
      */
-    abstract public function initResponse(array $info = array()): string;
+    abstract public function initResponse(array $info = array()): ResponseInterface;
 
     /**
      * return the response
-     * @return string $html
      */
-    public function get(): string
+    public function get(): ResponseInterface
     {
         return $this->response;
     }
 
     /**
-     * sets the header status of HTTP protocol
+     * sets the HTTP status code of the response
      *
      * @param int $status Code of the status
      */
     protected function setHeaderStatus(int $status): void
     {
-        $this->setHeader('HTTP/1.1', (string) $status);
+        $this->response = $this->response->withStatus($status);
     }
 
     /**
@@ -64,7 +72,17 @@ abstract class Response
      */
     protected function setHeader(string $key, string $value): void
     {
-        @header($key . ': ' . $value);
+        $this->response = $this->response->withHeader($key, $value);
+    }
+
+    /**
+     * sets the response body
+     *
+     * @param string $body
+     */
+    protected function setBody(string $body): void
+    {
+        $this->response = $this->response->withBody(Utils::streamFor($body));
     }
 
 }

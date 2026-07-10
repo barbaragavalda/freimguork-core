@@ -2,6 +2,9 @@
 
 namespace Core\View\Response;
 
+use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\ResponseInterface;
+
 class CSV extends Response
 {
 
@@ -9,6 +12,8 @@ class CSV extends Response
 
     public function __construct($tableName)
     {
+        parent::__construct();
+
         $this->tableName = $tableName;
     }
 
@@ -17,31 +22,31 @@ class CSV extends Response
      *
      * @param array   $info info to write to the file
      * @param ?string $path path to file
-     *
-     * @return string
      */
-    public function initResponse(array $info = array(), ?string $path = null): string
+    public function initResponse(array $info = array(), ?string $path = null): ResponseInterface
     {
         $file = $this->tableName . '-' . date('Y-m-d-His') . '.csv';
         if (array_key_exists('export_without_date', $info)) {
             $file = $this->tableName . '.csv';
         }
 
-        $destination = $path;
-        if ($path == null) {
-            $destination = 'php://output';
+        $toHttpResponse = $path == null;
+        if ($toHttpResponse) {
+            // built in memory, then wrapped as the PSR-7 body below - not
+            // written straight to php://output anymore, so this builds like
+            // any other Response subclass (cacheable, testable)
+            $f = fopen('php://temp', 'w+');
             $this->setHeaderType('application/csv');
             $this->setHeader('Content-Disposition', 'attachment; filename="' . $file . '";');
         } else {
-            $destination .= $file;
+            $f = fopen($path . $file, 'w');
         }
-        $f = fopen($destination, 'w');
 
         // titles
         if (count($info['csv']['titles']) > 0) {
             fputs($f, chr(0xEF) . chr(0xBB) . chr(0xBF));
             array_unshift($info['csv']['titles'], '');
-            fputcsv($f, $info['csv']['titles'], ';');
+            fputcsv($f, $info['csv']['titles'], ';', escape: '\\');
         }
 
         // list
@@ -51,10 +56,17 @@ class CSV extends Response
                     $value = strip_tags($value);
                 }
             }
-            fputcsv($f, $item, ';');
+            fputcsv($f, $item, ';', escape: '\\');
         }
 
-        return $destination;
+        if ($toHttpResponse) {
+            rewind($f);
+            $this->response = $this->response->withBody(Utils::streamFor($f));
+        } else {
+            fclose($f);
+        }
+
+        return $this->response;
     }
 
     /**
@@ -72,7 +84,7 @@ class CSV extends Response
         fputs($f, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         foreach ($content as $line) {
-            fputcsv($f, $line, ';');
+            fputcsv($f, $line, ';', escape: '\\');
         }
     }
 

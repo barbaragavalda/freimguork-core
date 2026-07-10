@@ -4,6 +4,7 @@ namespace Core\View\Response;
 
 use Core\Model\Utils\StringUtils;
 use Core\Utils\Config;
+use Psr\Http\Message\ResponseInterface;
 
 class Json extends Response
 {
@@ -13,6 +14,8 @@ class Json extends Response
      */
     public function __construct()
     {
+        parent::__construct();
+
         // add allow origin header
         $config = Config::getInstance();
         $allowOrigins = $config->get('api', 'allow-origin');
@@ -51,12 +54,10 @@ class Json extends Response
      * converts the $info to a string with json format
      *
      * @param array $info
-     *
-     * @return string
      */
-    public function initResponse(array $info = array()): string
+    public function initResponse(array $info = array()): ResponseInterface
     {
-        $this->response = json_encode($info);
+        $this->setBody(json_encode($info));
         return $this->response;
     }
 

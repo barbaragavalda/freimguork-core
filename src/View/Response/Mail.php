@@ -11,12 +11,20 @@ use Twig\Error\SyntaxError;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFilter;
 
-class Mail extends Response
+/**
+ * Class Mail
+ * renders a Twig template to a plain string for use as an email body - not
+ * an HTTP response (no headers/status involved), so this deliberately
+ * doesn't extend Response
+ */
+class Mail
 {
 
     private string $file;
 
     private string $directory;
+
+    private string $response = '';
 
     /**
      * set the header of the response
@@ -64,4 +72,13 @@ class Mail extends Response
         }
         return $this->response;
     }
+
+    /**
+     * return the rendered response
+     */
+    public function get(): string
+    {
+        return $this->response;
+    }
+
 }

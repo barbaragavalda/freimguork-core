@@ -22,7 +22,9 @@ use Core\Utils\Exception;
 use Core\Utils\Language;
 use Core\Utils\Session;
 use Core\View\View;
+use GuzzleHttp\Psr7\Response as PsrResponse;
 use GuzzleHttp\Psr7\ServerRequest;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -197,24 +199,34 @@ class Bootstrap
 
         $cacheDef = $this->controller->getCacheDef();
         $cache    = $this->controllerCache->getCache($cacheDef);
-        if ($cache == null) {
-            $response = $this->render();
+        if ($this->isValidCache($cache)) {
+            $response = new PsrResponse($cache['status'], $cache['headers'], $cache['body']);
         } else {
-            $response = $cache['response'];
-            $headers  = $cache['headers'];
-            foreach ($headers as $header) {
-                header($header);
-            }
+            $response = $this->render();
         }
 
-        echo $response;
+        $this->emit($response);
+    }
+
+    /**
+     * a cached entry is only usable if it has the shape saveCache() writes -
+     * guards against a stale entry left on disk from before this response
+     * layer was rewritten to store status/headers/body instead of a raw
+     * response string, which would otherwise be read back as a cache hit
+     * with missing data
+     */
+    private function isValidCache(mixed $cache): bool
+    {
+        return is_array($cache)
+            && array_key_exists('status', $cache)
+            && array_key_exists('headers', $cache)
+            && array_key_exists('body', $cache);
     }
 
     /**
      * if there is no cache, executes the controller and gets its result
-     * @return string $result    final response of the petition
      */
-    private function render(): string
+    private function render(): ResponseInterface
     {
         $this->controller->setView(new View($this->projectFolder));
 
@@ -226,11 +238,27 @@ class Bootstrap
 
         $response = $this->controller->getResponse();
         $this->controllerCache->saveCache(array(
-            'response' => $response,
-            'headers'  => headers_list()
+            'status'  => $response->getStatusCode(),
+            'headers' => $response->getHeaders(),
+            'body'    => (string) $response->getBody(),
         ));
 
         return $response;
+    }
+
+    /**
+     * the single point that actually sends a response to the client -
+     * status code, every header (multi-value-safe), then the body
+     */
+    private function emit(ResponseInterface $response): void
+    {
+        http_response_code($response->getStatusCode());
+        foreach ($response->getHeaders() as $name => $values) {
+            foreach ($values as $value) {
+                header("$name: $value", false);
+            }
+        }
+        echo (string) $response->getBody();
     }
 
 }

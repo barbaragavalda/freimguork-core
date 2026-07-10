@@ -7,6 +7,7 @@ use Core\View\Response\HTML;
 use Core\View\Response\Json;
 use Core\View\Response\Redirect;
 use Core\View\Response\XML;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class View
@@ -43,7 +44,7 @@ class View
     /**
      * returns the final result
      */
-    public function getResponse(): string
+    public function getResponse(): ResponseInterface
     {
         return $this->response->get();
     }
