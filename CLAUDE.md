@@ -93,18 +93,40 @@ Every request through a consuming app funnels through `Core\Bootstrap`:
    and a `Core\View\Response\*` class (`HTML` = Twig, `Json`, `XML`, `CSV`, `Redirect`, `Mail`).
 
 ### Multi-project structure
-A single consuming app repo is not necessarily one application — `config/projects.dev.php` and
-`config/projects.prod.php` each define a map of **sub-projects** (e.g. the public `Web` site,
-an `Appacman` admin panel, an `Import` tool, a `Cronjob` runner), keyed by a domain/path pattern
-(`{lang}` for the language-prefixed public site, or a literal prefix like `wallaby`/`cronjob`).
-Each sub-project entry has:
+A single consuming app repo is not necessarily one application — `config/projects.php` defines a
+map of **sub-projects** (e.g. the public `Web` site, an `Appacman` admin panel, an `Import` tool,
+a `Cronjob` runner), keyed by a domain/path pattern (`{lang}` for the language-prefixed public
+site, or a literal prefix like `wallaby`/`cronjob`). Each sub-project entry has:
 - `app` — the PSR-4 root namespace and `src/<App>/` directory holding that sub-project's own
   `Controller/` (and `Model/`, `View/`) tree
 - `folders` — the `config/<folder>/` directory to load additional config from
 - `languages` — languages that sub-project supports
 
+`Core\Utils\Config::__construct()` loads a single `config/projects.php` if present, falling back to
+separate `config/projects.dev.php` / `config/projects.prod.php` files otherwise (legacy — most
+`*-local` sites still have the split pair; `cuina-de-profit-local` is the reference migration to
+the consolidated form). Since `projects.php` is a plain `include`d PHP file and `IS_DEV` is already
+defined by the time it loads, a sub-project that should only exist in one environment is written
+directly with `if (IS_DEV) { $config['x'] = ...; }` inside the one file, instead of duplicating the
+whole array across two files — see `cuina-de-profit-local/config/projects.php`. This also avoids
+the two files silently drifting apart on shared sub-projects, which happened in practice (a stray,
+unread `force_language` key that only existed in `cuina-de-profit-local`'s old `projects.dev.php`).
+
+`base_domain` (each sub-project's app domain, and the root for asset/upload URLs — see
+`getBaseDomain()` below) is deliberately **not** one of `projects.php`'s keys, even though it also
+varies by environment. `Core\Routing\Projects::searchProject()` needs `Config::getBaseDomain()`
+before `Config::loadConfigs()` — the method that loads `config/dev/`/`config/prod/` — has even run
+(`Bootstrap::router()` constructs `Projects` before it calls `loadConfigs()`), so it can't be
+resolved through that generic per-environment merge like `db.php`/`mail.php`/`keys.php` are.
+Instead `Config::__construct()` gives it its own dedicated, eager load: a `base_domain.php` (same
+`$config = array(...)` shape as every other config file) directly inside `config/dev/` or
+`config/prod/`, read before anything else — see `cuina-de-profit-local/config/dev/base_domain.php`
+/ `config/prod/base_domain.php`. A `base_domain` key left inline in `projects.php` (as some
+un-migrated `*-local` sites still have) is still honored as a fallback if no dedicated file exists,
+and `$_SERVER['SERVER_NAME']` remains the last-resort default if neither is set.
+
 **The set of sub-projects can differ between dev and prod** (e.g. an `import` tool only defined
-in `projects.dev.php`) — this is intentional, not a bug to "fix". `Core\Routing\Projects` resolves
+for dev) — this is intentional, not a bug to "fix". `Core\Routing\Projects` resolves
 which sub-project the current request belongs to; `Core\Routing\Project` is the resolved value
 object. This class pair is considered stable/foundational — routing and DI build on top of it
 rather than replacing it (`Bootstrap` registers the resolved `Projects`/`Project` as container

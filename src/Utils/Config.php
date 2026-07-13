@@ -39,6 +39,18 @@ class Config
     {
         $this->initFolders();
 
+        // base_domain must be resolved before anything else - Projects::searchProject()
+        // needs it before Config::loadConfigs() (which is what normally merges
+        // config/dev|prod/*.php) ever runs, so it can't go through that generic
+        // mechanism and gets its own dedicated, eager load instead
+        $domainFile = $this->folders[1] . 'base_domain.php';
+        if (file_exists($domainFile)) {
+            $domainConfig = $this->load($domainFile);
+            if (array_key_exists('base_domain', $domainConfig)) {
+                $this->baseDomain = $domainConfig['base_domain'];
+            }
+        }
+
         // load projects info
         $projectFile = $this->folders[0] . 'projects.php';
         if (!file_exists($projectFile)) {
@@ -46,7 +58,11 @@ class Config
         }
         $this->projects = $this->load($projectFile);
         if (array_key_exists('base_domain', $this->projects)) {
-            $this->baseDomain = $this->projects['base_domain'];
+            // sites that haven't migrated base_domain out to their own
+            // config/dev|prod/base_domain.php yet can still define it inline
+            if (!$this->baseDomain) {
+                $this->baseDomain = $this->projects['base_domain'];
+            }
             unset($this->projects['base_domain']);
         }
 
