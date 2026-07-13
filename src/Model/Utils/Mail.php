@@ -17,6 +17,11 @@ class Mail
 
     protected string $fromName = '';
 
+    private array $data      = array();
+    private bool  $header    = true;
+    private bool  $footer    = true;
+    private bool  $signature = true;
+
     public function __construct($configMail = null)
     {
         if ($configMail == null) {
@@ -62,8 +67,6 @@ class Mail
             if (array_key_exists('smtp_options', $this->config)) {
                 $this->mail->SMTPOptions = $this->config['smtp_options'];
             }
-
-            return $this->mail;
         }
         return $this->mail;
     }
@@ -112,11 +115,6 @@ class Mail
         }
     }
 
-    private array $data      = array();
-    private bool  $header    = true;
-    private bool  $footer    = true;
-    private bool  $signature = true;
-
     /**
      * @throws \PHPMailer\PHPMailer\Exception
      */
@@ -149,7 +147,10 @@ class Mail
 
         $this->mail = null;
         if (!$success) {
-            echo $mail->ErrorInfo;
+            error_log('Mail::sendTwig failed: ' . $mail->ErrorInfo);
+            if (IS_DEV) {
+                echo $mail->ErrorInfo;
+            }
             return false;
         } else {
             return true;

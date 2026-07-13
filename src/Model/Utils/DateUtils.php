@@ -25,12 +25,7 @@ class DateUtils
      */
     public static function userDate(string $string): ?string
     {
-        $value = self::format(self::FORMAT_DATE_DB, self::FORMAT_DATE_USER, $string);
-        if ($value) {
-            return $value;
-        } else {
-            return null;
-        }
+        return self::format(self::FORMAT_DATE_DB, self::FORMAT_DATE_USER, $string) ?: null;
     }
 
     /**
@@ -42,12 +37,7 @@ class DateUtils
      */
     public static function databaseDate(string $string): ?string
     {
-        $value = self::format(self::FORMAT_DATE_USER, self::FORMAT_DATE_DB, $string);
-        if ($value) {
-            return $value;
-        } else {
-            return null;
-        }
+        return self::format(self::FORMAT_DATE_USER, self::FORMAT_DATE_DB, $string) ?: null;
     }
 
     /**
@@ -59,12 +49,7 @@ class DateUtils
      */
     public static function userTimestamp(string $string): ?string
     {
-        $value = self::format(self::FORMAT_TIMESTAMP_DB, self::FORMAT_TIMESTAMP_USER, $string);
-        if ($value) {
-            return $value;
-        } else {
-            return null;
-        }
+        return self::format(self::FORMAT_TIMESTAMP_DB, self::FORMAT_TIMESTAMP_USER, $string) ?: null;
     }
 
     /**
@@ -76,12 +61,7 @@ class DateUtils
      */
     public static function databaseTimestamp(string $string): ?string
     {
-        $value = self::format(self::FORMAT_TIMESTAMP_USER, self::FORMAT_TIMESTAMP_DB, $string);
-        if ($value) {
-            return $value;
-        } else {
-            return null;
-        }
+        return self::format(self::FORMAT_TIMESTAMP_USER, self::FORMAT_TIMESTAMP_DB, $string) ?: null;
     }
 
     /**
