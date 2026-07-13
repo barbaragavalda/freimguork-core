@@ -100,10 +100,7 @@ class SessionLog
         );
         $session = $this->mysql->query($sql, $params);
 
-        if (count($session)) {
-            return true;
-        }
-        return false;
+        return count($session) > 0;
     }
 
 }

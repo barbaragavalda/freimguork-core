@@ -6,6 +6,7 @@ use Core\View\Response\CSV;
 use Core\View\Response\HTML;
 use Core\View\Response\Json;
 use Core\View\Response\Redirect;
+use Core\View\Response\Response;
 use Core\View\Response\XML;
 use Psr\Http\Message\ResponseInterface;
 
@@ -27,9 +28,9 @@ class View
     private ?string $projectFolder;
 
     /**
-     * @var ?object $response . Object response
+     * @var ?Response $response . Object response
      */
-    private ?object $response = null;
+    private ?Response $response = null;
 
     public function __construct($projectFolder)
     {
@@ -52,9 +53,9 @@ class View
     /**
      * set info needed for response render
      */
-    public function setInfo($info)
+    public function setInfo(array $info): void
     {
-        return $this->info = $info;
+        $this->info = $info;
     }
 
     /**
