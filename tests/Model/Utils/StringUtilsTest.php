@@ -179,13 +179,6 @@ class StringUtilsTest extends TestCase
         $this->assertSame('CDP', StringUtils::acronym('cuina de profit'));
     }
 
-    public function testMbStrPadAccountsForMultibyteCharacters(): void
-    {
-        // "café" is 5 bytes but 4 characters (é is 2 bytes in UTF-8) - a plain
-        // str_pad would under-pad by one visible column
-        $this->assertSame('café ', StringUtils::mb_str_pad('café', 5));
-    }
-
     public function testTruncateHtmlReturnsShortTextUnchanged(): void
     {
         $this->assertSame('short text', StringUtils::truncateHtml('short text', 100));

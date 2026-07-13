@@ -446,14 +446,4 @@ class StringUtils
         return mb_strtoupper($acronym);
     }
 
-    public static function mb_str_pad(
-        string $input,
-        int $pad_length,
-        string $pad_string = ' ',
-        int $pad_type = STR_PAD_RIGHT
-    ): string {
-        $diff = strlen($input) - mb_strlen($input);
-        return str_pad($input, $pad_length + $diff, $pad_string, $pad_type);
-    }
-
 }

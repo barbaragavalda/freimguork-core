@@ -249,7 +249,7 @@ class File extends Model
     }
 
     /**
-     * Resize description of han image
+     * Resize description of an image
      *
      * @param int $fieldID
      *
@@ -413,7 +413,7 @@ class File extends Model
      *
      * @return bool
      */
-    function checkImageOrientation(string $path): bool
+    public function checkImageOrientation(string $path): bool
     {
         $ext = $this->getImageExtension($this->getRelativePath());
         if ($ext == ImageUtils::IMG_JPG) {
@@ -423,17 +423,12 @@ class File extends Model
                 return false;
             }
 
-            switch ($exif['Orientation']) {
-                case 3:
-                    $image = imagerotate($image, 180, 0);
-                    break;
-                case 6:
-                    $image = imagerotate($image, -90, 0);
-                    break;
-                case 8:
-                    $image = imagerotate($image, 90, 0);
-                    break;
-            }
+            $image = match ($exif['Orientation']) {
+                3 => imagerotate($image, 180, 0),
+                6 => imagerotate($image, -90, 0),
+                8 => imagerotate($image, 90, 0),
+                default => $image,
+            };
             imagejpeg($image, $path);
             return true;
         }

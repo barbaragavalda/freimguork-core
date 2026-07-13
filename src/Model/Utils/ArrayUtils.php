@@ -57,9 +57,7 @@ class ArrayUtils
      */
     public static function sum(array $a, array $b): array
     {
-        return array_map(function (...$arrays) {
-            return array_sum($arrays);
-        }, $a, $b);
+        return array_map(fn($x, $y) => $x + $y, $a, $b);
     }
 
     /**
@@ -94,7 +92,7 @@ class ArrayUtils
         return !array_diff_key(array_flip($keys), $array);
     }
 
-    public static function arraySpliceAssoc(array $array, int $offset, int $length, array $extraArray)
+    public static function arraySpliceAssoc(array $array, int $offset, int $length, array $extraArray): array
     {
         return array_slice($array, 0, $offset, true) + $extraArray + array_slice($array, $offset + $length, null, true);
     }

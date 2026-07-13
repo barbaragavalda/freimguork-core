@@ -37,9 +37,7 @@ class Language extends Model
             return $this->culture;
         }
 
-        if ($this->mysql == null) {
-            parent::__construct();
-        }
+        $this->ensureConnected();
         $sql      = '
             SELECT culture
             FROM appacman_lang
@@ -118,6 +116,17 @@ class Language extends Model
         $this->initCulture();
     }
 
+    /**
+     * Language can be constructed without a DB connection (see __construct());
+     * methods that need one lazily open it on first use.
+     */
+    private function ensureConnected(): void
+    {
+        if ($this->mysql == null) {
+            parent::__construct();
+        }
+    }
+
     private function equivalents($language, $preferred): string
     {
         if ($language == $preferred) {
@@ -151,9 +160,7 @@ class Language extends Model
 
     public function initID(): void
     {
-        if ($this->mysql == null) {
-            parent::__construct();
-        }
+        $this->ensureConnected();
 
         $table = 'appacman_lang';
         if (!$this->mysql->tableExists($table)) {
@@ -191,9 +198,7 @@ class Language extends Model
 
     public function getLanguages($culture = null): array
     {
-        if ($this->mysql == null) {
-            parent::__construct();
-        }
+        $this->ensureConnected();
 
         $table = 'appacman_lang';
         if (!$this->mysql->tableExists($table)) {

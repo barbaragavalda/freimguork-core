@@ -72,7 +72,7 @@ class Model
         $this->created = $created;
     }
 
-    protected function getFile(?int $fileID = null, string $suffix = ''): string
+    protected function getFile(?int $fileID = null, string $suffix = ''): ?string
     {
         if ($fileID === null) {
             return '';
