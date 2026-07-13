@@ -422,13 +422,8 @@ class PDO
      */
     public function start(): bool
     {
-        $answer = shell_exec('sudo /etc/init.d/mysql start 2>&1');
-        if (strcmp(trim($answer), 'Starting mysql (via systemctl): mysql.service.') == 0) {
-            $ok = true;
-        } else {
-            $ok = false;
-        }
-        return $ok;
+        $answer = trim(shell_exec('sudo /etc/init.d/mysql start 2>&1') ?? '');
+        return $answer === 'Starting mysql (via systemctl): mysql.service.';
     }
 
     /**
@@ -437,13 +432,8 @@ class PDO
      */
     public function stop(): bool
     {
-        $answer = shell_exec('sudo /etc/init.d/mysql stop 2>&1');
-        if (strcmp(trim($answer), 'Stopping mysql (via systemctl): mysql.service.') == 0) {
-            $ok = true;
-        } else {
-            $ok = false;
-        }
-        return $ok;
+        $answer = trim(shell_exec('sudo /etc/init.d/mysql stop 2>&1') ?? '');
+        return $answer === 'Stopping mysql (via systemctl): mysql.service.';
     }
 
     /**

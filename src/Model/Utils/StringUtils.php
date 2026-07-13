@@ -386,9 +386,8 @@ class StringUtils
      */
     public static function getStringBetween(string $string, string $start, string $end): string
     {
-        $string = ' ' . $string;
-        $ini    = strpos($string, $start);
-        if ($ini == 0) {
+        $ini = strpos($string, $start);
+        if ($ini === false) {
             return '';
         }
         $ini += strlen($start);
