@@ -2,6 +2,7 @@
 
 namespace Core\Model;
 
+use Core\Model\Encryptor\BlindIndex;
 use Core\Model\Encryptor\TwoWay;
 use Core\Model\MySQL\Manager;
 use Core\Model\MySQL\PDO;
@@ -171,7 +172,10 @@ class Model
     /**
      * add fields to query
      *
-     * @param array  $fields array('<name>' => true | false)
+     * @param array $fields array('<name>' => true | false | array('searchable' => true))
+     *                      a 'searchable' field also gets its blind index written to
+     *                      '<name>_bidx', so it can be looked up later via that column
+     *                      instead of decrypting every row (see Core\Model\Encryptor\BlindIndex)
      * @param string $sql
      * @param array  $params
      * @param bool   $isPost
@@ -179,19 +183,29 @@ class Model
     protected function addFields(array $fields, string &$sql, array &$params, bool $isPost = false): void
     {
         foreach ($fields as $field => $encrypted) {
-            $value = $this->$field;
+            $searchable = is_array($encrypted) && !empty($encrypted['searchable']);
+            $isEncrypted = is_array($encrypted) || $encrypted;
+
+            $plainValue = $value = $this->$field;
             if ($isPost) {
-                $value = $_POST[ $field ] ?? '';
+                $plainValue = $value = $_POST[ $field ] ?? '';
             }
             if (empty($value)) {
                 $value = '';
             } else {
-                if ($encrypted) {
+                if ($isEncrypted) {
                     $value = TwoWay::encrypt($value, $this->key . $field);
                 }
             }
             $sql              .= ", `$field` = :$field";
             $params[ $field ] = array('value' => $value, 'type' => \PDO::PARAM_STR);
+
+            if ($searchable) {
+                $bidxField             = $field . '_bidx';
+                $bidxValue             = empty($plainValue) ? '' : BlindIndex::compute($plainValue, $field);
+                $sql                   .= ", `$bidxField` = :$bidxField";
+                $params[ $bidxField ] = array('value' => $bidxValue, 'type' => \PDO::PARAM_STR);
+            }
         }
     }
 
