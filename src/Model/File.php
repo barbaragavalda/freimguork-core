@@ -314,7 +314,7 @@ class File extends Model
         return 0;
     }
 
-    private function downloadResized($fileName, $path, $percent = 0.75): false|GdImage
+    private function downloadResized($fileName, $path, $percent = 0.75): bool
     {
         list($width, $height) = getimagesize($fileName);
         $newWidth  = intval($width * $percent);
@@ -513,7 +513,7 @@ class File extends Model
         return array();
     }
 
-    private function getImageExtension(string $path): int
+    private function getImageExtension(string $path): string|false
     {
         $extension = exif_imagetype($path);
         return match ($extension) {
@@ -532,9 +532,9 @@ class File extends Model
      * @param string      $image
      * @param string|null $path
      *
-     * @return resource
+     * @return GdImage|false|null
      */
-    private function createEmptyImage(string $image, ?string $path = null): string
+    private function createEmptyImage(string $image, ?string $path = null): GdImage|false|null
     {
         if ($path == null) {
             $path = $this->getRelativePath();
