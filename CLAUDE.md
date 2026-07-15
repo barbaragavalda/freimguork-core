@@ -201,6 +201,14 @@ actually achieved depends on the deployment target, and it's currently inconsist
   compromised: rotating the DB passwords/encryption keys/mail credentials and purging the blobs
   from history (e.g. `git filter-repo`) is a deliberate remediation task, not something to do as a
   side effect of an unrelated change.
+- **The documented convention going forward** (see README's "Secrets management"): any
+  per-environment credential file (`config/dev/keys.php`, `config/prod/db.php`, etc.) is gitignored,
+  and a `<file>.php.dist` with placeholder values is committed instead — each environment copies the
+  `.dist` to the real filename and fills in real values locally, never in git. This only prevents
+  *new* leaks; it doesn't retroactively fix what's already in a repo's history (previous bullet).
+  `cuina-de-profit-local`'s `config/{dev,prod}/keys.php.dist` (the encryption secret, see
+  `Core\Model\Encryptor\Secret` below) is the reference example — `db.php`/`mail.php` there still
+  need the same treatment, they just haven't been done yet.
 - `robots.txt` `Disallow` rules on `config/`/`src/`/`vendor/` (already used in practice) are a
   courtesy to well-behaved crawlers only, not a security control — they don't stop anything from
   actually being requested.

@@ -39,6 +39,23 @@ have already migrated (`freimguork-appacman`, `freimguork-webservice`) track it 
 `CLAUDE.md`'s "Known migration debt" notes for what still needs migrating before an app can safely
 move off `v1.0`.
 
+## Secrets management
+
+Consuming apps load per-environment credentials (encryption keys, DB credentials, mail settings,
+third-party API keys) through `config/dev/`/`config/prod/` (see `CLAUDE.md`'s "Config layering").
+None of these files should ever be committed with real values. The convention:
+
+- Commit `<file>.php.dist` with placeholder values (e.g. `config/dev/keys.php.dist`).
+- Gitignore the real `<file>.php`.
+- Each environment copies the `.dist` to the real filename and fills in real values locally —
+  never in git.
+
+`Core\Model\Encryptor\Secret` expects `config/keys.php`'s shape to be
+`['encryption' => ['secret' => '<64 hex chars>']]`, generated with `bin2hex(random_bytes(32))`.
+`cuina-de-profit-local`'s `config/{dev,prod}/keys.php.dist` is the reference example. This only
+prevents new leaks — it doesn't retroactively fix credentials already committed in a repo's
+history; see `CLAUDE.md`'s "Known issue" note for why that's separate, deliberate remediation work.
+
 ## Routing
 
 Controllers declare routes with PHP attributes:
