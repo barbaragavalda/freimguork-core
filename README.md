@@ -29,6 +29,16 @@ it — Bitbucket app passwords are deprecated, so use an Atlassian API token wit
 composer config --global http-basic.bitbucket.org "your-atlassian-account-email@example.com" "your-api-token"
 ```
 
+## Versioning
+
+`v1.0` tags the last pre-modernization snapshot (old `routing.php` config-based routing, no DI
+container, echo/`header()`-based responses). Consuming apps that haven't migrated their controller
+constructors to the new required-dependency shape yet pin to it explicitly
+(`"optisistem/freimguork-core": "v1.0"`). `dev-master` is the actively modernized line — apps that
+have already migrated (`freimguork-appacman`, `freimguork-webservice`) track it directly. See
+`CLAUDE.md`'s "Known migration debt" notes for what still needs migrating before an app can safely
+move off `v1.0`.
+
 ## Routing
 
 Controllers declare routes with PHP attributes:
