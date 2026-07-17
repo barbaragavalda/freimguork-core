@@ -9,9 +9,10 @@ class Project
     private string  $regularExpression = '';
     private int     $langPosition      = 0;
 
-    private string $app       = '';
-    private array  $folders   = array();
-    private array  $languages = array();
+    private string $app        = '';
+    private array  $folders    = array();
+    private array  $languages  = array();
+    private array  $vendorApps = array();
 
     public function isEmpty(): bool
     {
@@ -48,6 +49,17 @@ class Project
         return $this->languages;
     }
 
+    /**
+     * @return array<string> extra vendor-package namespaces (e.g. "Webservice")
+     *                        whose own Controller/ directory should be merged
+     *                        into this sub-project's routes, in addition to
+     *                        its own src/<app>/Controller/
+     */
+    public function getVendorApps(): array
+    {
+        return $this->vendorApps;
+    }
+
     public function setURL(string $url): void
     {
         $this->url = $url;
@@ -65,9 +77,10 @@ class Project
 
     public function setInfo(array $info): void
     {
-        $this->app       = $info['app'];
-        $this->folders   = $info['folders'];
-        $this->languages = $info['languages'];
+        $this->app        = $info['app'];
+        $this->folders    = $info['folders'];
+        $this->languages  = $info['languages'];
+        $this->vendorApps = $info['vendorApps'] ?? array();
     }
 
 }

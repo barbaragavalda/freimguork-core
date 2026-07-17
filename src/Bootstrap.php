@@ -174,7 +174,23 @@ class Bootstrap
             ? null
             : DIR_ROOT . 'src/cache/prod/freimguork/routes-' . $app . '-' . $language . '.php';
 
-        return (new AttributeRouteLoader())->load($app, $directory, $cacheFile);
+        $loader     = new AttributeRouteLoader();
+        $collection = $loader->load($app, $directory, $cacheFile);
+
+        // a sub-project can also pull in generic routes straight from a vendor
+        // package (e.g. Webservice's own Register/Login/Logout), merged after
+        // its own so a same-path project route would still win - see
+        // Project::getVendorApps()
+        foreach ($project->getVendorApps() as $vendorApp) {
+            $vendorDirectory = DIR_ROOT . 'vendor/optisistem/freimguork-' . strtolower($vendorApp) . '/src/Controller/';
+            $vendorCacheFile = IS_DEV
+                ? null
+                : DIR_ROOT . 'src/cache/prod/freimguork/routes-' . $app . '-' . $vendorApp . '-' . $language . '.php';
+
+            $collection->addAll($loader->load($vendorApp, $vendorDirectory, $vendorCacheFile));
+        }
+
+        return $collection;
     }
 
     /**

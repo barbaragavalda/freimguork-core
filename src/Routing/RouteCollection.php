@@ -30,6 +30,17 @@ class RouteCollection implements IteratorAggregate
     }
 
     /**
+     * appends every route from $other onto this collection (e.g. merging a
+     * vendor package's generic routes after a sub-project's own)
+     */
+    public function addAll(RouteCollection $other): void
+    {
+        foreach ($other->all() as $route) {
+            $this->add($route);
+        }
+    }
+
+    /**
      * @return array<Route>
      */
     public function all(): array

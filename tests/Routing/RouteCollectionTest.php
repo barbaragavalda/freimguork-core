@@ -22,6 +22,24 @@ class RouteCollectionTest extends TestCase
         $this->assertSame(array($route), iterator_to_array($collection->getIterator()));
     }
 
+    public function testAddAllMergesRoutesKeepingOriginalOrderFirst(): void
+    {
+        $ownRoute    = Route::compile('/register', array('POST'), 'Api\\Controller\\Register', 'build', 'api.register');
+        $vendorRoute = Route::compile('/login', array('POST'), 'Webservice\\Controller\\Login', 'build', 'webservice.login');
+
+        $collection = new RouteCollection();
+        $collection->add($ownRoute);
+
+        $vendorCollection = new RouteCollection();
+        $vendorCollection->add($vendorRoute);
+
+        $collection->addAll($vendorCollection);
+
+        $this->assertSame(2, $collection->count());
+        $this->assertSame(array($ownRoute, $vendorRoute), $collection->all());
+        $this->assertSame($vendorRoute, $collection->getByName('webservice.login'));
+    }
+
     public function testToArrayFromArrayRoundTrip(): void
     {
         $collection = new RouteCollection();
