@@ -12,7 +12,8 @@ class Language extends Model
     const string DOMAIN          = 'messenges';
     const string DOMAIN_APPACMAN = 'messenges_appacman';
 
-    private string $app = '';
+    private string $app        = '';
+    private array  $vendorApps = array();
     private string $language;
     private string $culture;
 
@@ -66,7 +67,8 @@ class Language extends Model
     public function __construct(string $userLanguage = '', ?Project $currentProject = null)
     {
         if ($currentProject != null) {
-            $this->app = $currentProject->getApp();
+            $this->app        = $currentProject->getApp();
+            $this->vendorApps = $currentProject->getVendorApps();
             $this->initLanguage($userLanguage, $currentProject);
             $this->initGettext();
         }
@@ -156,6 +158,18 @@ class Language extends Model
         bindtextdomain($domain, $domainDirectory);
         bind_textdomain_codeset($domain, 'UTF-8');
         textdomain($domain);
+
+        // a vendor package pulled in via Project::getVendorApps() (e.g.
+        // freimguork-webservice) can ship its own translations under its own
+        // domain, so its generic controllers can dgettext() them regardless
+        // of which project ends up consuming them - same convention as
+        // Appacman's own domain above, just not hardcoded to that one app
+        foreach ($this->vendorApps as $vendorApp) {
+            $vendorDomain    = self::DOMAIN . '_' . strtolower($vendorApp);
+            $vendorDirectory = DIR_ROOT . 'vendor/optisistem/freimguork-' . strtolower($vendorApp) . '/src/locale';
+            bindtextdomain($vendorDomain, $vendorDirectory);
+            bind_textdomain_codeset($vendorDomain, 'UTF-8');
+        }
     }
 
     public function initID(): void
