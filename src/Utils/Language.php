@@ -54,6 +54,74 @@ class Language extends Model
         return 'es';
     }
 
+    /**
+     * inverse of getCulture($languageID) - looks up the id_appacman_lang
+     * (or id_language, same table-name fallback as getCulture()/initID())
+     * for a given 2-letter culture code, or null if it isn't one of this
+     * project's configured languages. Added for Webservice\Controller\
+     * Register to persist a user's language at signup, since that's a
+     * fact worth storing rather than re-deriving from Accept-Language on
+     * every later request (a returning user's browser/device might not
+     * send the same header, or none at all)
+     */
+    public function getLanguageID(string $culture): ?int
+    {
+        $this->ensureConnected();
+
+        $table = 'appacman_lang';
+        if (!$this->mysql->tableExists($table)) {
+            $table = 'language';
+        }
+        $sql    = '
+            SELECT id_' . $table . ' AS id
+            FROM ' . $table . '
+            WHERE culture = :culture
+        ';
+        $params = array(
+            'culture' => array('value' => $culture, 'type' => PDO::PARAM_STR)
+        );
+        $result = $this->mysql->query($sql, $params);
+        return isset($result[0]['id']) ? (int) $result[0]['id'] : null;
+    }
+
+    /**
+     * runs $callback with gettext temporarily switched to $culture (not
+     * necessarily this request's own resolved language - Bootstrap-time
+     * gettext setup, see initGettext(), is otherwise fixed for the whole
+     * request), restoring the original locale afterward regardless of
+     * whether $callback throws. Needed for anything translating into a
+     * *stored* preference rather than the current request's own language -
+     * e.g. Webservice\Controller\ForgotPassword's reset-code email, sent in
+     * whatever language the recipient registered with, not necessarily
+     * whatever Accept-Language this particular request happened to carry
+     */
+    public function withCulture(string $culture, callable $callback): mixed
+    {
+        $locale = self::CONFIGURATION[$culture] ?? null;
+        if ($locale === null) {
+            return $callback();
+        }
+
+        // getenv(), not setlocale(LC_ALL, 0)'s own current-locale-query
+        // convention (passing int 0 as the "locale" arg) - same env-var-
+        // driven approach initGettext() already uses to set it in the first
+        // place, so it's guaranteed to be a valid restorable value here
+        $previousLocale = getenv('LC_ALL');
+        putenv('LC_ALL=' . $locale);
+        setlocale(LC_ALL, $locale);
+
+        try {
+            return $callback();
+        } finally {
+            if ($previousLocale !== false) {
+                putenv('LC_ALL=' . $previousLocale);
+                setlocale(LC_ALL, $previousLocale);
+            } else {
+                putenv('LC_ALL');
+            }
+        }
+    }
+
     public function setCulture(string $culture): void
     {
         $this->culture = $culture;

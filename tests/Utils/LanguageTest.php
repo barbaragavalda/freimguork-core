@@ -2,9 +2,11 @@
 
 namespace Core\Tests\Utils;
 
+use Core\Model\MySQL\PDO;
 use Core\Utils\Language;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
+use RuntimeException;
 
 class LanguageTest extends TestCase
 {
@@ -42,6 +44,53 @@ class LanguageTest extends TestCase
     public function testReturnsEmptyStringForAnUnsupportedUnrelatedLanguage(): void
     {
         $this->assertSame('', $this->equivalents('fr', array('ca', 'es')));
+    }
+
+    public function testGetLanguageIDReturnsNullWhenNotFound(): void
+    {
+        $language        = new Language();
+        // public property, injected directly (bypassing ensureConnected()'s
+        // real Manager::getInstance() connection) - an empty $dbConfig +
+        // $throwError = false leaves the internal \PDO null, so query() just
+        // returns [], same convention as Core\Tests\Model\ModelTest
+        $language->mysql = new PDO(array(), false);
+
+        $this->assertNull($language->getLanguageID('xx'));
+    }
+
+    public function testWithCultureReturnsTheCallbacksReturnValue(): void
+    {
+        $language = new Language();
+
+        $result = $language->withCulture('en', fn() => 'hello');
+
+        $this->assertSame('hello', $result);
+    }
+
+    public function testWithCultureCallsTheCallbackDirectlyForAnUnconfiguredCulture(): void
+    {
+        $language = new Language();
+
+        $result = $language->withCulture('xx', fn() => 'unchanged');
+
+        $this->assertSame('unchanged', $result);
+    }
+
+    public function testWithCultureRestoresThePreviousLocaleEvenIfTheCallbackThrows(): void
+    {
+        $language = new Language();
+        $before   = getenv('LC_ALL');
+
+        try {
+            $language->withCulture('es', function () {
+                throw new RuntimeException('boom');
+            });
+            $this->fail('expected exception to propagate');
+        } catch (RuntimeException $e) {
+            $this->assertSame('boom', $e->getMessage());
+        }
+
+        $this->assertSame($before, getenv('LC_ALL'));
     }
 
 }
