@@ -103,7 +103,7 @@ class Language extends Model
             } else {
                 if (array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
                     $agentLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-                    $agentLanguage = $this->equivalents($agentLanguage, $projectLanguages[0]);
+                    $agentLanguage = $this->equivalents($agentLanguage, $projectLanguages);
                     if (in_array($agentLanguage, $projectLanguages)) {
                         // language from browser
                         $language = $agentLanguage;
@@ -129,9 +129,21 @@ class Language extends Model
         }
     }
 
-    private function equivalents($language, $preferred): string
+    /**
+     * @param string   $language         2-letter browser language (from Accept-Language)
+     * @param string[] $projectLanguages every language this project actually supports
+     *
+     * Was previously only checked against a single $preferred language (the
+     * project's first/default one) instead of the full list - correct on a
+     * 2-language ca/es project only by coincidence, since 'es' has its own
+     * match() case below anyway, but silently broken for any 3rd+ language
+     * (confirmed empirically: 'en'/'fr'/etc. always fell through to '',
+     * meaning the browser's language was *never* actually honored on a
+     * project like tv-tracker-local's api sub-project, ['ca','es','en']).
+     */
+    private function equivalents(string $language, array $projectLanguages): string
     {
-        if ($language == $preferred) {
+        if (in_array($language, $projectLanguages, true)) {
             return $language;
         }
         return match ($language) {
