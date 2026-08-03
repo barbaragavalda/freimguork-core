@@ -21,6 +21,7 @@ use Core\Utils\Config;
 use Core\Utils\Exception;
 use Core\Utils\Language;
 use Core\Utils\Session;
+use Core\View\Response\Json;
 use Core\View\View;
 use GuzzleHttp\Psr7\Response as PsrResponse;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -79,6 +80,25 @@ class Bootstrap
     public function run(): void
     {
         try {
+            // A CORS preflight OPTIONS request never matches a real route -
+            // no #[Route] in this framework family declares OPTIONS among
+            // its methods (routes are GET/POST/DELETE, matching each
+            // controller's actual verb) - so it always fell through to
+            // DefaultController's 404 handling. That was harmless as long
+            // as every response stayed HTTP 200 regardless of its `error`
+            // body (see Json::initResponse()'s own docblock on why that
+            // changed) - browsers require a 2xx preflight status or they
+            // block the real cross-origin request entirely, so a genuine
+            // 404 here breaks every authenticated browser call, not just
+            // literal OPTIONS requests to a dead URL. Short-circuit it
+            // before routing/auth ever run: the preflight isn't a real
+            // request, it's the browser asking permission for one, and the
+            // answer only depends on the CORS headers Json's constructor
+            // already sets unconditionally.
+            if (strtoupper($this->request->getMethod()) === 'OPTIONS') {
+                $this->emit((new Json())->initResponse());
+                return;
+            }
             $this->router();
             $this->execute();
         } catch (Exception $e) {

@@ -57,6 +57,17 @@ class Json extends Response
      */
     public function initResponse(array $info = array()): ResponseInterface
     {
+        // `error` doubles as an HTTP status code when it's an int -
+        // currently only ever 401, from WebserviceController::checkToken()
+        // (see that method's own docblock) failing to resolve the request's
+        // token to a real user. Every response used to stay a plain 200
+        // regardless, with the failure only ever visible inside the JSON
+        // body itself - a client had no transport-level way to tell "your
+        // session is gone" apart from any other error without inspecting
+        // every response body by hand, and in practice nothing did.
+        if (is_int($info['error'] ?? null)) {
+            $this->setHeaderStatus($info['error']);
+        }
         $this->setBody(json_encode($info));
         return $this->response;
     }
