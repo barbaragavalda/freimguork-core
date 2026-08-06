@@ -42,7 +42,7 @@ class Json extends Response
 
         $this->setHeader(
             'Access-Control-Allow-Headers',
-            'Origin, X-Requested-With, Content-Type, Accept, Authorization, Authorization-Alias'
+            'Origin, X-Requested-With, Content-Type, Accept, Authorization, Authorization-Alias, Accept-Language'
         );
         $this->setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE');
         $this->setHeader('Connection', 'close');
