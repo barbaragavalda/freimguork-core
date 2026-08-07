@@ -111,7 +111,19 @@ class Projects
     {
         $projects = $this->config->getProjects();
 
-        $currentURL     = $this->url->getUserURL();
+        // a sub-project key that's just a bare path segment (e.g. 'api',
+        // 'wallaby') is matched via an unanchored substring search below -
+        // against the *raw* userURL (host+path, see URL::getUserURL()),
+        // that segment could just as easily match text that's part of the
+        // request's own hostname rather than its path. Confirmed happening
+        // for real: 'api' matched every request to
+        // api-seguim.cuinadeprofit.cat, regardless of path, purely because
+        // the hostname itself starts with "api" - stripping the app's own
+        // known base_domain host from the front of userURL first (and from
+        // any domain key that happens to redundantly repeat it, see
+        // getRegularExpression()) means a bare path-segment key can only
+        // ever match inside the actual path, never inside the host text.
+        $currentURL     = $this->stripBaseDomainHost($this->url->getUserURL());
         $defaultProject = new Project();
         foreach ($projects as $domain => $project) {
             if (array_key_exists('isDefault', $project) && $project['isDefault']) {
@@ -176,6 +188,12 @@ class Projects
      */
     private function getRegularExpression(string $domain, array $project, ?Project $defaultProject = null): array
     {
+        // same host-stripping as searchProject()'s own $currentURL - a
+        // domain key that redundantly repeats the app's own host (as
+        // opposed to a bare path segment like 'api') must have it stripped
+        // too, or it can never match the already-host-stripped $currentURL
+        // it gets compared against
+        $domain       = $this->stripBaseDomainHost($domain);
         $domainRegExp = '(' . $domain . ')';
         $langPosition = 0;
 
@@ -218,6 +236,21 @@ class Projects
             'regExp'       => $domainRegExp,
             'langPosition' => $langPosition
         );
+    }
+
+    /**
+     * removes this app's own configured base_domain host from the front of
+     * $value, if present - see searchProject()'s own docblock for why this
+     * needs to happen before any sub-project domain key is matched against
+     * a URL
+     */
+    private function stripBaseDomainHost(string $value): string
+    {
+        $baseDomainHost = parse_url($this->config->getBaseDomain(), PHP_URL_HOST) ?? '';
+        if ($baseDomainHost !== '' && str_starts_with($value, $baseDomainHost)) {
+            return substr($value, strlen($baseDomainHost));
+        }
+        return $value;
     }
 
 }

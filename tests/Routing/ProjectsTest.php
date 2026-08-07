@@ -24,6 +24,15 @@ use ReflectionClass;
  *    default-project fallback from whichever non-{lang} project happened to
  *    be processed first, instead of only the one actually flagged
  *    isDefault.
+ *
+ * 3. searchProject()/getRegularExpression() matched a sub-project's bare
+ *    path-segment domain key (e.g. 'api') via an unanchored substring
+ *    search against the *raw* userURL, which includes the request's own
+ *    hostname (see URL::getUserURL()) - a key like 'api' matched *every*
+ *    request to a host that merely starts with "api" (e.g.
+ *    api-seguim.cuinadeprofit.cat), regardless of path, before the '{lang}'
+ *    project ever got a chance to match. Found on a real production
+ *    deployment, not hypothetical.
  */
 class ProjectsTest extends TestCase
 {
@@ -72,6 +81,45 @@ class ProjectsTest extends TestCase
         new Projects();
     }
 
+    /**
+     * regression for bug 3 above - reproduces the exact real-world
+     * configuration that broke: 'api' is checked before '{lang}' (config
+     * key order), and the app's own base_domain host starts with the
+     * literal text "api"
+     */
+    public function testDoesNotMatchABareDomainKeyAgainstTheRequestsOwnHostname(): void
+    {
+        $this->seedConfig(array(
+            'api'    => array('app' => 'Api', 'folders' => array(), 'languages' => array('ca')),
+            '{lang}' => array('app' => 'Web', 'folders' => array(), 'languages' => array('ca', 'es', 'en')),
+        ), 'https://api-seguim.example.com/');
+        $_SERVER['HTTP_HOST']   = 'api-seguim.example.com';
+        $_SERVER['REQUEST_URI'] = '/ca';
+
+        $projects = new Projects();
+
+        $this->assertSame('Web', $projects->getProject()->getApp());
+    }
+
+    /**
+     * same configuration, but an actual /api/... request still correctly
+     * resolves to the Api project - the fix must not turn 'api' into a
+     * dead key, only stop it matching inside the hostname
+     */
+    public function testStillMatchesABareDomainKeyAgainstARealPathSegment(): void
+    {
+        $this->seedConfig(array(
+            'api'    => array('app' => 'Api', 'folders' => array(), 'languages' => array('ca')),
+            '{lang}' => array('app' => 'Web', 'folders' => array(), 'languages' => array('ca', 'es', 'en')),
+        ), 'https://api-seguim.example.com/');
+        $_SERVER['HTTP_HOST']   = 'api-seguim.example.com';
+        $_SERVER['REQUEST_URI'] = '/api/login';
+
+        $projects = new Projects();
+
+        $this->assertSame('Api', $projects->getProject()->getApp());
+    }
+
     public function testFallsBackToTheProjectExplicitlyFlaggedDefault(): void
     {
         $this->seedConfig(array(
@@ -96,13 +144,13 @@ class ProjectsTest extends TestCase
      * loads its project list from disk normally - build one directly via
      * reflection instead, entirely independent of any real config files.
      */
-    private function seedConfig(array $projects): void
+    private function seedConfig(array $projects, string $baseDomain = 'https://example.com/'): void
     {
         $reflection = new ReflectionClass(Config::class);
         $config     = $reflection->newInstanceWithoutConstructor();
 
         $reflection->getProperty('projects')->setValue($config, $projects);
-        $reflection->getProperty('baseDomain')->setValue($config, 'https://example.com/');
+        $reflection->getProperty('baseDomain')->setValue($config, $baseDomain);
 
         $reflection->getProperty('instance')->setValue(null, $config);
     }
