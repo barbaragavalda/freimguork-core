@@ -87,7 +87,7 @@ abstract class Paginated extends Model
         $currentPage = $this->page + 1;
         $itemCount   = count($this->items);
         $firstPage   = 1;
-        $lastPage    = ceil($itemCount / $this->itemsPerPage);
+        $lastPage    = (int) ceil($itemCount / $this->itemsPerPage);
         if ($lastPage == 1 || $this->page > $lastPage) {
             // no pagination
             return array();
