@@ -3,7 +3,6 @@
 namespace Core\Tests\Routing\Loader;
 
 use Core\Routing\Loader\AttributeRouteLoader;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 class AttributeRouteLoaderTest extends TestCase
@@ -15,16 +14,24 @@ class AttributeRouteLoaderTest extends TestCase
 
     private string|false $originalTextDomain;
 
+    private string|false $originalLanguage;
+
     protected function setUp(): void
     {
         $this->originalLocale     = setlocale(LC_ALL, 0);
         $this->originalTextDomain = textdomain(null);
+        $this->originalLanguage   = getenv('LANGUAGE');
     }
 
     protected function tearDown(): void
     {
         setlocale(LC_ALL, $this->originalLocale);
         textdomain($this->originalTextDomain);
+        if ($this->originalLanguage === false) {
+            putenv('LANGUAGE');
+        } else {
+            putenv('LANGUAGE=' . $this->originalLanguage);
+        }
     }
 
     private function fixturesDirectory(): string
@@ -74,28 +81,12 @@ class AttributeRouteLoaderTest extends TestCase
         $this->assertSame('/recepta/{uri}', $routes->getByName('translated.show')->path);
     }
 
-    #[RunInSeparateProcess]
     public function testStaticSegmentsAreTranslatedWhenATranslationExists(): void
     {
         if (shell_exec('which msgfmt') === null) {
             $this->markTestSkipped('msgfmt is not available to compile a test .mo file');
         }
 
-        // this build's gettext occasionally doesn't pick up a just-compiled .mo file on
-        // the first bind (load-sensitive, not reproducible in isolation) - retry a few
-        // times with a fresh domain/directory before treating it as a real failure
-        $attempts   = 0;
-        $translated = null;
-        do {
-            $attempts++;
-            $translated = $this->loadTranslatedRoute();
-        } while ($translated !== '/recipe/{uri}' && $attempts < 5);
-
-        $this->assertSame('/recipe/{uri}', $translated);
-    }
-
-    private function loadTranslatedRoute(): ?string
-    {
         $localeDir = sys_get_temp_dir() . '/freimguork-locale-test-' . uniqid();
         $domain    = 'routing_test_' . uniqid();
         $moDir     = $localeDir . '/en_US.UTF-8/LC_MESSAGES';
@@ -113,6 +104,9 @@ class AttributeRouteLoaderTest extends TestCase
         exec('msgfmt ' . escapeshellarg($poFile) . ' -o ' . escapeshellarg($moDir . '/' . $domain . '.mo'));
 
         try {
+            // gettext prefers LANGUAGE over LC_ALL when both are set - Composer sets
+            // LANGUAGE=C for its own scripts, which silently defeats setlocale() below
+            putenv('LANGUAGE=en_US.UTF-8');
             putenv('LC_ALL=en_US.UTF-8');
             setlocale(LC_ALL, 'en_US.UTF-8', 'en_US');
             bindtextdomain($domain, $localeDir);
@@ -121,7 +115,8 @@ class AttributeRouteLoaderTest extends TestCase
 
             $routes = (new AttributeRouteLoader())->load(self::NAMESPACE, $this->fixturesDirectory());
 
-            return $routes->getByName('translated.show')->path;
+            // static segment translated, {uri} param segment left untouched
+            $this->assertSame('/recipe/{uri}', $routes->getByName('translated.show')->path);
         } finally {
             unlink($moDir . '/' . $domain . '.mo');
             rmdir($moDir);
