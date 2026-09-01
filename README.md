@@ -24,6 +24,11 @@ have already migrated (`freimguork-appacman`, `freimguork-webservice`) track it 
 `CLAUDE.md`'s "Known migration debt" notes for what still needs migrating before an app can safely
 move off `v1.0`.
 
+`v2.0` is a checkpoint tag, not a pinning point: it marks the state of `dev-master` once the DI
+container, the PSR-7 response layer, and PHPStan (plus the routing/i18n/DB correctness fixes that
+came with them) were all in place. Apps keep tracking `dev-master` directly exactly as before — `v2.0`
+exists as a named reference point for what shipped, not a new constraint to pin to.
+
 ## Secrets management
 
 Per-environment credentials load from `config/dev/`/`config/prod/` and are never committed with

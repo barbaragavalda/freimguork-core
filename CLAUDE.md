@@ -21,7 +21,8 @@ emits it. PHPStan (level 5, with a baseline for what predates it) is configured 
 Broader test coverage remains ongoing, alongside all of this. Expect a mix of very old,
 singleton/superglobal-heavy code (`Config`, `Session`) — which the DI phase deliberately wraps
 rather than replaces — alongside the newer, PSR-7/attribute-based routing, the container, and the
-PSR-7 response layer.
+PSR-7 response layer. This state of `dev-master` is tagged `v2.0`, a checkpoint reference rather than
+a pinning point — see README's "Versioning" section for the full `v1.0`/`v2.0`/`dev-master` convention.
 
 **Modernization work in this repo should not be constrained by keeping every consuming app working
 as-is.** Design each phase (routing, DI, and whatever comes next) the correct way for core itself;
