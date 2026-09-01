@@ -80,7 +80,9 @@ class AttributeRouteLoaderTest extends TestCase
         }
 
         $localeDir = sys_get_temp_dir() . '/freimguork-locale-test-' . uniqid();
-        $domain    = 'routing_test';
+        // a fixed domain name risks stale gettext catalog caching across runs (this
+        // build's underlying gettext is known to cache translations per-process)
+        $domain    = 'routing_test_' . uniqid();
         $moDir     = $localeDir . '/en_US.UTF-8/LC_MESSAGES';
         mkdir($moDir, 0777, true);
 
