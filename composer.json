@@ -55,7 +55,8 @@
   },
   "scripts": {
     "test": "phpunit",
-    "phpstan": "phpstan analyse --memory-limit=512M"
+    "phpstan": "phpstan analyse --memory-limit=512M",
+    "check-constraints": "php bin/check-sibling-constraints.php"
   },
   "minimum-stability": "dev"
 }
