@@ -3,6 +3,7 @@
 namespace Core\Tests\Routing\Loader;
 
 use Core\Routing\Loader\AttributeRouteLoader;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 class AttributeRouteLoaderTest extends TestCase
@@ -73,6 +74,7 @@ class AttributeRouteLoaderTest extends TestCase
         $this->assertSame('/recepta/{uri}', $routes->getByName('translated.show')->path);
     }
 
+    #[RunInSeparateProcess]
     public function testStaticSegmentsAreTranslatedWhenATranslationExists(): void
     {
         if (shell_exec('which msgfmt') === null) {
