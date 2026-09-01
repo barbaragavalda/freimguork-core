@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`freimguork-core` is the shared core library of "Freimguork," a small, lightweight, in-house
+`freimguork-core` is the shared core library of "Freimgüork," a small, lightweight, in-house
 PHP framework (own routing, DB layer, Twig-based views — no Symfony/Laravel dependency). It is
 never run standalone: it's installed as a Composer dependency (`optisistem/freimguork-core`) by
 consuming applications (each app's own repo has a `src/<App>/...` tree with its own controllers,

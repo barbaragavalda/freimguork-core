@@ -1,12 +1,11 @@
 # freimguork-core
 
-Core module for Freimguork — a small, lightweight, in-house PHP framework (own routing, DB layer,
+Core module for Freimgüork — a small, lightweight, in-house PHP framework (own routing, DB layer,
 Twig-based views) with no Symfony/Laravel dependency. This package is never run standalone: it's
 installed as a Composer dependency by consuming applications, which provide their own `src/<App>/`
 controller trees, `config/`, `locale/`, and web-exposed folder.
 
-Sibling packages in this family: `freimguork-appacman` (admin panel), `freimguork-webservice`,
-`freimguork-jwt`.
+Sibling packages in this family: `freimguork-appacman` (admin panel), `freimguork-webservice`.
 
 ## Requirements
 
@@ -14,20 +13,6 @@ Sibling packages in this family: `freimguork-appacman` (admin panel), `freimguor
 - A consuming application providing the expected folder layout (`config/`, `locale/`, `src/`, a
   web-exposed folder, `composer.json`) — see `CLAUDE.md` for the full structure and its deployment
   security model
-
-## Installation
-
-```bash
-composer require optisistem/freimguork-core
-```
-
-This is a private Bitbucket package. Composer needs to authenticate to `bitbucket.org` to fetch
-it — Bitbucket app passwords are deprecated, so use an Atlassian API token with the
-`read:repository:bitbucket` scope instead:
-
-```bash
-composer config --global http-basic.bitbucket.org "your-atlassian-account-email@example.com" "your-api-token"
-```
 
 ## Versioning
 
