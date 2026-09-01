@@ -150,7 +150,14 @@ class Projects
                             |> (fn($x) => str_replace(self::LANG_PATTERN, '', $x))
                             |> (fn($x) => str_replace('/', '\/', $x));
 
-                    $domainRegExpLangSlash = '/' . $domainRegExp . '(' . self::LANG_CODE_REG_EXPRESSION . '/)/';
+                    // the trailing '/' is a literal character being matched,
+                    // not the pattern delimiter - unescaped, PHP reads it as
+                    // the closing delimiter and treats the rest (')') as a
+                    // modifier flag, throwing "Unknown modifier ')'". Hit live
+                    // on cuina-de-profit-local: a request matching neither
+                    // loop's primary regex falls through to this fallback,
+                    // which this codebase apparently never exercised before
+                    $domainRegExpLangSlash = '/' . $domainRegExp . '(' . self::LANG_CODE_REG_EXPRESSION . '\/)/';
 
                     if (preg_match($domainRegExpLangSlash, $currentURL)) {
                         $found = true;

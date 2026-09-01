@@ -33,6 +33,17 @@ use ReflectionClass;
  *    api-seguim.cuinadeprofit.cat), regardless of path, before the '{lang}'
  *    project ever got a chance to match. Found on a real production
  *    deployment, not hypothetical.
+ * 4. searchProject()'s "user didn't enter the language" fallback built a
+ *    regex with an unescaped literal '/' sharing the pattern's own '/'
+ *    delimiter - PHP reads that '/' as the closing delimiter and the
+ *    following ')' as an invalid modifier flag, emitting a
+ *    "Unknown modifier ')'" warning (not a catchable exception) on every
+ *    request that reaches this fallback. Found live on
+ *    cuina-de-profit-local: the warning's own output counted as "headers
+ *    already sent", so Bootstrap's later http_response_code() call for the
+ *    intended 301 redirect silently failed too - the response body was
+ *    still (accidentally) correct, but sent as 200 instead of 301, with two
+ *    PHP warnings (including a vendor file path) leaked into the HTML.
  */
 class ProjectsTest extends TestCase
 {
@@ -133,6 +144,26 @@ class ProjectsTest extends TestCase
         ));
         $_SERVER['HTTP_HOST']   = 'totally-unmatched-domain.example';
         $_SERVER['REQUEST_URI'] = '/nothing/matches';
+
+        $projects = new Projects();
+
+        $this->assertSame('Web', $projects->getProject()->getApp());
+    }
+
+    /**
+     * regression for bug 4 above - reproduces cuina-de-profit-local's real
+     * config shape (a bare '{lang}' key, no isDefault anywhere) and a plain
+     * "/" request with no language in the URL, which falls through both
+     * domains' primary regex and reaches the broken fallback
+     */
+    public function testResolvesTheLanguagePrefixedProjectWhenNoLanguageWasEnteredInTheUrl(): void
+    {
+        $this->seedConfig(array(
+            'cronjob' => array('app' => 'Cronjob', 'folders' => array(), 'languages' => array('ca')),
+            '{lang}'  => array('app' => 'Web', 'folders' => array(), 'languages' => array('ca', 'es')),
+        ), 'https://cuina-de-profit.local/');
+        $_SERVER['HTTP_HOST']   = 'cuina-de-profit.local';
+        $_SERVER['REQUEST_URI'] = '/';
 
         $projects = new Projects();
 
