@@ -24,6 +24,10 @@ class PDO
 
     private bool $activeTransaction = false;
 
+    private array $tableExistsCache = array();
+
+    private array $fieldExistsCache = array();
+
     /**
      * PDO constructor
      *
@@ -178,6 +182,11 @@ class PDO
      */
     public function tableExists(string $table): bool
     {
+        if (array_key_exists($table, $this->tableExistsCache)) {
+            return $this->tableExistsCache[ $table ];
+        }
+
+        $exists = false;
         if ($this->pdo != null) {
             $sql    = '
                 SELECT table_name
@@ -190,12 +199,11 @@ class PDO
                 'table_name' => array('value' => $table, 'type' => \PDO::PARAM_STR),
             );
             $result = $this->query($sql, $params);
-
-            if (count($result)) {
-                return true;
-            }
+            $exists = count($result) > 0;
         }
-        return false;
+
+        $this->tableExistsCache[ $table ] = $exists;
+        return $exists;
     }
 
     /**
@@ -209,10 +217,16 @@ class PDO
      */
     public function fieldExists($table, $field): bool
     {
+        $key = $table . '.' . $field;
+        if (array_key_exists($key, $this->fieldExistsCache)) {
+            return $this->fieldExistsCache[ $key ];
+        }
+
+        $exists = false;
         if ($this->pdo != null) {
             $sql    = '
-                SELECT * 
-                FROM information_schema.columns 
+                SELECT *
+                FROM information_schema.columns
                 WHERE table_schema = :bbdd_name
                 AND table_name = :table_name
                 AND column_name = :field
@@ -223,12 +237,11 @@ class PDO
                 'field'      => array('value' => $field, 'type' => \PDO::PARAM_STR),
             );
             $result = $this->query($sql, $params);
-
-            if (count($result)) {
-                return true;
-            }
+            $exists = count($result) > 0;
         }
-        return false;
+
+        $this->fieldExistsCache[ $key ] = $exists;
+        return $exists;
     }
 
     /**
