@@ -109,8 +109,13 @@ class Mail
 
             $result     = $mail->send();
             $this->mail = null;
+            if (!$result) {
+                error_log('Mail::send failed: ' . $mail->ErrorInfo);
+            }
             return $result;
-        } catch (Exception) {
+        } catch (Exception $e) {
+            error_log('Mail::send failed: ' . $e->getMessage());
+            $this->mail = null;
             return false;
         }
     }
